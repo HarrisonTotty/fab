@@ -1,0 +1,46 @@
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires      = ["poetry-core>=1.0.0"]
+
+[tool.mypy]
+files                  = "src/**/*.py"
+ignore_errors          = true
+ignore_missing_imports = true
+pretty                 = true
+python_version         = "3.9"
+show_column_numbers    = true
+show_error_codes       = true
+show_error_context     = true
+
+[[tool.mypy.overrides]]
+ignore_errors = false
+module        = "fab"
+
+[tool.poetry]
+authors     = ["Harrison Totty <harrisongtotty@gmail.com>"]
+description = "A python library for analyzing the Flesh and Blood TCG."
+name        = "fab"
+readme      = "README.md"
+repository  = "https://github.com/HarrisonTotty/fab"
+version     = "0.1.0"
+
+[tool.poetry.dependencies]
+numpy           = "*"
+pandas          = "*"
+plotly          = "*"
+python          = "^3.9"
+python-dateutil = "*"
+pyyaml          = "*"
+
+[tool.poetry.dev-dependencies]
+mypy            = "*"
+pytest          = "*"
+pytest-aio      = "*"
+pytest-cov      = "*"
+pytest-randomly = "*"
+
+[tool.pytest.ini_options]
+addopts          = "-v --cov=fab"
+python_files     = "*.py"
+python_functions = "test_*"
+testpaths        = "tests"

@@ -1,0 +1,23 @@
+# .dockerignore file
+# ------------------
+
+.DS_Store
+.idea
+*.log
+tmp/
+
+*.py[cod]
+*.egg
+build
+htmlcov
+
+dist/
+
+__pycache__/
+
+.git
+.coverage
+.pytest_cache
+.mypy_cache
+
+notebooks/
