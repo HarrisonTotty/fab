@@ -26,13 +26,13 @@ class CardSet:
       * editions - The list of editions the set was printed for
       * identifier - The string shorthand identifier of the set
       * name - The full name of the set
-      * release_date - The release date of the card set
+      * release_date - The release date of the card set (if applicable)
     '''
 
     editions: list[str]
     identifier: str
     name: str
-    release_date: datetime.date
+    release_date: Optional[datetime.date]
 
     def __getitem__(self, key: str) -> Any:
         '''
@@ -60,7 +60,8 @@ class CardSet:
         date strings.
         '''
         rep = copy.deepcopy(jsondict)
-        rep['release_date'] = datetime.datetime.strptime(rep['release_date'], DATE_FORMAT).date()
+        if not rep['release_date'] is None:
+            rep['release_date'] = datetime.datetime.strptime(rep['release_date'], DATE_FORMAT).date()
         return CardSet(**rep)
 
     @staticmethod
@@ -76,7 +77,8 @@ class CardSet:
         is set to its string representation.
         '''
         rep = copy.deepcopy(self.__dict__)
-        rep['release_date'] = rep['release_date'].strftime(DATE_FORMAT)
+        if not rep['release_date'] is None:
+            rep['release_date'] = rep['release_date'].strftime(DATE_FORMAT)
         return rep
 
     def to_json(self) -> str:
@@ -124,15 +126,24 @@ class CardSetCollection:
             csv_data = csv.DictReader(io.StringIO(csvstr), delimiter = delimiter)
         except Exception as e:
             raise Exception(f'unable to parse CSV content - {e}')
+        def parse_release_date(inputstr: str) -> str:
+            '''
+            A helper function for parsing the release date string.
+            '''
+            if not inputstr or inputstr == 'null': return ''
+            if ',' in inputstr:
+                return inputstr.split(',')[0].split('T')[0].strip()
+            else:
+                return inputstr.split('T')[0].strip()
         card_sets = {}
         for entry in csv_data:
             identifier = entry['Identifier'].strip()
-            release_date_str = entry['Initial Release Dates'].split(',')[0].split('T')[0].strip()
+            release_date_str = parse_release_date(entry['Initial Release Dates'])
             card_sets[identifier] = CardSet(
                 editions = [x.strip() for x in entry['Editions'].split(',')] if entry['Editions'] else [],
                 identifier = identifier,
                 name = entry['Name'].strip(),
-                release_date = datetime.datetime.strptime(release_date_str, '%Y-%m-%d').date()
+                release_date = datetime.datetime.strptime(release_date_str, '%Y-%m-%d').date() if release_date_str else None
             )
         return CardSetCollection(card_sets)
 
@@ -153,7 +164,7 @@ class CardSetCollection:
         once.
         '''
         if len(self.items) < 1: return None
-        release_dates = [s.release_date for i, s in self.items.items() if i in card.sets]
+        release_dates = [s.release_date for i, s in self.items.items() if i in card.sets and not s.release_date is None]
         if release_dates:
             return sorted(release_dates)[0]
         else:
@@ -190,7 +201,7 @@ class CardSetCollection:
         Returns the set of all card set release dates within this card set
         collection.
         '''
-        return list(set([cs.release_date for cs in self.items.values()]))
+        return list(set([cs.release_date for cs in self.items.values() if not cs.release_date is None]))
 
     def save(self, file_path: str):
         '''
