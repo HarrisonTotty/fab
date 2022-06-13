@@ -621,7 +621,7 @@ class CardList:
                   body         = unidecode(entry['Functional Text'].strip()) if entry['Functional Text'] else None,
                   cost         = int_str_or_none(entry['Cost']),
                   defense      = int_str_or_none(entry['Defense']),
-                  flavor_text  = unidecode(entry['Flavor Text']) if entry['Flavor Text'] else None,
+                  flavor_text  = unidecode(entry['Flavor Text'].strip()) if entry['Flavor Text'] else None,
                   full_name    = unidecode(entry['Name'].strip()) + (f" ({entry['Pitch']})" if entry['Pitch'].isdigit() else ''),
                   grants       = [x.strip() for x in entry['Granted Keywords'].split(',')] if entry['Granted Keywords'] else [],
                   health       = int(entry['Health']) if entry['Health'].isdigit() else None,
@@ -1237,9 +1237,9 @@ class CardList:
         Computes the standard deviation of card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 2: return None
         array = [x.cost for x in self if isinstance(x.cost, int)]
-        if array:
+        if len(array) >= 2:
             return round(stdev(array), precision)
         else:
             return None
@@ -1249,9 +1249,9 @@ class CardList:
         Computes the standard deviation of card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 2: return None
         array = [x.defense for x in self if isinstance(x.defense, int)]
-        if array:
+        if len(array) >= 2:
             return round(stdev(array), precision)
         else:
             return None
@@ -1261,9 +1261,9 @@ class CardList:
         Computes the standard deviation of card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 2: return None
         array = [x.health for x in self if isinstance(x.health, int)]
-        if array:
+        if len(array) >= 2:
             return round(stdev(array), precision)
         else:
             return None
@@ -1273,9 +1273,9 @@ class CardList:
         Computes the standard deviation of card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 2: return None
         array = [x.intelligence for x in self if isinstance(x.intelligence, int)]
-        if array:
+        if len(array) >= 2:
             return round(stdev(array), precision)
         else:
             return None
@@ -1285,9 +1285,9 @@ class CardList:
         Computes the standard deviation of card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 2: return None
         array = [x.pitch for x in self if isinstance(x.pitch, int)]
-        if array:
+        if len(array) >= 2:
             return round(stdev(array), precision)
         else:
             return None
@@ -1297,9 +1297,9 @@ class CardList:
         Computes the standard deviation of card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 2: return None
         array = [x.power for x in self if isinstance(x.power, int)]
-        if array:
+        if len(array) >= 2:
             return round(stdev(array), precision)
         else:
             return None
