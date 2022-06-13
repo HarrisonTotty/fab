@@ -63,6 +63,6 @@ WORKDIR /home/jovyan/work
 COPY --from=build /project/dist .
 
 RUN pip install *.whl && \
-    wget https://github.com/flesh-cube/flesh-and-blood-cards/releases/latest/download/csvs.zip && \
+    wget -q https://github.com/flesh-cube/flesh-and-blood-cards/releases/latest/download/csvs.zip && \
     unzip csvs.zip && \
     rm -rf __MACOSX csvs.zip csvs/.DS_store

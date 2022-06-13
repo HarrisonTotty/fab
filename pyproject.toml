@@ -25,6 +25,7 @@ repository  = "https://github.com/HarrisonTotty/fab"
 version     = "0.1.0"
 
 [tool.poetry.dependencies]
+IPython         = "*"
 numpy           = "*"
 pandas          = "*"
 plotly          = "*"
