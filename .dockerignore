@@ -21,3 +21,6 @@ __pycache__/
 .mypy_cache
 
 notebooks/
+data/
+
+poetry.lock

@@ -14,6 +14,7 @@ import os
 from IPython.display import display, Image
 from statistics import mean, median, stdev
 from typing import Any, Optional
+from unidecode import unidecode
 
 @dataclasses.dataclass
 class Card:
@@ -23,6 +24,7 @@ class Card:
       * cost - The pitch cost of the card
       * defense - The defense value of the card
       * flavor_text - Any lore flavor text printed on the card
+      * full_name - The name of the card, including the pitch value
       * grants - A list of key words this card grants to other cards
       * health - The health value of the card (for heroes and minions)
       * identifiers - A list of card identifiers, such as "RNR012"
@@ -43,6 +45,7 @@ class Card:
     cost: None | str | int
     defense: None | str | int
     flavor_text: Optional[str]
+    full_name: str
     grants: list[str]
     health: Optional[int]
     identifiers: list[str]
@@ -285,6 +288,7 @@ class CardList:
           * body
           * cost
           * defense
+          * full_name
           * grants
           * health
           * intelligence
@@ -297,8 +301,9 @@ class CardList:
           * type_text
           * types
         In addition to functions/lambdas, you can also specify:
-          * A string for the `body`, `name`, or `type_text` keyword arguments.
-            These comparisons are case-insentitive and will match substrings.
+          * A string for the `body`, `full_name`, `name`, or `type_text` keyword
+            arguments. These comparisons are case-insentitive and will match
+            substrings.
           * An integer for the `cost`, `defense`, `health`, `intelligence`,
             `pitch`, or `power` keyword arguments. `None` and `str` values
             will not be included in the results.
@@ -318,6 +323,7 @@ class CardList:
             'body',
             'cost',
             'defense',
+            'full_name',
             'grants'
             'health',
             'intelligence',
@@ -384,6 +390,18 @@ class CardList:
                         if defense(c.defense): continue
                     else:
                         if not defense(c.defense): continue
+            if 'full_name' in kwargs:
+                full_name = kwargs['full_name']
+                if isinstance(full_name, str):
+                    if negate:
+                        if full_name.lower() in c.full_name.lower(): continue
+                    else:
+                        if not full_name.lower() in c.full_name.lower(): continue
+                else:
+                    if negate:
+                        if full_name(c.full_name): continue
+                    else:
+                        if not full_name(c.full_name): continue
             if 'grants' in kwargs:
                 grants = kwargs['grants']
                 if isinstance(grants, str):
@@ -587,34 +605,41 @@ class CardList:
             '''
             A helper function for parsing our the image URL dictionary.
             '''
-            if not inputstr or not ',' in inputstr: return {}
-            inputstr.replace('–', '-') # funkyness
+            if not inputstr: return {}
             result = {}
-            for substrings in [x.split(' - ') for x in inputstr.split(',') if ' - ' in x]:
-                result[substrings[1].strip()] = substrings[0].strip()
+            if ',' in inputstr:
+                for substrings in [x.split(' - ', 1) for x in unidecode(inputstr).split(',') if ' - ' in x]:
+                    result[substrings[1].strip()] = substrings[0].strip()
+            elif ' - ' in inputstr:
+                substring = unidecode(inputstr).split(' - ', 1)
+                result[substring[1].strip()] = substring[0].strip()
             return result
         cards = []
         for entry in csv_data:
-            cards.append(Card(
-                body         = entry['Functional Text'].strip() if entry['Functional Text'] else None,
-                cost         = int_str_or_none(entry['Cost']),
-                defense      = int_str_or_none(entry['Defense']),
-                flavor_text  = entry['Flavor Text'] if entry['Flavor Text'] else None,
-                grants       = [x.strip() for x in entry['Granted Keywords'].split(',')] if entry['Granted Keywords'] else [],
-                health       = int(entry['Health']) if entry['Health'].isdigit() else None,
-                identifiers  = [x.strip() for x in entry['Identifiers'].split(',')],
-                intelligence = int(entry['Intelligence']) if entry['Intelligence'].isdigit() else None,
-                image_urls   = image_url_parser(entry['Image URLs']),
-                keywords     = [x.strip() for x in entry['Card Keywords'].split(',')] + [x.strip() for x in entry['Ability and Effect Keywords'].split(',')],
-                name         = entry['Name'].strip(),
-                pitch        = int(entry['Pitch']) if entry['Pitch'].isdigit() else None,
-                power        = int_str_or_none(entry['Power']),
-                rarities     = [x.strip() for x in entry['Rarity'].split(',')],
-                sets         = [x.strip() for x in entry['Set Identifiers'].split(',')],
-                tags         = [],
-                type_text    = entry['Type Text'].strip(),
-                types        = [x.strip() for x in entry['Types'].split(',')]
-            ))
+            try:
+              cards.append(Card(
+                  body         = unidecode(entry['Functional Text'].strip()) if entry['Functional Text'] else None,
+                  cost         = int_str_or_none(entry['Cost']),
+                  defense      = int_str_or_none(entry['Defense']),
+                  flavor_text  = unidecode(entry['Flavor Text']) if entry['Flavor Text'] else None,
+                  full_name    = entry['Name'].strip() + (f" ({entry['Pitch']})" if entry['Pitch'].isdigit() else ''),
+                  grants       = [x.strip() for x in entry['Granted Keywords'].split(',')] if entry['Granted Keywords'] else [],
+                  health       = int(entry['Health']) if entry['Health'].isdigit() else None,
+                  identifiers  = [x.strip() for x in entry['Identifiers'].split(',')],
+                  intelligence = int(entry['Intelligence']) if entry['Intelligence'].isdigit() else None,
+                  image_urls   = image_url_parser(entry['Image URLs']),
+                  keywords     = list(set(([x.strip() for x in entry['Card Keywords'].split(',')] if entry['Card Keywords'] else []) + ([x.strip() for x in entry['Ability and Effect Keywords'].split(',')] if entry['Ability and Effect Keywords'] else []))),
+                  name         = entry['Name'].strip(),
+                  pitch        = int(entry['Pitch']) if entry['Pitch'].isdigit() else None,
+                  power        = int_str_or_none(entry['Power']),
+                  rarities     = [x.strip() for x in entry['Rarity'].split(',')],
+                  sets         = [x.strip() for x in entry['Set Identifiers'].split(',')],
+                  tags         = [],
+                  type_text    = unidecode(entry['Type Text'].strip()),
+                  types        = [x.strip() for x in entry['Types'].split(',')]
+               ))
+            except Exception as e:
+                raise Exception(f'unable to parse intermediate card data - {e} - {entry}')
         return CardList(cards)
 
     @staticmethod
@@ -626,6 +651,12 @@ class CardList:
         for jcard in json.loads(jsonstr):
             cards.append(Card(**jcard))
         return CardList(cards)
+
+    def full_names(self) -> list[str]:
+        '''
+        Returns the set of all full card names within this list of cards.
+        '''
+        return list(set([card.full_name for card in self]))
 
     def grants(self) -> list[str]:
         '''
@@ -640,6 +671,7 @@ class CardList:
         '''
         Groups transactions by one of the following criteria:
           * key = str
+            * full_name
             * grants
             * keyword
             * name
@@ -658,7 +690,10 @@ class CardList:
         if len(self.items) < 1: return {}
         res = {}
         # str keys
-        if by == 'grants':
+        if by == 'full_name':
+            for full_name in self.full_names():
+                res[full_name] = CardList([card for card in self if card.full_name == full_name]).sort()
+        elif by == 'grants':
             for grants in self.grants():
                 res[grants] = CardList([card for card in self if grants in card.grants]).sort()
         elif by == 'keyword':
