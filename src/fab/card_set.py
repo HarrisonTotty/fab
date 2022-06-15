@@ -54,6 +54,12 @@ class CardSet:
         '''
         return self.to_json()
 
+    def keys(self) -> list[str]:
+        '''
+        Returns the dictionary keys associated with this card set class.
+        '''
+        return list(self.__dict__.keys())
+
     @staticmethod
     def from_datestr_dict(jsondict: dict) -> CardSet:
         '''
