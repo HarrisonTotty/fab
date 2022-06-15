@@ -16,6 +16,7 @@ from typing import Any, Optional
 
 from .card import Card
 
+CARD_SET_CATALOG: Optional[CardSetCollection] = None
 DATE_FORMAT = '%Y/%m/%d'
 
 @dataclasses.dataclass
@@ -178,17 +179,23 @@ class CardSetCollection:
         return list(self.items.keys())
 
     @staticmethod
-    def load(file_path: str) -> CardSetCollection:
+    def load(file_path: str, set_catalog: bool = False) -> CardSetCollection:
         '''
         Loads a card set collection from the specified `.json` or `.csv` file.
+        If `set_catalog` is set to `True`, then a cop of the card set collection
+        will be set as the default `card_set.CATALOG`.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
             if file_path.endswith('.json'):
-                return CardSetCollection.from_json(f.read())
+                res = CardSetCollection.from_json(f.read())
             elif file_path.endswith('.csv'):
-                return CardSetCollection.from_csv(f.read())
+                res = CardSetCollection.from_csv(f.read())
             else:
                 raise Exception('specified file is not a CSV or JSON file')
+        if set_catalog:
+            global CARD_SET_CATALOG
+            CARD_SET_CATALOG = res
+        return res
 
     def names(self) -> list[str]:
         '''

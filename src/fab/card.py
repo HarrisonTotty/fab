@@ -16,6 +16,8 @@ from statistics import mean, median, stdev
 from typing import Any, Optional
 from unidecode import unidecode
 
+CARD_CATALOG: Optional[CardList] = None
+
 @dataclasses.dataclass
 class Card:
     '''
@@ -85,6 +87,20 @@ class Card:
         of the `to_json()` method.
         '''
         return self.to_json()
+
+    @staticmethod
+    def from_full_name(full_name: str, catalog: Optional[CardList] = None) -> Card:
+        '''
+        Creates a new card from its full name. To instantiate the card this way,
+        a card catalog (`CardList`) must be provided, defaulting to
+        `card.CARD_CATALOG`.
+        '''
+        _catalog = CARD_CATALOG if catalog is None else catalog
+        if _catalog is None: raise Exception('specified card catalog has not been initialized')
+        grouped = _catalog.group(by='full_name')
+        if not full_name in grouped:
+            raise Exception(f'specified card catalog does not contain a card will full name "{full_name}"')
+        return copy.deepcopy(grouped[full_name][0])
 
     @staticmethod
     def from_json(jsonstr: str) -> Card:
@@ -250,14 +266,14 @@ class CardList:
 
     def counts(self) -> dict[str, int]:
         '''
-        Returns a dictionary of card counts organized by type text.
+        Returns a dictionary of card counts organized by full name.
         '''
         counts = {}
         for card in self:
-            if card.type_text in counts:
-                counts[card.type_text] += 1
+            if card.full_name in counts:
+                counts[card.full_name] += 1
             else:
-                counts[card.type_text] = 1
+                counts[card.full_name] = 1
         return counts
 
     def defense_reactions(self) -> CardList:
@@ -275,6 +291,13 @@ class CardList:
         for card in self:
             if isinstance(card.defense, int): res.append(card.defense)
         return list(set(res))
+
+    @staticmethod
+    def empty() -> CardList:
+        '''
+        Returns a new empty card list containing no cards.
+        '''
+        return CardList([])
 
     def equipment(self) -> CardList:
         '''
@@ -790,233 +813,239 @@ class CardList:
         return list(set(res))
 
     @staticmethod
-    def load(file_path: str) -> CardList:
+    def load(file_path: str, set_catalog: bool = False) -> CardList:
         '''
-        Loads a list of cards from the specified `.json` or `.csv` file.
+        Loads a list of cards from the specified `.json` or `.csv` file. If
+        `set_catalog` is set to `True`, then a copy of the loaded card list will
+        also be set as the default `card.CARD_CATALOG`.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
             if file_path.endswith('.json'):
-                return CardList.from_json(f.read())
+                res = CardList.from_json(f.read())
             elif file_path.endswith('.csv'):
-                return CardList.from_csv(f.read())
+                res = CardList.from_csv(f.read())
             else:
                 raise Exception('specified file is not a CSV or JSON file')
+        if set_catalog:
+            global CARD_CATALOG
+            CARD_CATALOG = copy.deepcopy(res)
+        return res
 
-    def max_cost(self) -> Optional[int]:
+    def max_cost(self) -> int:
         '''
         Computes the maximum card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.cost for x in self if isinstance(x.cost, int)]
         if array:
             return max(array)
         else:
-            return None
+            return 0
 
-    def max_defense(self) -> Optional[int]:
+    def max_defense(self) -> int:
         '''
         Computes the maximum card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.defense for x in self if isinstance(x.defense, int)]
         if array:
             return max(array)
         else:
-            return None
+            return 0
 
-    def max_health(self) -> Optional[int]:
+    def max_health(self) -> int:
         '''
         Computes the maximum card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.health for x in self if isinstance(x.health, int)]
         if array:
             return max(array)
         else:
-            return None
+            return 0
 
-    def max_intelligence(self) -> Optional[int]:
+    def max_intelligence(self) -> int:
         '''
         Computes the maximum card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.intelligence for x in self if isinstance(x.intelligence, int)]
         if array:
             return max(array)
         else:
-            return None
+            return 0
 
-    def max_pitch(self) -> Optional[int]:
+    def max_pitch(self) -> int:
         '''
         Computes the maximum card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.pitch for x in self if isinstance(x.pitch, int)]
         if array:
             return max(array)
         else:
-            return None
+            return 0
 
-    def max_power(self) -> Optional[int]:
+    def max_power(self) -> int:
         '''
         Computes the maximum card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.power for x in self if isinstance(x.power, int)]
         if array:
             return max(array)
         else:
-            return None
+            return 0
 
-    def mean_cost(self, precision: int = 2) -> Optional[float]:
+    def mean_cost(self, precision: int = 2) -> float:
         '''
         Computes the mean card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.cost for x in self if isinstance(x.cost, int)]
         if array:
             return round(mean(array), precision)
         else:
-            return None
+            return 0.0
 
-    def mean_defense(self, precision: int = 2) -> Optional[float]:
+    def mean_defense(self, precision: int = 2) -> float:
         '''
         Computes the mean card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.defense for x in self if isinstance(x.defense, int)]
         if array:
             return round(mean(array), precision)
         else:
-            return None
+            return 0.0
 
-    def mean_health(self, precision: int = 2) -> Optional[float]:
+    def mean_health(self, precision: int = 2) -> float:
         '''
         Computes the mean card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.health for x in self if isinstance(x.health, int)]
         if array:
             return round(mean(array), precision)
         else:
-            return None
+            return 0.0
 
-    def mean_intelligence(self, precision: int = 2) -> Optional[float]:
+    def mean_intelligence(self, precision: int = 2) -> float:
         '''
         Computes the mean card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.intelligence for x in self if isinstance(x.intelligence, int)]
         if array:
             return round(mean(array), precision)
         else:
-            return None
+            return 0.0
 
-    def mean_pitch(self, precision: int = 2) -> Optional[float]:
+    def mean_pitch(self, precision: int = 2) -> float:
         '''
         Computes the mean card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.pitch for x in self if isinstance(x.pitch, int)]
         if array:
             return round(mean(array), precision)
         else:
-            return None
+            return 0.0
 
-    def mean_power(self, precision: int = 2) -> Optional[float]:
+    def mean_power(self, precision: int = 2) -> float:
         '''
         Computes the mean card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.power for x in self if isinstance(x.power, int)]
         if array:
             return round(mean(array), precision)
         else:
-            return None
+            return 0.0
 
-    def median_cost(self, precision: int = 2) -> Optional[float]:
+    def median_cost(self, precision: int = 2) -> float:
         '''
         Computes the median card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.cost for x in self if isinstance(x.cost, int)]
         if array:
             return round(median(array), precision)
         else:
-            return None
+            return 0.0
 
-    def median_defense(self, precision: int = 2) -> Optional[float]:
+    def median_defense(self, precision: int = 2) -> float:
         '''
         Computes the median card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.defense for x in self if isinstance(x.defense, int)]
         if array:
             return round(median(array), precision)
         else:
-            return None
+            return 0.0
 
-    def median_health(self, precision: int = 2) -> Optional[float]:
+    def median_health(self, precision: int = 2) -> float:
         '''
         Computes the median card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.health for x in self if isinstance(x.health, int)]
         if array:
             return round(median(array), precision)
         else:
-            return None
+            return 0.0
 
-    def median_intelligence(self, precision: int = 2) -> Optional[float]:
+    def median_intelligence(self, precision: int = 2) -> float:
         '''
         Computes the median card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.intelligence for x in self if isinstance(x.intelligence, int)]
         if array:
             return round(median(array), precision)
         else:
-            return None
+            return 0.0
 
-    def median_pitch(self, precision: int = 2) -> Optional[float]:
+    def median_pitch(self, precision: int = 2) -> float:
         '''
         Computes the median card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.pitch for x in self if isinstance(x.pitch, int)]
         if array:
             return round(median(array), precision)
         else:
-            return None
+            return 0.0
 
-    def median_power(self, precision: int = 2) -> Optional[float]:
+    def median_power(self, precision: int = 2) -> float:
         '''
         Computes the median card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0.0
         array = [x.power for x in self if isinstance(x.power, int)]
         if array:
             return round(median(array), precision)
         else:
-            return None
+            return 0.0
 
     @staticmethod
     def merge(*args, unique: bool = False) -> CardList:
@@ -1026,6 +1055,7 @@ class CardList:
         '''
         merged = []
         for card_list in args:
+            if card_list is None: continue
             for card in card_list:
                 if unique and not card in merged:
                     merged.append(card)
@@ -1033,83 +1063,92 @@ class CardList:
                     merged.append(card)
         return CardList(merged)
 
-    def min_cost(self) -> Optional[int]:
+    def min_cost(self) -> int:
         '''
         Computes the minimum card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.cost for x in self if isinstance(x.cost, int)]
         if array:
             return min(array)
         else:
-            return None
+            return 0
 
-    def min_defense(self) -> Optional[int]:
+    def min_defense(self) -> int:
         '''
         Computes the minimum card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.defense for x in self if isinstance(x.defense, int)]
         if array:
             return min(array)
         else:
-            return None
+            return 0
 
-    def min_health(self) -> Optional[int]:
+    def min_health(self) -> int:
         '''
         Computes the minimum card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.health for x in self if isinstance(x.health, int)]
         if array:
             return min(array)
         else:
-            return None
+            return 0
 
-    def min_intelligence(self) -> Optional[int]:
+    def min_intelligence(self) -> int:
         '''
         Computes the minimum card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.intelligence for x in self if isinstance(x.intelligence, int)]
         if array:
             return min(array)
         else:
-            return None
+            return 0
 
-    def min_pitch(self) -> Optional[int]:
+    def min_pitch(self) -> int:
         '''
         Computes the minimum card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.pitch for x in self if isinstance(x.pitch, int)]
         if array:
             return min(array)
         else:
-            return None
+            return 0
 
-    def min_power(self) -> Optional[int]:
+    def min_power(self) -> int:
         '''
         Computes the minimum card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.power for x in self if isinstance(x.power, int)]
         if array:
             return min(array)
         else:
-            return None
+            return 0
 
     def names(self) -> list[str]:
         '''
         Returns the set of all card names in this card list.
         '''
         return list(set([card.name for card in self]))
+
+    def pitch_cost_difference(self) -> int:
+        '''
+        Returns the difference between the pitch and cost values of all cards. A
+        positive integer indicates that on average one generates more pitch
+        value than consumes it. This calculation does not take into effect any
+        additional pitch/cost a card might incur in its body text.
+        '''
+        return self.total_pitch() - self.total_cost()
 
     def pitch_values(self) -> list[int]:
         '''
@@ -1120,6 +1159,15 @@ class CardList:
         for card in self:
             if isinstance(card.pitch, int): res.append(card.pitch)
         return list(set(res))
+
+    def power_defense_difference(self) -> int:
+        '''
+        Returns the difference between the power and defense values of all
+        cards. A positive integer indicates the deck prefers an offensive
+        strategy. This calculation does not take into effect any additional
+        power/defense a card might incur in its body text.
+        '''
+        return self.total_power() - self.total_defense()
 
     def power_values(self) -> list[int]:
         '''
@@ -1180,7 +1228,7 @@ class CardList:
             card_sets.extend(card.sets)
         return list(set(card_sets))
 
-    def statistics(self, precision: int = 2) -> dict[str, Optional[int | float]]:
+    def statistics(self, precision: int = 2) -> dict[str, int | float]:
         '''
         Computes helpful statistics associated with this collection of cards.
         The result is a dictionary containing the following keys:
@@ -1189,6 +1237,8 @@ class CardList:
         * mean_[cost, defense, health, intelligence, pitch, power]
         * median_[cost, defense, health, intelligence, pitch, power]
         * min_[cost, defense, health, intelligence, pitch, power]
+        * pitch_cost_difference
+        * power_defense_difference
         * stdev_[cost, defense, health, intelligence, pitch, power]
         * total_[cost, defense, health, intelligence, pitch, power]
         '''
@@ -1218,6 +1268,8 @@ class CardList:
             'min_intelligence': self.min_intelligence(),
             'min_pitch': self.min_pitch(),
             'min_power': self.min_power(),
+            'pitch_cost_difference': self.pitch_cost_difference(),
+            'power_defense_difference': self.power_defense_difference(),
             'stdev_cost': self.stdev_cost(precision),
             'stdev_defense': self.stdev_defense(precision),
             'stdev_health': self.stdev_health(precision),
@@ -1232,83 +1284,90 @@ class CardList:
             'total_power': self.total_power(),
         }
 
-    def stdev_cost(self, precision: int = 2) -> Optional[float]:
+    def stdev_cost(self, precision: int = 2) -> float:
         '''
         Computes the standard deviation of card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 2: return None
+        if len(self.items) < 2: return 0.0
         array = [x.cost for x in self if isinstance(x.cost, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
-            return None
+            return 0.0
 
-    def stdev_defense(self, precision: int = 2) -> Optional[float]:
+    def stdev_defense(self, precision: int = 2) -> float:
         '''
         Computes the standard deviation of card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 2: return None
+        if len(self.items) < 2: return 0.0
         array = [x.defense for x in self if isinstance(x.defense, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
-            return None
+            return 0.0
 
-    def stdev_health(self, precision: int = 2) -> Optional[float]:
+    def stdev_health(self, precision: int = 2) -> float:
         '''
         Computes the standard deviation of card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 2: return None
+        if len(self.items) < 2: return 0.0
         array = [x.health for x in self if isinstance(x.health, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
-            return None
+            return 0.0
 
-    def stdev_intelligence(self, precision: int = 2) -> Optional[float]:
+    def stdev_intelligence(self, precision: int = 2) -> float:
         '''
         Computes the standard deviation of card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 2: return None
+        if len(self.items) < 2: return 0.0
         array = [x.intelligence for x in self if isinstance(x.intelligence, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
-            return None
+            return 0.0
 
-    def stdev_pitch(self, precision: int = 2) -> Optional[float]:
+    def stdev_pitch(self, precision: int = 2) -> float:
         '''
         Computes the standard deviation of card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 2: return None
+        if len(self.items) < 2: return 0.0
         array = [x.pitch for x in self if isinstance(x.pitch, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
-            return None
+            return 0.0
 
-    def stdev_power(self, precision: int = 2) -> Optional[float]:
+    def stdev_power(self, precision: int = 2) -> float:
         '''
         Computes the standard deviation of card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 2: return None
+        if len(self.items) < 2: return 0.0
         array = [x.power for x in self if isinstance(x.power, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
-            return None
+            return 0.0
 
     def to_json(self) -> str:
         '''
         Converts the list of cards to a JSON string representation.
         '''
-        return json.dumps([card.to_dict() for card in self.items])
+        return json.dumps(self.to_list())
+
+    def to_list(self) -> list[dict[str, Any]]:
+        '''
+        Converts the list of cards into a raw Python list with nested
+        dictionaries.
+        '''
+        return [card.to_dict() for card in self.items]
 
     def tokens(self) -> CardList:
         '''
@@ -1316,77 +1375,77 @@ class CardList:
         '''
         return CardList([card for card in self if card.is_token()])
 
-    def total_cost(self) -> Optional[int]:
+    def total_cost(self) -> int:
         '''
         Computes the total card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.cost for x in self if isinstance(x.cost, int)]
         if array:
             return sum(array)
         else:
-            return None
+            return 0
 
-    def total_defense(self) -> Optional[int]:
+    def total_defense(self) -> int:
         '''
         Computes the total card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.defense for x in self if isinstance(x.defense, int)]
         if array:
             return sum(array)
         else:
-            return None
+            return 0
 
-    def total_health(self) -> Optional[int]:
+    def total_health(self) -> int:
         '''
         Computes the total card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.health for x in self if isinstance(x.health, int)]
         if array:
             return sum(array)
         else:
-            return None
+            return 0
 
-    def total_intelligence(self) -> Optional[int]:
+    def total_intelligence(self) -> int:
         '''
         Computes the total card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.intelligence for x in self if isinstance(x.intelligence, int)]
         if array:
             return sum(array)
         else:
-            return None
+            return 0
 
-    def total_pitch(self) -> Optional[int]:
+    def total_pitch(self) -> int:
         '''
         Computes the total card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.pitch for x in self if isinstance(x.pitch, int)]
         if array:
             return sum(array)
         else:
-            return None
+            return 0
 
-    def total_power(self) -> Optional[int]:
+    def total_power(self) -> int:
         '''
         Computes the total card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return None
+        if len(self.items) < 1: return 0
         array = [x.power for x in self if isinstance(x.power, int)]
         if array:
             return sum(array)
         else:
-            return None
+            return 0
 
     def types(self) -> list[str]:
         '''
@@ -1408,3 +1467,4 @@ class CardList:
         Returns the set of all weapon cards in this card list.
         '''
         return CardList([card for card in self if card.is_weapon()])
+

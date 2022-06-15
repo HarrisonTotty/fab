@@ -67,6 +67,7 @@ def distribution_plot(
     cards: CardList,
     bin_size: Optional[int] = 1,
     by: str = 'keyword',
+    only: list[str] = [],
     title: Optional[str] = None,
     value: str = 'power'
 ) -> Any:
@@ -88,7 +89,7 @@ def distribution_plot(
     else:
         raise Exception(f'unknown value {value}')
     if by == 'grants':
-        layers = subcards.grants()
+        layers = [l for l in subcards.grants() if not only or l in only]
         if value == 'cost':
             values = [[card.cost for card in subcards.filter(grants=layer) if isinstance(card.cost, int)] for layer in layers]
         elif value == 'defense':
@@ -104,7 +105,7 @@ def distribution_plot(
         else:
             raise Exception(f'unknown value {value}')
     elif by == 'keyword':
-        layers = subcards.keywords()
+        layers = [l for l in subcards.keywords() if not only or l in only]
         if value == 'cost':
             values = [[card.cost for card in subcards.filter(keywords=layer) if isinstance(card.cost, int)] for layer in layers]
         elif value == 'defense':
@@ -120,7 +121,7 @@ def distribution_plot(
         else:
             raise Exception(f'unknown value {value}')
     elif by == 'rarity':
-        layers = subcards.rarities()
+        layers = [l for l in subcards.rarities() if not only or l in only]
         if value == 'cost':
             values = [[card.cost for card in subcards.filter(rarities=layer) if isinstance(card.cost, int)] for layer in layers]
         elif value == 'defense':
@@ -136,7 +137,7 @@ def distribution_plot(
         else:
             raise Exception(f'unknown value {value}')
     elif by == 'type':
-        layers = subcards.types()
+        layers = [l for l in subcards.types() if not only or l in only]
         if value == 'cost':
             values = [[card.cost for card in subcards.filter(types=layer) if isinstance(card.cost, int)] for layer in layers]
         elif value == 'defense':
