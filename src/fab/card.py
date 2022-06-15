@@ -18,6 +18,17 @@ from unidecode import unidecode
 
 CARD_CATALOG: Optional[CardList] = None
 
+RARITY_VALUE: dict[str, int] = {
+    'P': 0,
+    'T': 1,
+    'C': 2,
+    'R': 3,
+    'S': 4,
+    'M': 5,
+    'L': 6,
+    'F': 7,
+}
+
 @dataclasses.dataclass
 class Card:
     '''
@@ -192,6 +203,12 @@ class Card:
         '''
         return 'Weapon' in self.types
 
+    def keys(self) -> list[str]:
+        '''
+        Returns the dictionary keys associated with this card class.
+        '''
+        return list(self.__dict__.keys())
+
     def to_dict(self) -> dict:
         '''
         Converts this card into a raw python dictionary.
@@ -347,7 +364,7 @@ class CardList:
             'cost',
             'defense',
             'full_name',
-            'grants'
+            'grants',
             'health',
             'intelligence',
             'keywords',
@@ -1191,15 +1208,41 @@ class CardList:
 
     def sort(self, key: Any = 'name', reverse: bool = False) -> CardList:
         '''
-        Sorts the list of cards, returning a new sorted collection.
+        Sorts the list of cards, returning a new sorted collection. If `reverse`
+        is set to `True`, then the order is reversed.
 
         The `key` parameter may be:
           * A function/lambda on each card.
           * A string corresponding to the field to sort by (for example:
-            `type_text`).
+            `type_text`). Any `None` values will be shifted to the beginning of
+            the resulting `CardList`, or at the end if `reverse` is equal to
+            `True`. Note that when specifying `grants`, `keywords`, `tags` or
+            `types`, the ordering is based on the _number_ of values within
+            those lists. `rarities` is a special case where cards are sorted by
+            their highest/lowest rarity value. `identifiers` and `sets` are
+            sorted by their first element.
+            not implemented.
         '''
         if isinstance(key, str):
-            return CardList(sorted(copy.deepcopy(self.items), key = lambda x: x[key], reverse = reverse))
+            contains_none = []
+            to_sort = []
+            for card in self:
+                if card[key] is None:
+                    contains_none.append(copy.deepcopy(card))
+                else:
+                    to_sort.append(copy.deepcopy(card))
+            if key in ['identifiers', 'sets']:
+                sorted_part = sorted(to_sort, key = lambda x: x[key][0], reverse = reverse)
+            elif key in ['grants', 'keywords', 'tags', 'types']:
+                sorted_part = sorted(to_sort, key = lambda x: len(x[key]), reverse = reverse)
+            elif key == 'rarities':
+                sorted_part = sorted(to_sort, key = lambda x: sorted(RARITY_VALUE[y] for y in x[key])[-1] if x[key] else -1, reverse = reverse)
+            else:
+                sorted_part = sorted(to_sort, key = lambda x: x[key], reverse = reverse)
+            if reverse:
+                return CardList(sorted_part + contains_none)
+            else:
+                return CardList(contains_none + sorted_part)
         else:
             return CardList(sorted(copy.deepcopy(self.items), key = key, reverse = reverse))
 
