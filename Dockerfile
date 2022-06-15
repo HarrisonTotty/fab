@@ -47,13 +47,13 @@ RUN poetry install \
     && pip install dist/*.whl
 
 
-# FROM build as test
+FROM build as test
 
-# ENV MYPY_CACHE_DIR=/tmp/mypy-cache
+ENV MYPY_CACHE_DIR=/tmp/mypy-cache
 
-# RUN poetry install --no-ansi --no-interaction --no-root && \
-#     mypy --install-types --non-interactive && \
-#     pytest
+RUN poetry install --no-ansi --no-interaction --no-root && \
+    mypy --install-types --non-interactive && \
+    pytest
 
 
 FROM jupyter as install
