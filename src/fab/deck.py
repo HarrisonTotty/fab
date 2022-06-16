@@ -30,8 +30,8 @@ class Deck:
     Represents a deck of Flesh and Blood cards. Each deck has the following
     fields:
       * cards - The "main" part of the deck from which one draws cards
-      * format - The game format associated with this deck, being `blitz`, `cc`,
-                 `commoner`, or `upf`.
+      * format - The game format associated with this deck, being `Blitz`,
+                 `Classic Constructed`, `Commoner`, or `Ultimate Pit Fight`.
       * hero - The hero card associated with this deck
       * inventory - The list of weapon/equipment cards associated with this deck
                     (not including items).
