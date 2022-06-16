@@ -10,6 +10,7 @@ import dataclasses
 import io
 import json
 import os
+import re
 
 from IPython.display import display, Image
 from statistics import mean, median, stdev
@@ -50,8 +51,8 @@ class Card:
       * rarities - A list of rarities available to the card
       * sets - The list of card set codes associated with this card
       * tags - A collection of user-defined tags associated with the card
-      * type_text - The full type text of the card ("Ninja Action - Attack")
-      * types - The list of types associated with the type_text
+      * type_text - The full type box text of the card ("Ninja Action - Attack")
+      * types - The list of all types associated with this card
     '''
 
     body: Optional[str]
@@ -388,9 +389,9 @@ class CardList:
                 body = kwargs['body']
                 if isinstance(body, str):
                     if negate:
-                        if body.lower() in c.body.lower(): continue
+                        if body.lower() in str(c.body).lower(): continue
                     else:
-                        if not body.lower() in c.body.lower(): continue
+                        if not body.lower() in str(c.body).lower(): continue
                 else:
                     if negate:
                         if body(c.body): continue
@@ -1232,6 +1233,8 @@ class CardList:
             to_sort = []
             for card in self:
                 if card[key] is None:
+                    contains_none.append(copy.deepcopy(card))
+                elif isinstance(card[key], str) and key in ['cost', 'defense', 'health', 'intelligence', 'pitch', 'power']:
                     contains_none.append(copy.deepcopy(card))
                 else:
                     to_sort.append(copy.deepcopy(card))
