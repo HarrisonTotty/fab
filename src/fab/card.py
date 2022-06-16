@@ -717,6 +717,7 @@ class CardList:
             * name
             * rarity
             * set
+            * type
             * type_text (default)
           * key = int
             * cost
@@ -748,6 +749,9 @@ class CardList:
         elif by == 'set':
             for card_set in self.sets():
                 res[card_set] = CardList([card for card in self if card_set in card.sets]).sort()
+        elif by == 'type':
+            for type_val in self.types():
+                res[type_val] = CardList([card for card in self if type_val in card.types]).sort()
         elif by == 'type_text':
             for type_text in self.type_texts():
                 res[type_text] = CardList([card for card in self if card.type_text == type_text]).sort()
