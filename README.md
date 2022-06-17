@@ -14,6 +14,9 @@ In short, there are basically two ways you can start using `fab`: either
 downloading and installing the latest release `.whl` via `pip`, _or_ building
 and running the containerized Jupyter Lab environment.
 
+To learn more about working with the library, check out the [Getting
+Started](notebooks/getting-started.ipynb) notebook.
+
 ### Installing Locally
 
 ```bash
