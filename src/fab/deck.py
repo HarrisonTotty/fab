@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import os
 
 from typing import Any, Optional
 
@@ -74,13 +75,20 @@ class Deck:
         else:
             return CardList.merge(CardList([self.hero]), self.inventory, self.cards)
 
-    def filter_related(self, cards: CardList, include_generic: bool = True) -> CardList:
+    def filter_related(self, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
         '''
         Filters out cards from the specified list which may be included in this
         deck, based on the deck's hero card. If `include_generic` is set to
-        `False`, then `Generic` cards will not be added to the result.
+        `False`, then `Generic` cards will not be added to the result. To be
+        able to accurately compare cards, a card `catalog` must be provided,
+        defaulting to the global catalog `card.CARD_CATALOG` if unspecified.
         '''
-        return cards.filter(types=self.valid_types(include_generic))
+        return CardList._hero_filter_related(
+            hero            = self.hero,
+            cards           = cards,
+            catalog         = catalog,
+            include_generic = include_generic
+        )
 
     @staticmethod
     def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'Blitz') -> Deck:
@@ -146,6 +154,11 @@ class Deck:
         if any(not (card.is_equipment() or card.is_weapon()) for card in self.inventory): return (False, 'Common: Inventory deck contains non-equipment/weapon cards - move these cards to their appropriate field.')
         if not self.hero.is_hero(): return (False, 'Common: Deck `hero` is not a hero card.')
         if any(not card.is_token() for card in self.tokens): return (False, 'Common: Token deck contains non-token cards - move these cards to their appropriate field.')
+        if not 'Shapeshifter' in self.hero.types:
+            valid_types = self.valid_types()
+            for card in self.all_cards(include_tokens=True):
+                if card == self.hero: continue
+                if not any(t in valid_types for t in card.types): return (False, f'Common: Card "{card.full_name}" is not one of the following types: {valid_types}')
         if self.format == 'Blitz':
             if len(self.cards) != 40: return (False, 'Blitz: Main deck may only contain 40 cards.')
             if len(self.inventory) > 11: return (False, 'Blitz: Inventory deck may not contain more than 11 cards.')
@@ -164,6 +177,21 @@ class Deck:
         elif self.format == 'Ultimate Pit Fight':
             return (True, 'Ultimate Pit Fight: Warning, UPF has not been implemented, only common checks have been validated.')
         return (True, None)
+
+    @staticmethod
+    def load(file_path: str) -> Deck:
+        '''
+        Loads a deck from the specified JSON file.
+        '''
+        with open(os.path.expanduser(file_path), 'r') as f:
+            return Deck.from_json(f.read())
+
+    def save(self, file_path: str):
+        '''
+        Saves this deck to the specified JSON file.
+        '''
+        with open(os.path.expanduser(file_path), 'w') as f:
+            f.write(self.to_json())
 
     def statistics(self, precision: int = 2) -> dict[str, Any]:
         '''
@@ -223,6 +251,8 @@ class Deck:
         based on the deck's hero card. If `include_generic` is set to `False`,
         then `Generic` will not be added as a valid type.
         '''
+        if 'Shapeshifter' in self.hero.types:
+            raise Exception(f'deck hero "{self.hero.full_name}" is a Shapeshifter')
         selection = [t for t in self.hero.types if not t in EXCLUDE_TYPES]
         if include_generic:
             return selection + ['Generic']
