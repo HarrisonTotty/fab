@@ -2,7 +2,7 @@
 # --------------------
 
 nav:
-  - 'Home': home.md
+  - index.md
   - 'Card Objects': cards.md
   - 'CardList Objects': card-lists.md
   - 'CardSet Objects': card-sets.md
