@@ -35,11 +35,15 @@ pyyaml          = "*"
 unidecode       = "*"
 
 [tool.poetry.dev-dependencies]
-mypy            = "*"
-pytest          = "*"
-pytest-aio      = "*"
-pytest-cov      = "*"
-pytest-randomly = "*"
+mkdocs              = "*"
+mkdocs-material     = "*"
+mkdocstrings        = "*"
+mkdocstrings-python = "*"
+mypy                = "*"
+pytest              = "*"
+pytest-aio          = "*"
+pytest-cov          = "*"
+pytest-randomly     = "*"
 
 [tool.pytest.ini_options]
 addopts          = "-v --cov=fab"

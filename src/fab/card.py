@@ -11,6 +11,7 @@ import io
 import json
 import os
 
+from collections import UserList
 from IPython.display import display, Image
 from statistics import mean, median, stdev
 from typing import Any, Optional
@@ -33,31 +34,33 @@ RARITY_VALUE: dict[str, int] = {
 @dataclasses.dataclass
 class Card:
     '''
-    Represents a Flesh and Blood card. Each card has the following fields:
-      * body - The full body text of the card, excluding flavor text
-      * cost - The pitch cost of the card
-      * defense - The defense value of the card
-      * flavor_text - Any lore flavor text printed on the card
-      * full_name - The name of the card, including the pitch value
-      * grants - A list of key words this card grants to other cards
-      * health - The health value of the card (for heroes and minions)
-      * identifiers - A list of card identifiers, such as "RNR012"
-      * image_urls - A dictionary of card image URLs, by card identifier.
-      * intelligence - The intelligence value of the card (for heroes)
-      * keywords - A list of keywords associated with the card, such as "Attack" or "Dominate"
-      * name - The name of the card, not including the pitch value
-      * pitch - The pitch value of the card
-      * power - The "attack" or "power" value of the card
-      * rarities - A list of rarities available to the card
-      * sets - The list of card set codes associated with this card
-      * tags - A collection of user-defined tags associated with the card
-      * type_text - The full type box text of the card ("Ninja Action - Attack")
-      * types - The list of all types associated with this card
+    Represents a Flesh and Blood card.
+
+    Attributes:
+      body: The full body text of the card, excluding flavor text.
+      cost: The resource cost of the card.
+      defense: The defense value of the card.
+      flavor_text: Any lore text printed on the body of the card.
+      full_name: The full name of the card, including pitch value.
+      grants: A list of keywords this card grants to other cards.
+      health: The health value of the card.
+      identifiers: The list of card identifiers, such as `RNR012`.
+      image_urls: A dictionary of card image URLs, by card identifier.
+      intelligence: The intelligence value of the card.
+      keywords: A list of keywords associated with the card, such as `Dominate`.
+      name: The name of the card, excluding pitch value.
+      pitch: The pitch value of the card.
+      power: The (attack) power of the card.
+      rarities: The list of rarities associated with each card identifier.
+      sets: The list of card set codes associated with the card.
+      tags: A collection of user-defined tags.
+      type_text: The full type box text of the card.
+      types: The list of types present in the card's type box.
     '''
 
     body: Optional[str]
-    cost: None | str | int
-    defense: None | str | int
+    cost: int | str | None
+    defense: int | str | None
     flavor_text: Optional[str]
     full_name: str
     grants: list[str]
@@ -68,7 +71,7 @@ class Card:
     keywords: list[str]
     name: str
     pitch: Optional[int]
-    power: None | str | int
+    power: int | str | None
     rarities: list[str]
     sets: list[str]
     tags: list[str]
@@ -78,6 +81,9 @@ class Card:
     def __getitem__(self, key: str) -> Any:
         '''
         Allows one to access fields of a card via dictionary syntax.
+
+        Args:
+          key: The name of the class attribute to fetch.
         '''
         return self.__dict__[key]
 
@@ -103,9 +109,14 @@ class Card:
     @staticmethod
     def from_full_name(full_name: str, catalog: Optional[CardList] = None) -> Card:
         '''
-        Creates a new card from its full name. To instantiate the card this way,
-        a card catalog (`CardList`) must be provided, defaulting to
-        `card.CARD_CATALOG`.
+        Creates a new card from its full name.
+
+        To instantiate the card this way, a card catalog (`CardList`) must be
+        provided, defaulting to `card.CARD_CATALOG`.
+
+        Args:
+          full_name: The full name of the card (including pitch value, if applicable).
+          catalog: The card catalog to use as a reference, defaulting to `card.CARD_CATALOG` if `None`.
         '''
         _catalog = CARD_CATALOG if catalog is None else catalog
         if _catalog is None: raise Exception('specified card catalog has not been initialized')
@@ -118,6 +129,9 @@ class Card:
     def from_json(jsonstr: str) -> Card:
         '''
         Creates a new card from the specified JSON string.
+
+        Args:
+          jsonstr: The JSON string representation to parse.
         '''
         return Card(**json.loads(jsonstr))
 
@@ -125,6 +139,9 @@ class Card:
         '''
         Display an image of this card, optionally providing an alternative
         identifier to use.
+
+        Args:
+          identifier: The target card identifier to fetch image data for.
         '''
         if not self.image_urls: return 'No images available'
         if isinstance(identifier, str):
@@ -223,54 +240,36 @@ class Card:
         return json.dumps(self.__dict__)
 
 
-@dataclasses.dataclass
-class CardList:
+class CardList(UserList):
     '''
     Represents a collection of cards.
+
+    This is ultimately a superclass of `list`, and thus supports all common
+    `list` methods.
     '''
-    items: list[Card]
-
-    def __getitem__(self, index: int) -> Card:
-        '''
-        Allows one to access cards using index notation.
-        '''
-        return self.items[index]
-
-    def __iter__(self):
-        '''
-        Iterator implementation.
-        '''
-        yield from self.items
-
-    def __len__(self) -> int:
-        '''
-        Returns the number of items within this card list.
-        '''
-        return len(self.items)
-
     def actions(self) -> CardList:
         '''
         Returns the set of all action cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_action()])
+        return CardList([card for card in self.data if card.is_action()])
 
     def attacks(self) -> CardList:
         '''
         Returns the set of all attack cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_attack()])
+        return CardList([card for card in self.data if card.is_attack()])
 
     def attack_reactions(self) -> CardList:
         '''
         Returns the set of all attack reaction cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_attack_reaction()])
+        return CardList([card for card in self.data if card.is_attack_reaction()])
 
     def auras(self) -> CardList:
         '''
         Returns the set of all aura cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_aura()])
+        return CardList([card for card in self.data if card.is_aura()])
 
     def costs(self) -> list[int]:
         '''
@@ -278,7 +277,7 @@ class CardList:
         (excluding cards with no cost or with variable cost).
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             if isinstance(card.cost, int): res.append(card.cost)
         return list(set(res))
 
@@ -287,7 +286,7 @@ class CardList:
         Returns a dictionary of card counts organized by full name.
         '''
         counts = {}
-        for card in self.items:
+        for card in self.data:
             if card.full_name in counts:
                 counts[card.full_name] += 1
             else:
@@ -298,7 +297,7 @@ class CardList:
         '''
         Returns the set of all defense reaction cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_defense_reaction()])
+        return CardList([card for card in self.data if card.is_defense_reaction()])
 
     def defense_values(self) -> list[int]:
         '''
@@ -306,7 +305,7 @@ class CardList:
         cards (excluding cards with no defense or with variable defense).
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             if isinstance(card.defense, int): res.append(card.defense)
         return list(set(res))
 
@@ -321,72 +320,73 @@ class CardList:
         '''
         Returns the set of all equipment cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_equipment()])
+        return CardList([card for card in self.data if card.is_equipment()])
 
-    def filter(self, **kwargs) -> CardList:
+    def filter(
+            self,
+            body: Optional[Any] = None,
+            cost: Optional[Any] = None,
+            defense: Optional[Any] = None,
+            full_name: Optional[Any] = None,
+            grants: Optional[Any] = None,
+            health: Optional[Any] = None,
+            intelligence: Optional[Any] = None,
+            keywords: Optional[Any] = None,
+            name: Optional[Any] = None,
+            negate: bool = False,
+            pitch: Optional[Any] = None,
+            power: Optional[Any] = None,
+            sets: Optional[Any] = None,
+            tags: Optional[Any] = None,
+            type_text: Optional[Any] = None,
+            types: Optional[Any] = None
+    ) -> CardList:
         '''
-        Filters a list of cards according to a function filtering by:
-          * body
-          * cost
-          * defense
-          * full_name
-          * grants
-          * health
-          * intelligence
-          * keywords
-          * name
-          * pitch
-          * power
-          * sets
-          * tags
-          * type_text
-          * types
+        Filters a list of cards according to a function against a particular
+        `Card` field.
+
         In addition to functions/lambdas, you can also specify:
-          * A string for the `body`, `full_name`, `name`, or `type_text` keyword
-            arguments. These comparisons are case-insentitive and will match
-            substrings.
-          * An integer for the `cost`, `defense`, `health`, `intelligence`,
-            `pitch`, or `power` keyword arguments. `None` and `str` values
-            will not be included in the results.
-          * A tuple of integers for the `cost`, `defense`, `health`,
-            `intelligence`, `pitch`, or `power` keyword arguments. This defines
-            a range of values to include (inclusive).
-          * A list of strings for the `grants`, `keywords`, `sets`, `tags`, and
-            `types` keyword arguments. At least one value of the list must be
-            present for an item to be included.
-          * A string for the `grants`, `keywords`, `sets`, `tags`, and `types`
-            keyword arguments. This is the same as passing in a single-element
-            list.
+
+        * A `str` for the `body`, `full_name`, `name`, or `type_text` keyword
+          arguments. These comparisons are case-insentitive and will match
+          substrings.
+        * An `int` for the `cost`, `defense`, `health`, `intelligence`,
+          `pitch`, or `power` keyword arguments. `None` and `str` values
+          will not be included in the results.
+        * A `tuple[int, int]` for the `cost`, `defense`, `health`,
+          `intelligence`, `pitch`, or `power` keyword arguments. This defines
+          a range of values to include (inclusive).
+        * A `list[str]` for the `grants`, `keywords`, `sets`, `tags`, and
+          `types` keyword arguments. At least one value of the list must be
+          present for an item to be included.
+        * A `str` for the `grants`, `keywords`, `sets`, `tags`, and `types`
+          keyword arguments. This is the same as passing in a single-element
+          list.
+
         If a keyword argument called `negate` is set to `True`, then each filter
         specification is reversed.
+
+        Args:
+          body: A `str` or function to filter by `body`.
+          cost: An `int`, `tuple[int, int]`, or function to filter by `cost`.
+          defense: An `int`, `tuple[int, int]`, or function to filter by `defense`.
+          full_name: A `str` or function to filter by `full_name`.
+          grants: A `str`, `list[str]`, or function to filter by `grants`.
+          health: An `int`, `tuple[int, int]`, or function to filter by `health`.
+          intelligence: An `int`, `tuple[int, int]`, or function to filter by `intelligence`.
+          keywords: A `str`, `list[str]`, or function to filter by `keywords`.
+          name: A `str` or function to filter by `name`.
+          pitch: An `int`, `tuple[int, int]`, or function to filter by `pitch`.
+          power: An `int`, `tuple[int, int]`, or function to filter by `power`.
+          sets: A `str`, `list[str]`, or function to filter by `sets`.
+          tags: A `str`, `list[str]`, or function to filter by `tags`.
+          type_text: A `str` or function to filter by `type_text`.
+          types: A `str`, `list[str]`, or function to filter by `types`.
         '''
-        ALLOWED_KEYS = [
-            'body',
-            'cost',
-            'defense',
-            'full_name',
-            'grants',
-            'health',
-            'intelligence',
-            'keywords',
-            'name',
-            'negate',
-            'pitch',
-            'power',
-            'sets',
-            'tags',
-            'type_text',
-            'types'
-        ]
-        for key in kwargs:
-            if not key in ALLOWED_KEYS:
-                raise Exception(f'unknown filter key "{key}"')
-        if len(self.items) < 2: return copy.deepcopy(self)
+        if len(self.data) < 2: return copy.deepcopy(self)
         filtered = []
-        negate = 'negate' in kwargs and kwargs['negate']
         for c in self:
-            if 'body' in kwargs:
-                body = kwargs['body']
+            if not body is None:
                 if isinstance(body, str):
                     if negate:
                         if body.lower() in str(c.body).lower(): continue
@@ -397,8 +397,7 @@ class CardList:
                         if body(c.body): continue
                     else:
                         if not body(c.body): continue
-            if 'cost' in kwargs:
-                cost = kwargs['cost']
+            if not cost is None:
                 if isinstance(cost, int):
                     if negate:
                         if isinstance(c.cost, int) and cost == c.cost: continue
@@ -414,8 +413,7 @@ class CardList:
                         if cost(c.cost): continue
                     else:
                         if not cost(c.cost): continue
-            if 'defense' in kwargs:
-                defense = kwargs['defense']
+            if not defense is None:
                 if isinstance(defense, int):
                     if negate:
                         if isinstance(c.defense, int) and defense == c.defense: continue
@@ -431,8 +429,7 @@ class CardList:
                         if defense(c.defense): continue
                     else:
                         if not defense(c.defense): continue
-            if 'full_name' in kwargs:
-                full_name = kwargs['full_name']
+            if not full_name is None:
                 if isinstance(full_name, str):
                     if negate:
                         if full_name.lower() in c.full_name.lower(): continue
@@ -443,8 +440,7 @@ class CardList:
                         if full_name(c.full_name): continue
                     else:
                         if not full_name(c.full_name): continue
-            if 'grants' in kwargs:
-                grants = kwargs['grants']
+            if not grants is None:
                 if isinstance(grants, str):
                     if negate:
                         if grants in c.grants: continue
@@ -460,8 +456,7 @@ class CardList:
                         if grants(c.grants): continue
                     else:
                         if not grants(c.grants): continue
-            if 'health' in kwargs:
-                health = kwargs['health']
+            if not health is None:
                 if isinstance(health, int):
                     if negate:
                         if isinstance(c.health, int) and health == c.health: continue
@@ -477,8 +472,7 @@ class CardList:
                         if health(c.health): continue
                     else:
                         if not health(c.health): continue
-            if 'intelligence' in kwargs:
-                intelligence = kwargs['intelligence']
+            if not intelligence is None:
                 if isinstance(intelligence, int):
                     if negate:
                         if isinstance(c.intelligence, int) and intelligence == c.intelligence: continue
@@ -494,8 +488,7 @@ class CardList:
                         if intelligence(c.intelligence): continue
                     else:
                         if not intelligence(c.intelligence): continue
-            if 'keywords' in kwargs:
-                keywords = kwargs['keywords']
+            if not keywords is None:
                 if isinstance(keywords, str):
                     if negate:
                         if keywords in c.keywords: continue
@@ -511,8 +504,7 @@ class CardList:
                         if keywords(c.keywords): continue
                     else:
                         if not keywords(c.keywords): continue
-            if 'name' in kwargs:
-                name = kwargs['name']
+            if not name is None:
                 if isinstance(name, str):
                     if negate:
                         if name.lower() in c.name.lower(): continue
@@ -523,8 +515,7 @@ class CardList:
                         if name(c.name): continue
                     else:
                         if not name(c.name): continue
-            if 'pitch' in kwargs:
-                pitch = kwargs['pitch']
+            if not pitch is None:
                 if isinstance(pitch, int):
                     if negate:
                         if isinstance(c.pitch, int) and pitch == c.pitch: continue
@@ -540,8 +531,7 @@ class CardList:
                         if pitch(c.pitch): continue
                     else:
                         if not pitch(c.pitch): continue
-            if 'power' in kwargs:
-                power = kwargs['power']
+            if not power is None:
                 if isinstance(power, int):
                     if negate:
                         if isinstance(c.power, int) and power == c.power: continue
@@ -557,8 +547,7 @@ class CardList:
                         if power(c.power): continue
                     else:
                         if not power(c.power): continue
-            if 'sets' in kwargs:
-                sets = kwargs['sets']
+            if not sets is None:
                 if isinstance(sets, str):
                     if negate:
                         if sets in c.sets: continue
@@ -574,8 +563,7 @@ class CardList:
                         if sets(c.sets): continue
                     else:
                         if not sets(c.sets): continue
-            if 'tags' in kwargs:
-                tags = kwargs['tags']
+            if not tags is None:
                 if isinstance(tags, str):
                     if negate:
                         if tags in c.tags: continue
@@ -591,8 +579,7 @@ class CardList:
                         if tags(c.tags): continue
                     else:
                         if not tags(c.tags): continue
-            if 'type_text' in kwargs:
-                type_text = kwargs['type_text']
+            if not type_text is None:
                 if isinstance(type_text, str):
                     if negate:
                         if type_text.lower() in c.type_text.lower(): continue
@@ -603,8 +590,7 @@ class CardList:
                         if type_text(c.type_text): continue
                     else:
                         if not type_text(c.type_text): continue
-            if 'types' in kwargs:
-                types = kwargs['types']
+            if not types is None:
                 if isinstance(types, str):
                     if negate:
                         if types in c.types: continue
@@ -627,6 +613,10 @@ class CardList:
     def from_csv(csvstr: str, delimiter: str = '\t') -> CardList:
         '''
         Creates a new list of cards given a CSV string representation.
+
+        Args:
+          csvstr: The CSV string representation to parse.
+          delimiter: An alternative primary delimiter to pass to `csv.DictReader`.
         '''
         try:
             csv_data = csv.DictReader(io.StringIO(csvstr), delimiter = delimiter)
@@ -687,6 +677,9 @@ class CardList:
     def from_json(jsonstr: str) -> CardList:
         '''
         Creates a new list of cards given a JSON string representation.
+
+        Args:
+          jsonstr: The JSON string representation to parse into a card list.
         '''
         cards = []
         for jcard in json.loads(jsonstr):
@@ -697,18 +690,18 @@ class CardList:
         '''
         Returns the set of all full card names within this list of cards.
         '''
-        return list(set([card.full_name for card in self.items]))
+        return list(set([card.full_name for card in self.data]))
 
     def grants(self) -> list[str]:
         '''
         Returns the set of all card grant keywords within this list of cards.
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             res.extend(card.grants)
         return list(set(res))
 
-    def group(self, by: str = 'type_text', include_empty: bool = False) -> dict[Any, CardList]:
+    def group(self, by: str = 'type_text') -> dict[Any, CardList]:
         '''
         Groups transactions by one of the following criteria:
           * key = str
@@ -727,9 +720,11 @@ class CardList:
             * intelligence
             * pitch
             * power
-        If `include_empty` is set to `False`, any empty groups will be removed.
+
+        Args:
+          by: The `Card` field to group by.
         '''
-        if len(self.items) < 1: return {}
+        if len(self.data) < 1: return {}
         res = {}
         # str keys
         if by == 'full_name':
@@ -783,16 +778,23 @@ class CardList:
         cards (excluding cards with no health or with variable health).
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             if isinstance(card.health, int): res.append(card.health)
         return list(set(res))
 
     @staticmethod
     def _hero_filter_related(hero: Card, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
         '''
-        A helper function for filtering cards based on a hero. Note that this
-        function needs a card catalog to work properly and will fall back to
-        `CARD_CATALOG`.
+        A helper function for filtering cards based on a hero.
+
+        Note that this function needs a card catalog to work properly and will
+        fall back to `card.CARD_CATALOG`.
+
+        Args:
+          hero: The hero card to filter with.
+          cards: The collection of cards to filter.
+          catalog: A catalog of cards representing all cards in the game.
+          include_generic: Whether to include _Generic_ cards in the result.
         '''
         _catalog = CARD_CATALOG if catalog is None else catalog
         if _catalog is None:
@@ -806,7 +808,7 @@ class CardList:
             types = lambda card_types: not any(t in relevant for t in card_types)
         )
         final = []
-        for card in filtered.items:
+        for card in filtered.data:
             if any('Specialization' in k for k in card.keywords):
                 spec = next(k for k in card.keywords if 'Specialization' in k).replace('Specialization', '').strip()
                 if spec.lower() in hero.full_name.lower():
@@ -819,14 +821,14 @@ class CardList:
         '''
         Returns the set of all hero cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_hero()])
+        return CardList([card for card in self.data if card.is_hero()])
 
     def identifiers(self) -> list[str]:
         '''
         Returns the set of all card identifiers in this card list.
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             res.extend(card.identifiers)
         return list(set(res))
 
@@ -834,7 +836,7 @@ class CardList:
         '''
         Returns the set of all instant cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_instant()])
+        return CardList([card for card in self.data if card.is_instant()])
 
     def intelligence_values(self) -> list[int]:
         '''
@@ -843,7 +845,7 @@ class CardList:
         intelligence).
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             if isinstance(card.intelligence, int): res.append(card.intelligence)
         return list(set(res))
 
@@ -851,23 +853,28 @@ class CardList:
         '''
         Returns the set of all item cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_item()])
+        return CardList([card for card in self.data if card.is_item()])
 
     def keywords(self) -> list[str]:
         '''
         Returns the set of all keywords in this card list.
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             res.extend(card.keywords)
         return list(set(res))
 
     @staticmethod
     def load(file_path: str, set_catalog: bool = False) -> CardList:
         '''
-        Loads a list of cards from the specified `.json` or `.csv` file. If
-        `set_catalog` is set to `True`, then a copy of the loaded card list will
-        also be set as the default `card.CARD_CATALOG`.
+        Loads a list of cards from the specified `.json` or `.csv` file.
+
+        If `set_catalog` is set to `True`, then a copy of the loaded card list
+        will also be set as the default `card.CARD_CATALOG`.
+
+        Args:
+          file_path: The file path to load from.
+          set_catalog: Whether to also set the loaded data as the default card catalog.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
             if file_path.endswith('.json'):
@@ -886,8 +893,8 @@ class CardList:
         Computes the maximum card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.cost for x in self.items if isinstance(x.cost, int)]
+        if len(self.data) < 1: return 0
+        array = [x.cost for x in self.data if isinstance(x.cost, int)]
         if array:
             return max(array)
         else:
@@ -898,8 +905,8 @@ class CardList:
         Computes the maximum card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.defense for x in self.items if isinstance(x.defense, int)]
+        if len(self.data) < 1: return 0
+        array = [x.defense for x in self.data if isinstance(x.defense, int)]
         if array:
             return max(array)
         else:
@@ -910,8 +917,8 @@ class CardList:
         Computes the maximum card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.health for x in self.items if isinstance(x.health, int)]
+        if len(self.data) < 1: return 0
+        array = [x.health for x in self.data if isinstance(x.health, int)]
         if array:
             return max(array)
         else:
@@ -922,8 +929,8 @@ class CardList:
         Computes the maximum card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.intelligence for x in self.items if isinstance(x.intelligence, int)]
+        if len(self.data) < 1: return 0
+        array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
         if array:
             return max(array)
         else:
@@ -934,8 +941,8 @@ class CardList:
         Computes the maximum card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.pitch for x in self.items if isinstance(x.pitch, int)]
+        if len(self.data) < 1: return 0
+        array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
         if array:
             return max(array)
         else:
@@ -946,8 +953,8 @@ class CardList:
         Computes the maximum card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.power for x in self.items if isinstance(x.power, int)]
+        if len(self.data) < 1: return 0
+        array = [x.power for x in self.data if isinstance(x.power, int)]
         if array:
             return max(array)
         else:
@@ -957,9 +964,12 @@ class CardList:
         '''
         Computes the mean card cost within this card list. Cards with
         variable or no cost are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.cost for x in self.items if isinstance(x.cost, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.cost for x in self.data if isinstance(x.cost, int)]
         if array:
             return round(mean(array), precision)
         else:
@@ -969,9 +979,12 @@ class CardList:
         '''
         Computes the mean card defense within this card list. Cards with
         variable or no defense are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.defense for x in self.items if isinstance(x.defense, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.defense for x in self.data if isinstance(x.defense, int)]
         if array:
             return round(mean(array), precision)
         else:
@@ -981,9 +994,12 @@ class CardList:
         '''
         Computes the mean card health within this card list. Cards with
         variable or no health are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.health for x in self.items if isinstance(x.health, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.health for x in self.data if isinstance(x.health, int)]
         if array:
             return round(mean(array), precision)
         else:
@@ -993,9 +1009,12 @@ class CardList:
         '''
         Computes the mean card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.intelligence for x in self.items if isinstance(x.intelligence, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
         if array:
             return round(mean(array), precision)
         else:
@@ -1005,9 +1024,12 @@ class CardList:
         '''
         Computes the mean card pitch within this card list. Cards with
         variable or no pitch are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.pitch for x in self.items if isinstance(x.pitch, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
         if array:
             return round(mean(array), precision)
         else:
@@ -1017,9 +1039,12 @@ class CardList:
         '''
         Computes the mean card power within this card list. Cards with
         variable or no power are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.power for x in self.items if isinstance(x.power, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.power for x in self.data if isinstance(x.power, int)]
         if array:
             return round(mean(array), precision)
         else:
@@ -1029,9 +1054,12 @@ class CardList:
         '''
         Computes the median card cost within this card list. Cards with
         variable or no cost are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.cost for x in self.items if isinstance(x.cost, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.cost for x in self.data if isinstance(x.cost, int)]
         if array:
             return round(median(array), precision)
         else:
@@ -1041,9 +1069,12 @@ class CardList:
         '''
         Computes the median card defense within this card list. Cards with
         variable or no defense are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.defense for x in self.items if isinstance(x.defense, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.defense for x in self.data if isinstance(x.defense, int)]
         if array:
             return round(median(array), precision)
         else:
@@ -1053,8 +1084,11 @@ class CardList:
         '''
         Computes the median card health within this card list. Cards with
         variable or no health are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
+        if len(self.data) < 1: return 0.0
         array = [x.health for x in self if isinstance(x.health, int)]
         if array:
             return round(median(array), precision)
@@ -1065,9 +1099,12 @@ class CardList:
         '''
         Computes the median card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.intelligence for x in self.items if isinstance(x.intelligence, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
         if array:
             return round(median(array), precision)
         else:
@@ -1077,9 +1114,12 @@ class CardList:
         '''
         Computes the median card pitch within this card list. Cards with
         variable or no pitch are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.pitch for x in self.items if isinstance(x.pitch, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
         if array:
             return round(median(array), precision)
         else:
@@ -1089,9 +1129,12 @@ class CardList:
         '''
         Computes the median card power within this card list. Cards with
         variable or no power are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 1: return 0.0
-        array = [x.power for x in self.items if isinstance(x.power, int)]
+        if len(self.data) < 1: return 0.0
+        array = [x.power for x in self.data if isinstance(x.power, int)]
         if array:
             return round(median(array), precision)
         else:
@@ -1100,8 +1143,12 @@ class CardList:
     @staticmethod
     def merge(*args, unique: bool = False) -> CardList:
         '''
-        Merges two or more card lists into a single one. If `unique` is set to
-        `True`, then duplicate cards will be deleted.
+        Merges two or more card lists into a single one.
+
+        If `unique` is set to `True`, then duplicate cards will be deleted.
+
+        Args:
+          *args: The `CardList` objects to merge.
         '''
         merged = []
         for card_list in args:
@@ -1118,8 +1165,8 @@ class CardList:
         Computes the minimum card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.cost for x in self.items if isinstance(x.cost, int)]
+        if len(self.data) < 1: return 0
+        array = [x.cost for x in self.data if isinstance(x.cost, int)]
         if array:
             return min(array)
         else:
@@ -1130,8 +1177,8 @@ class CardList:
         Computes the minimum card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.defense for x in self.items if isinstance(x.defense, int)]
+        if len(self.data) < 1: return 0
+        array = [x.defense for x in self.data if isinstance(x.defense, int)]
         if array:
             return min(array)
         else:
@@ -1142,8 +1189,8 @@ class CardList:
         Computes the minimum card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.health for x in self.items if isinstance(x.health, int)]
+        if len(self.data) < 1: return 0
+        array = [x.health for x in self.data if isinstance(x.health, int)]
         if array:
             return min(array)
         else:
@@ -1154,8 +1201,8 @@ class CardList:
         Computes the minimum card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.intelligence for x in self.items if isinstance(x.intelligence, int)]
+        if len(self.data) < 1: return 0
+        array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
         if array:
             return min(array)
         else:
@@ -1166,8 +1213,8 @@ class CardList:
         Computes the minimum card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.pitch for x in self.items if isinstance(x.pitch, int)]
+        if len(self.data) < 1: return 0
+        array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
         if array:
             return min(array)
         else:
@@ -1178,8 +1225,8 @@ class CardList:
         Computes the minimum card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.power for x in self.items if isinstance(x.power, int)]
+        if len(self.data) < 1: return 0
+        array = [x.power for x in self.data if isinstance(x.power, int)]
         if array:
             return min(array)
         else:
@@ -1189,12 +1236,13 @@ class CardList:
         '''
         Returns the set of all card names in this card list.
         '''
-        return list(set([card.name for card in self.items]))
+        return list(set([card.name for card in self.data]))
 
     def pitch_cost_difference(self) -> int:
         '''
-        Returns the difference between the pitch and cost values of all cards. A
-        positive integer indicates that on average one generates more pitch
+        Returns the difference between the pitch and cost values of all cards.
+
+        A positive integer indicates that on average one generates more pitch
         value than consumes it. This calculation does not take into effect any
         additional pitch/cost a card might incur in its body text.
         '''
@@ -1206,16 +1254,18 @@ class CardList:
         cards (excluding cards with no pitch or with variable pitch).
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             if isinstance(card.pitch, int): res.append(card.pitch)
         return list(set(res))
 
     def power_defense_difference(self) -> int:
         '''
         Returns the difference between the power and defense values of all
-        cards. A positive integer indicates the deck prefers an offensive
-        strategy. This calculation does not take into effect any additional
-        power/defense a card might incur in its body text.
+        cards.
+
+        A positive integer indicates the deck prefers an offensive strategy.
+        This calculation does not take into effect any additional power/defense
+        a card might incur in its body text.
         '''
         return self.total_power() - self.total_defense()
 
@@ -1225,13 +1275,16 @@ class CardList:
         cards (excluding cards with no power or with variable power).
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             if isinstance(card.power, int): res.append(card.power)
         return list(set(res))
 
     def save(self, file_path: str):
         '''
         Saves the list of cards to the specified file path.
+
+        Args:
+          file_path: The file path to save to.
         '''
         with open(os.path.expanduser(file_path), 'w') as f:
             if file_path.endswith('.json'):
@@ -1245,21 +1298,25 @@ class CardList:
         is set to `True`, then the order is reversed.
 
         The `key` parameter may be:
-          * A function/lambda on each card.
-          * A string corresponding to the field to sort by (for example:
-            `type_text`). Any `None` values will be shifted to the beginning of
-            the resulting `CardList`, or at the end if `reverse` is equal to
-            `True`. Note that when specifying `grants`, `keywords`, `tags` or
-            `types`, the ordering is based on the _number_ of values within
-            those lists. `rarities` is a special case where cards are sorted by
-            their highest/lowest rarity value. `identifiers` and `sets` are
-            sorted by their first element.
-            not implemented.
+
+        * A function/lambda on each card.
+        * A string corresponding to the field to sort by (for example:
+          `type_text`). Any `None` values will be shifted to the beginning of
+          the resulting `CardList`, or at the end if `reverse` is equal to
+          `True`. Note that when specifying `grants`, `keywords`, `tags` or
+          `types`, the ordering is based on the _number_ of values within
+          those lists. `rarities` is a special case where cards are sorted by
+          their highest/lowest rarity value. `identifiers` and `sets` are
+          sorted by their first element.
+
+        Args:
+          key: The `Card` field to sort by.
+          reverse: Whether to reverse the sort order.
         '''
         if isinstance(key, str):
             contains_none = []
             to_sort = []
-            for card in self.items:
+            for card in self.data:
                 if card[key] is None:
                     contains_none.append(copy.deepcopy(card))
                 elif isinstance(card[key], str) and key in ['cost', 'defense', 'health', 'intelligence', 'pitch', 'power']:
@@ -1279,14 +1336,14 @@ class CardList:
             else:
                 return CardList(contains_none + sorted_part)
         else:
-            return CardList(sorted(copy.deepcopy(self.items), key = key, reverse = reverse))
+            return CardList(sorted(copy.deepcopy(self.data), key = key, reverse = reverse))
 
     def rarities(self) -> list[str]:
         '''
         Returns the set of all card rarities in this card list.
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             res.extend(card.rarities)
         return list(set(res))
 
@@ -1295,33 +1352,26 @@ class CardList:
         Returns the set of all attack and defense reaction cards in this card
         list.
         '''
-        return CardList([card for card in self.items if card.is_reaction()])
+        return CardList([card for card in self.data if card.is_reaction()])
 
     def sets(self) -> list[str]:
         '''
         Returns the set of all card sets in this list.
         '''
         card_sets = []
-        for card in self.items:
+        for card in self.data:
             card_sets.extend(card.sets)
         return list(set(card_sets))
 
     def statistics(self, precision: int = 2) -> dict[str, int | float]:
         '''
         Computes helpful statistics associated with this collection of cards.
-        The result is a dictionary containing the following keys:
-        * count
-        * max_[cost, defense, health, intelligence, pitch, power]
-        * mean_[cost, defense, health, intelligence, pitch, power]
-        * median_[cost, defense, health, intelligence, pitch, power]
-        * min_[cost, defense, health, intelligence, pitch, power]
-        * pitch_cost_difference
-        * power_defense_difference
-        * stdev_[cost, defense, health, intelligence, pitch, power]
-        * total_[cost, defense, health, intelligence, pitch, power]
+
+        Args:
+          precision: Specifies the number of decimal places any `float` result will be rounded to.
         '''
         return {
-            'count': len(self.items),
+            'count': len(self.data),
             'max_cost': self.max_cost(),
             'max_defense': self.max_defense(),
             'max_health': self.max_health(),
@@ -1366,9 +1416,12 @@ class CardList:
         '''
         Computes the standard deviation of card cost within this card list. Cards with
         variable or no cost are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 2: return 0.0
-        array = [x.cost for x in self.items if isinstance(x.cost, int)]
+        if len(self.data) < 2: return 0.0
+        array = [x.cost for x in self.data if isinstance(x.cost, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
@@ -1378,9 +1431,12 @@ class CardList:
         '''
         Computes the standard deviation of card defense within this card list. Cards with
         variable or no defense are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 2: return 0.0
-        array = [x.defense for x in self.items if isinstance(x.defense, int)]
+        if len(self.data) < 2: return 0.0
+        array = [x.defense for x in self.data if isinstance(x.defense, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
@@ -1390,9 +1446,12 @@ class CardList:
         '''
         Computes the standard deviation of card health within this card list. Cards with
         variable or no health are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 2: return 0.0
-        array = [x.health for x in self.items if isinstance(x.health, int)]
+        if len(self.data) < 2: return 0.0
+        array = [x.health for x in self.data if isinstance(x.health, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
@@ -1402,9 +1461,12 @@ class CardList:
         '''
         Computes the standard deviation of card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 2: return 0.0
-        array = [x.intelligence for x in self.items if isinstance(x.intelligence, int)]
+        if len(self.data) < 2: return 0.0
+        array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
@@ -1414,9 +1476,12 @@ class CardList:
         '''
         Computes the standard deviation of card pitch within this card list. Cards with
         variable or no pitch are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 2: return 0.0
-        array = [x.pitch for x in self.items if isinstance(x.pitch, int)]
+        if len(self.data) < 2: return 0.0
+        array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
@@ -1426,9 +1491,12 @@ class CardList:
         '''
         Computes the standard deviation of card power within this card list. Cards with
         variable or no power are ignored.
+
+        Args:
+          precision: Specifies the number of decimal places the result will be rounded to.
         '''
-        if len(self.items) < 2: return 0.0
-        array = [x.power for x in self.items if isinstance(x.power, int)]
+        if len(self.data) < 2: return 0.0
+        array = [x.power for x in self.data if isinstance(x.power, int)]
         if len(array) >= 2:
             return round(stdev(array), precision)
         else:
@@ -1445,21 +1513,21 @@ class CardList:
         Converts the list of cards into a raw Python list with nested
         dictionaries.
         '''
-        return [card.to_dict() for card in self.items]
+        return [card.to_dict() for card in self.data]
 
     def tokens(self) -> CardList:
         '''
         Returns the set of all token cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_token()])
+        return CardList([card for card in self.data if card.is_token()])
 
     def total_cost(self) -> int:
         '''
         Computes the total card cost within this card list. Cards with
         variable or no cost are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.cost for x in self.items if isinstance(x.cost, int)]
+        if len(self.data) < 1: return 0
+        array = [x.cost for x in self.data if isinstance(x.cost, int)]
         if array:
             return sum(array)
         else:
@@ -1470,8 +1538,8 @@ class CardList:
         Computes the total card defense within this card list. Cards with
         variable or no defense are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.defense for x in self.items if isinstance(x.defense, int)]
+        if len(self.data) < 1: return 0
+        array = [x.defense for x in self.data if isinstance(x.defense, int)]
         if array:
             return sum(array)
         else:
@@ -1482,8 +1550,8 @@ class CardList:
         Computes the total card health within this card list. Cards with
         variable or no health are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.health for x in self.items if isinstance(x.health, int)]
+        if len(self.data) < 1: return 0
+        array = [x.health for x in self.data if isinstance(x.health, int)]
         if array:
             return sum(array)
         else:
@@ -1494,8 +1562,8 @@ class CardList:
         Computes the total card intelligence within this card list. Cards with
         variable or no intelligence are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.intelligence for x in self.items if isinstance(x.intelligence, int)]
+        if len(self.data) < 1: return 0
+        array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
         if array:
             return sum(array)
         else:
@@ -1506,8 +1574,8 @@ class CardList:
         Computes the total card pitch within this card list. Cards with
         variable or no pitch are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.pitch for x in self.items if isinstance(x.pitch, int)]
+        if len(self.data) < 1: return 0
+        array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
         if array:
             return sum(array)
         else:
@@ -1518,8 +1586,8 @@ class CardList:
         Computes the total card power within this card list. Cards with
         variable or no power are ignored.
         '''
-        if len(self.items) < 1: return 0
-        array = [x.power for x in self.items if isinstance(x.power, int)]
+        if len(self.data) < 1: return 0
+        array = [x.power for x in self.data if isinstance(x.power, int)]
         if array:
             return sum(array)
         else:
@@ -1530,7 +1598,7 @@ class CardList:
         Returns the set of all card types in this card list.
         '''
         res = []
-        for card in self.items:
+        for card in self.data:
             res.extend(card.types)
         return list(set(res))
 
@@ -1538,10 +1606,10 @@ class CardList:
         '''
         Returns the set of all type texts in this card list.
         '''
-        return list(set([card.type_text for card in self.items]))
+        return list(set([card.type_text for card in self.data]))
 
     def weapons(self) -> CardList:
         '''
         Returns the set of all weapon cards in this card list.
         '''
-        return CardList([card for card in self.items if card.is_weapon()])
+        return CardList([card for card in self.data if card.is_weapon()])

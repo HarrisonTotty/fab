@@ -1,0 +1,20 @@
+# MkDocs Configuration
+# --------------------
+
+nav:
+  - 'Home': index.md
+  - 'Card Objects': cards.md
+  - 'CardList Objects': card-lists.md
+  - 'CardSet Objects': card-sets.md
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_signature_annotations: true
+          paths: ['src']
+repo_name: HarrisonTotty/fab
+repo_url: https://github.com/HarrisonTotty/fab
+site_name: Flesh and Blood TCG Analysis Library
+theme: material

@@ -24,10 +24,12 @@ class CardSet:
     '''
     Represents a Flesh and Blood card set. Each card set has the following
     fields:
-      * editions - The list of editions the set was printed for
-      * identifier - The string shorthand identifier of the set
-      * name - The full name of the set
-      * release_date - The release date of the card set (if applicable)
+
+    Attributes:
+      editions: The list of editions the set was printed for.
+      identifier: The string shorthand identifier of the set.
+      name: The full name of the set.
+      release_date: The release date of the card set (if applicable).
     '''
 
     editions: list[str]
