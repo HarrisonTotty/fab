@@ -6,6 +6,8 @@ nav:
   - 'Card Objects': cards.md
   - 'CardList Objects': card-lists.md
   - 'CardSet Objects': card-sets.md
+  - 'CardSetCollection Objects': card-set-collections.md
+  - 'Deck Objects': decks.md
 plugins:
   - mkdocstrings:
       default_handler: python
@@ -16,5 +18,5 @@ plugins:
           paths: ['src']
 repo_name: HarrisonTotty/fab
 repo_url: https://github.com/HarrisonTotty/fab
-site_name: Flesh and Blood TCG Analysis Library
+site_name: Flesh and Blood TCG Analysis Library API Documentation
 theme: material

@@ -28,16 +28,15 @@ EXCLUDE_TYPES = [
 @dataclasses.dataclass
 class Deck:
     '''
-    Represents a deck of Flesh and Blood cards. Each deck has the following
-    fields:
-      * cards - The "main" part of the deck from which one draws cards
-      * format - The game format associated with this deck, being `Blitz`,
-                 `Classic Constructed`, `Commoner`, or `Ultimate Pit Fight`.
-      * hero - The hero card associated with this deck
-      * inventory - The list of weapon/equipment cards associated with this deck
-                    (not including items).
-      * name - An arbitrary name for the deck
-      * tokens - Any token cards associated with this deck
+    Represents a deck of Flesh and Blood cards.
+
+    Attributes:
+      cards: The "main" part of the deck from which one draws cards.
+      format: The game format associated with the deck, being `Blitz`, `Classic Constructed`, `Commoner`, or `Ultimate Pit Fight`.
+      hero: The hero card associated with the deck.
+      inventory: The list of weapon/equipment cards associated with the deck (not including items).
+      name: An arbitrary name for the deck.
+      tokens: Any token cards associated with the deck.
     '''
 
     name: str
@@ -47,9 +46,13 @@ class Deck:
     inventory: CardList = CardList.empty()
     tokens: CardList = CardList.empty()
 
-    def __getitem__(self, index: int) -> Card:
+    def __getitem__(self, index: int | slice) -> Card | CardList:
         '''
-        Allows one to access cards form the "main" part of the deck using index notation.
+        Allows one to access cards form the "main" part of the deck using index
+        notation.
+
+        Args:
+          index: An `int` or `slice` to reference a particular `Card` or sub-`CardList`.
         '''
         return self.cards[index]
 
@@ -69,6 +72,9 @@ class Deck:
     def all_cards(self, include_tokens: bool = False) -> CardList:
         '''
         Returns all cards within this deck (excluding tokens by default).
+
+        Args:
+          include_tokens: Whether to include token cards in the result.
         '''
         if include_tokens:
             return CardList.merge(CardList([self.hero]), self.inventory, self.cards, self.tokens)
@@ -78,10 +84,16 @@ class Deck:
     def filter_related(self, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
         '''
         Filters out cards from the specified list which may be included in this
-        deck, based on the deck's hero card. If `include_generic` is set to
-        `False`, then `Generic` cards will not be added to the result. To be
-        able to accurately compare cards, a card `catalog` must be provided,
-        defaulting to the global catalog `card.CARD_CATALOG` if unspecified.
+        deck, based on the deck's hero card.
+
+        To be able to accurately compare cards, a card `catalog` must be
+        provided, defaulting to the global catalog `card.CARD_CATALOG` if
+        unspecified.
+
+        Args:
+          cards: The list of cards to filter.
+          catalog: An optional `CardList` catalog to use instead of the default catalog.
+          include_generic: Whether to include _Generic_ cards in the result.
         '''
         return CardList._hero_filter_related(
             hero            = self.hero,
@@ -94,9 +106,16 @@ class Deck:
     def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'Blitz') -> Deck:
         '''
         Constructs a deck from the given deck list dictionary, where keys
-        correspond to the full name of a card and values are their counts. To be
-        able to generate cards, a card `catalog` must be provided, defaulting to
-        the global catalog `card.CARD_CATALOG` if unspecified.
+        correspond to the full name of a card and values are their counts.
+
+        To be able to generate cards, a card `catalog` must be provided,
+        defaulting to the global catalog `card.CARD_CATALOG` if unspecified.
+
+        Args:
+          name: The arbitrary name for the new `Deck`.
+          deck_list: The deck list to create the `Deck` from.
+          catalog: An optional `CardList` catalog to use instead of the default catalog.
+          format: The game format of the deck, being any valid `Deck.format`.
         '''
         cards: list[Card] = []
         inventory: list[Card] = []
@@ -124,6 +143,9 @@ class Deck:
     def from_json(jsonstr: str) -> Deck:
         '''
         Parses a new deck from a given JSON string representation.
+
+        Args:
+          jsonstr: The JSON string representation to parse.
         '''
         data = json.loads(jsonstr)
         return Deck(
@@ -182,6 +204,9 @@ class Deck:
     def load(file_path: str) -> Deck:
         '''
         Loads a deck from the specified JSON file.
+
+        Args:
+          file_path: The file path from which to load.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
             return Deck.from_json(f.read())
@@ -189,6 +214,9 @@ class Deck:
     def save(self, file_path: str):
         '''
         Saves this deck to the specified JSON file.
+
+        Args:
+          file_path: The file path to save to.
         '''
         with open(os.path.expanduser(file_path), 'w') as f:
             f.write(self.to_json())
@@ -197,15 +225,12 @@ class Deck:
         '''
         Computes useful statistics associated with this deck, returning the
         following keys:
-          * card_statistics
-            `CardList.statistics()` on the "main" deck of cards, with health and
-            intelligence metrics removed.
-          * hero
-            Contains the intelligence and health of the deck's hero.
-          * inventory_statistics
-            `CardList.statistics()` on the inventory cards, with health,
-            intelligence, cost, and pitch metrics removed since they aren't
-            applicable.
+
+        * `card_statistics` - `CardList.statistics()` on the "main" deck of cards, with health and
+          intelligence metrics removed.
+        * `hero` - Contains the intelligence and health of the deck's hero.
+        * `inventory_statistics` - `CardList.statistics()` on the inventory cards, with health,
+          intelligence, cost, and pitch metrics removed since they aren't applicable.
         '''
         card_stats = self.cards.statistics(precision)
         inventory_stats = self.inventory.statistics(precision)
@@ -220,9 +245,13 @@ class Deck:
 
     def to_deck_list(self, include_tokens: bool = False) -> dict[str, int]:
         '''
-        Returns a deck-list dictionary for this deck. The keys of this
-        dictionary correspond to the full names (including pitch value) of
-        cards, while the values are their corresponding counts.
+        Returns a deck-list dictionary for this deck.
+
+        The keys of this dictionary correspond to the full names (including
+        pitch value) of cards, while the values are their corresponding counts.
+
+        Args:
+          include_tokens: Whether to include token cards in the deck list.
         '''
         return self.all_cards(include_tokens).counts()
 
@@ -248,8 +277,10 @@ class Deck:
     def valid_types(self, include_generic: bool = True) -> list[str]:
         '''
         Returns the set of valid card types which may be included in this deck,
-        based on the deck's hero card. If `include_generic` is set to `False`,
-        then `Generic` will not be added as a valid type.
+        based on the deck's hero card.
+
+        Args:
+          include_generic: Whether to include the _Generic_ type in the result.
         '''
         if 'Shapeshifter' in self.hero.types:
             raise Exception(f'deck hero "{self.hero.full_name}" is a Shapeshifter')
