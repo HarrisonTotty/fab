@@ -16,12 +16,13 @@ downloading and installing the latest release `.whl` via `pip`, _or_ building
 and running the containerized Jupyter Lab environment.
 
 To learn more about working with the library, check out the [Getting
-Started](notebooks/getting-started.ipynb) notebook.
+Started](notebooks/getting-started.ipynb) notebook or the [Online API
+Documentation](https://fablib.readthedocs.io/en/latest/).
 
 ### Installing Locally
 
 ```bash
-export VERSION=0.1.6
+export VERSION=0.1.8
 curl "https://github.com/HarrisonTotty/fab/releases/download/v${VERSION}/fab-${VERSION}-py3-none-any.whl" -o fab.whl
 pip install fab.whl
 ```
