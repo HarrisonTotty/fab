@@ -95,7 +95,7 @@ class Deck:
           catalog: An optional `CardList` catalog to use instead of the default catalog.
           include_generic: Whether to include _Generic_ cards in the result.
         '''
-        return CardList._hero_filter_related(
+        return CardList.__hero_filter_related(
             hero            = self.hero,
             cards           = cards,
             catalog         = catalog,

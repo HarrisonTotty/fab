@@ -84,25 +84,29 @@ class Card:
 
         Args:
           key: The name of the class attribute to fetch.
+
+        Returns:
+          The value associated with the specified field.
         '''
         return self.__dict__[key]
 
     def __hash__(self) -> Any:
         '''
-        Returns the hash representation of the card.
+        Computes the hash representation of the card.
+
+        Returns:
+          The hash representation of the card.
         '''
         return hash((self.name, self.pitch, self.type_text))
 
-    def __len__(self) -> int:
-        '''
-        Returns the number of tags associated with this card.
-        '''
-        return len(self.tags)
-
     def __str__(self) -> str:
         '''
-        Returns the string representation of the transaction. This is an alias
-        of the `to_json()` method.
+        Computes the JSON string representation of the card.
+
+        This is an alias of the `to_json()` method.
+
+        Returns:
+          The JSON string representation of the card.
         '''
         return self.to_json()
 
@@ -111,12 +115,16 @@ class Card:
         '''
         Creates a new card from its full name.
 
-        To instantiate the card this way, a card catalog (`CardList`) must be
-        provided, defaulting to `card.CARD_CATALOG`.
+        Note:
+          To instantiate the card this way, a card catalog (`CardList`) must be
+          provided, defaulting to `card.CARD_CATALOG`.
 
         Args:
           full_name: The full name of the card (including pitch value, if applicable).
           catalog: The card catalog to use as a reference, defaulting to `card.CARD_CATALOG` if `None`.
+
+        Returns:
+          A new `Card` object.
         '''
         _catalog = CARD_CATALOG if catalog is None else catalog
         if _catalog is None: raise Exception('specified card catalog has not been initialized')
@@ -132,6 +140,9 @@ class Card:
 
         Args:
           jsonstr: The JSON string representation to parse.
+
+        Returns:
+          A new `Card` object.
         '''
         return Card(**json.loads(jsonstr))
 
@@ -142,6 +153,9 @@ class Card:
 
         Args:
           identifier: The target card identifier to fetch image data for.
+
+        Returns:
+          The image representation of the card.
         '''
         if not self.image_urls: return 'No images available'
         if isinstance(identifier, str):
@@ -152,90 +166,135 @@ class Card:
     def is_action(self) -> bool:
         '''
         Whether this card is an action card.
+
+        Returns:
+          Whether the card contains the _Action_ type.
         '''
         return 'Action' in self.types
 
     def is_attack(self) -> bool:
         '''
         Whether this card is an attack card.
+
+        Returns:
+          Whether the card contains the _Attack_ type.
         '''
         return 'Attack' in self.types
 
     def is_attack_reaction(self) -> bool:
         '''
         Whether this card is an attack reaction card.
+
+        Returns:
+          Whether the card contains the _Attack Reaction_ type.
         '''
         return 'Attack Reaction' in self.types
 
     def is_aura(self) -> bool:
         '''
         Whether this card is an aura card.
+
+        Returns:
+          Whether the card contains the _Aura_ type.
         '''
         return 'Aura' in self.types
 
     def is_defense_reaction(self) -> bool:
         '''
         Whether this card is a defense reaction card.
+
+        Returns:
+          Whether the card contains the _Defense Reaction_ type.
         '''
         return 'Defense Reaction' in self.types
 
     def is_equipment(self) -> bool:
         '''
         Whether this card is an equipment card.
+
+        Returns:
+          Whether the card contains the _Equipment_ type.
         '''
         return 'Equipment' in self.types
 
     def is_hero(self) -> bool:
         '''
         Whether this card is a hero card.
+
+        Returns:
+          Whether the card contains the _Hero_ type.
         '''
         return 'Hero' in self.types
 
     def is_instant(self) -> bool:
         '''
         Whether this card is an instant card.
+
+        Returns:
+          Whether the card contains the _Instant_ type.
         '''
         return 'Instant' in self.types
 
     def is_item(self) -> bool:
         '''
         Whether this card is an item card.
+
+        Returns:
+          Whether the card contains the _Item_ type.
         '''
         return 'Item' in self.types
 
     def is_reaction(self) -> bool:
         '''
         Whether this card is an attack or defense reaction card.
+
+        Returns:
+          Whether the card contains the _Attack Reaction_ or _Defense Reaction_ types.
         '''
         return self.is_attack_reaction() or self.is_defense_reaction()
 
     def is_token(self) -> bool:
         '''
         Whether this card is a token card.
+
+        Returns:
+          Whether the card contains the _Token_ type.
         '''
         return 'Token' in self.types
 
     def is_weapon(self) -> bool:
         '''
         Whether this card is a weapon card.
+
+        Returns:
+          Whether the card contains the _Weapon_ type.
         '''
         return 'Weapon' in self.types
 
     def keys(self) -> list[str]:
         '''
         Returns the dictionary keys associated with this card class.
+
+        Returns:
+          The `dict` keys as `list[str]`, corresponding to the possible fields of the card.
         '''
         return list(self.__dict__.keys())
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         '''
         Converts this card into a raw python dictionary.
+
+        Returns:
+          A copy of the raw `dict` representation of the card.
         '''
         return copy.deepcopy(self.__dict__)
 
     def to_json(self) -> str:
         '''
-        Converts this card into a JSON string representation.
+        Computes the card's JSON string representation.
+
+        Returns:
+          A JSON string representation of the card.
         '''
         return json.dumps(self.__dict__)
 
@@ -244,37 +303,58 @@ class CardList(UserList):
     '''
     Represents a collection of cards.
 
-    This is ultimately a superclass of `list`, and thus supports all common
-    `list` methods.
+    Note:
+      This is ultimately a superclass of `list`, and thus supports all common
+      `list` methods.
+
+    Attributes:
+      data (list[Card]): The raw `list` of `Card` objects contained within the object.
     '''
     def actions(self) -> CardList:
         '''
         Returns the set of all action cards in this card list.
+
+        Returns:
+          The set of all action cards in the card list.
         '''
         return CardList([card for card in self.data if card.is_action()])
 
     def attacks(self) -> CardList:
         '''
         Returns the set of all attack cards in this card list.
+
+        Returns:
+          The set of all attack cards in the card list.
         '''
         return CardList([card for card in self.data if card.is_attack()])
 
     def attack_reactions(self) -> CardList:
         '''
         Returns the set of all attack reaction cards in this card list.
+
+        Returns:
+          The set of all attack reaction cards in the card list.
         '''
         return CardList([card for card in self.data if card.is_attack_reaction()])
 
     def auras(self) -> CardList:
         '''
         Returns the set of all aura cards in this card list.
+
+        Returns:
+          The set of all aura cards in the card list.
         '''
         return CardList([card for card in self.data if card.is_aura()])
 
     def costs(self) -> list[int]:
         '''
-        Returns the set of all card costs associated with this list of cards
-        (excluding cards with no cost or with variable cost).
+        Returns the set of all card costs associated with this list of cards.
+
+        Tip: Warning
+          This excludes cards with no cost or with variable cost.
+
+        Returns:
+          The set of all card costs in the card list.
         '''
         res = []
         for card in self.data:
@@ -283,7 +363,11 @@ class CardList(UserList):
 
     def counts(self) -> dict[str, int]:
         '''
-        Returns a dictionary of card counts organized by full name.
+        Computes a `dict` of card counts, where keys correspond to the
+        `full_name` of `Card` objects.
+
+        Returns:
+          A `dict` of card counts by full name.
         '''
         counts = {}
         for card in self.data:
@@ -296,13 +380,22 @@ class CardList(UserList):
     def defense_reactions(self) -> CardList:
         '''
         Returns the set of all defense reaction cards in this card list.
+
+        Returns:
+          The set of all defense reaction cards in the card list.
         '''
         return CardList([card for card in self.data if card.is_defense_reaction()])
 
     def defense_values(self) -> list[int]:
         '''
         Returns the set of all card defense values associated with this list of
-        cards (excluding cards with no defense or with variable defense).
+        cards.
+
+        Tip: Warning
+          This excludes cards with no defense or with variable defense.
+
+        Returns:
+          A unique `list` of card defense values associated with the list of cards.
         '''
         res = []
         for card in self.data:
@@ -313,12 +406,18 @@ class CardList(UserList):
     def empty() -> CardList:
         '''
         Returns a new empty card list containing no cards.
+
+        Returns:
+          An empty card list.
         '''
         return CardList([])
 
     def equipment(self) -> CardList:
         '''
         Returns the set of all equipment cards in this card list.
+
+        Returns:
+          The set of all equipment cards in the card list.
         '''
         return CardList([card for card in self.data if card.is_equipment()])
 
@@ -345,26 +444,27 @@ class CardList(UserList):
         Filters a list of cards according to a function against a particular
         `Card` field.
 
-        In addition to functions/lambdas, you can also specify:
+        Note:
+          In addition to functions/lambdas, you can also specify:
 
-        * A `str` for the `body`, `full_name`, `name`, or `type_text` keyword
-          arguments. These comparisons are case-insentitive and will match
-          substrings.
-        * An `int` for the `cost`, `defense`, `health`, `intelligence`,
-          `pitch`, or `power` keyword arguments. `None` and `str` values
-          will not be included in the results.
-        * A `tuple[int, int]` for the `cost`, `defense`, `health`,
-          `intelligence`, `pitch`, or `power` keyword arguments. This defines
-          a range of values to include (inclusive).
-        * A `list[str]` for the `grants`, `keywords`, `sets`, `tags`, and
-          `types` keyword arguments. At least one value of the list must be
-          present for an item to be included.
-        * A `str` for the `grants`, `keywords`, `sets`, `tags`, and `types`
-          keyword arguments. This is the same as passing in a single-element
-          list.
+          * A `str` for the `body`, `full_name`, `name`, or `type_text` keyword
+            arguments. These comparisons are case-insentitive and will match
+            substrings.
+          * An `int` for the `cost`, `defense`, `health`, `intelligence`,
+            `pitch`, or `power` keyword arguments. `None` and `str` values
+            will not be included in the results.
+          * A `tuple[int, int]` for the `cost`, `defense`, `health`,
+            `intelligence`, `pitch`, or `power` keyword arguments. This defines
+            a range of values to include (inclusive).
+          * A `list[str]` for the `grants`, `keywords`, `sets`, `tags`, and
+            `types` keyword arguments. At least one value of the list must be
+            present for an item to be included.
+          * A `str` for the `grants`, `keywords`, `sets`, `tags`, and `types`
+            keyword arguments. This is the same as passing in a single-element
+            list.
 
-        If a keyword argument called `negate` is set to `True`, then each filter
-        specification is reversed.
+          If a keyword argument called `negate` is set to `True`, then each filter
+          specification is reversed.
 
         Args:
           body: A `str` or function to filter by `body`.
@@ -382,6 +482,9 @@ class CardList(UserList):
           tags: A `str`, `list[str]`, or function to filter by `tags`.
           type_text: A `str` or function to filter by `type_text`.
           types: A `str`, `list[str]`, or function to filter by `types`.
+
+        Returns:
+          A new `CardList` containing copies of `Card` objects that meet the filtering requirements.
         '''
         if len(self.data) < 2: return copy.deepcopy(self)
         filtered = []
@@ -617,6 +720,9 @@ class CardList(UserList):
         Args:
           csvstr: The CSV string representation to parse.
           delimiter: An alternative primary delimiter to pass to `csv.DictReader`.
+
+        Returns:
+          A new `CardList` object from the parsed data.
         '''
         try:
             csv_data = csv.DictReader(io.StringIO(csvstr), delimiter = delimiter)
@@ -680,6 +786,9 @@ class CardList(UserList):
 
         Args:
           jsonstr: The JSON string representation to parse into a card list.
+
+        Returns:
+          A new `CardList` object from the parsed data.
         '''
         cards = []
         for jcard in json.loads(jsonstr):
@@ -689,40 +798,44 @@ class CardList(UserList):
     def full_names(self) -> list[str]:
         '''
         Returns the set of all full card names within this list of cards.
+
+        Returns:
+          A unique `list` of all full card names within the list of cards.
         '''
         return list(set([card.full_name for card in self.data]))
 
     def grants(self) -> list[str]:
         '''
         Returns the set of all card grant keywords within this list of cards.
+
+        Returns:
+          A unique `list` of all card grant keywords within the list of cards.
         '''
         res = []
         for card in self.data:
             res.extend(card.grants)
         return list(set(res))
 
-    def group(self, by: str = 'type_text') -> dict[Any, CardList]:
+    def group(self, by: str = 'type_text') -> dict[int | str, CardList]:
         '''
-        Groups transactions by one of the following criteria:
-          * key = str
-            * full_name
-            * grants
-            * keyword
-            * name
-            * rarity
-            * set
-            * type
-            * type_text (default)
-          * key = int
-            * cost
-            * defense
-            * health
-            * intelligence
-            * pitch
-            * power
+        Groups cards by the specified (singular form) of the `Card` field.
+
+        Note:
+          The keys of the resulting `dict` take on the `type` described below:
+
+          * `str`: `full_name`, `grants`, `keyword`, `name`, `rarity`, `set`, `type`, `type_text`
+          * `int`: `cost`, `defense`, `health`, `intelligence`, `pitch`, `power`
+
+        Tip: Warning
+          When grouping by `cost`, `defense`, `health`, `intelligence`, `pitch`,
+          or `power`, cards with `str` or `None` values for the corresponding
+          field will be excluded from the result.
 
         Args:
           by: The `Card` field to group by.
+
+        Returns:
+          A `dict` of `CardList` objects grouped by the specified `Card` field.
         '''
         if len(self.data) < 1: return {}
         res = {}
@@ -775,7 +888,13 @@ class CardList(UserList):
     def health_values(self) -> list[int]:
         '''
         Returns the set of all card health values associated with this list of
-        cards (excluding cards with no health or with variable health).
+        cards.
+
+        Tip: Warning
+          This excludes cards with no health or with variable health.
+
+        Returns:
+          The unique `list` of all card health values within the card list.
         '''
         res = []
         for card in self.data:
@@ -783,18 +902,22 @@ class CardList(UserList):
         return list(set(res))
 
     @staticmethod
-    def _hero_filter_related(hero: Card, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
+    def __hero_filter_related(hero: Card, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
         '''
         A helper function for filtering cards based on a hero.
 
-        Note that this function needs a card catalog to work properly and will
-        fall back to `card.CARD_CATALOG`.
+        Note:
+          This function needs a card catalog to work properly and will fall back
+          to `card.CARD_CATALOG`.
 
         Args:
           hero: The hero card to filter with.
           cards: The collection of cards to filter.
           catalog: A catalog of cards representing all cards in the game.
           include_generic: Whether to include _Generic_ cards in the result.
+
+        Returns:
+          The list of cards that work with the specified hero.
         '''
         _catalog = CARD_CATALOG if catalog is None else catalog
         if _catalog is None:
@@ -820,12 +943,18 @@ class CardList(UserList):
     def heroes(self) -> CardList:
         '''
         Returns the set of all hero cards in this card list.
+
+        Returns:
+          The set of all hero cards within the card list.
         '''
         return CardList([card for card in self.data if card.is_hero()])
 
     def identifiers(self) -> list[str]:
         '''
         Returns the set of all card identifiers in this card list.
+
+        Returns:
+          The unique `list` of all card identifiers within the card list.
         '''
         res = []
         for card in self.data:
@@ -835,14 +964,23 @@ class CardList(UserList):
     def instants(self) -> CardList:
         '''
         Returns the set of all instant cards in this card list.
+
+        Returns:
+          The set of all instant cards within the card list.
         '''
         return CardList([card for card in self.data if card.is_instant()])
 
     def intelligence_values(self) -> list[int]:
         '''
         Returns the set of all card intelligence values associated with this
-        list of cards (excluding cards with no intelligence or with variable
-        intelligence).
+        list of cards.
+
+        Tip: Warning
+          This excludes cards with no intelligence or with variable
+          intelligence.
+
+        Returns:
+          A unique `list` of all card intelligence values within the list of cards.
         '''
         res = []
         for card in self.data:
@@ -852,12 +990,18 @@ class CardList(UserList):
     def item_cards(self) -> CardList:
         '''
         Returns the set of all item cards in this card list.
+
+        Returns:
+          The set of all item cards within the list of cards.
         '''
         return CardList([card for card in self.data if card.is_item()])
 
     def keywords(self) -> list[str]:
         '''
         Returns the set of all keywords in this card list.
+
+        Returns:
+          A unique `list` of all keywords within the list of cards.
         '''
         res = []
         for card in self.data:
@@ -869,12 +1013,16 @@ class CardList(UserList):
         '''
         Loads a list of cards from the specified `.json` or `.csv` file.
 
-        If `set_catalog` is set to `True`, then a copy of the loaded card list
-        will also be set as the default `card.CARD_CATALOG`.
+        Note:
+          If `set_catalog` is set to `True`, then a copy of the loaded card list
+          will also be set as the default `card.CARD_CATALOG`.
 
         Args:
           file_path: The file path to load from.
           set_catalog: Whether to also set the loaded data as the default card catalog.
+
+        Returns:
+          A new `CardList` object.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
             if file_path.endswith('.json'):
@@ -890,8 +1038,13 @@ class CardList(UserList):
 
     def max_cost(self) -> int:
         '''
-        Computes the maximum card cost within this card list. Cards with
-        variable or no cost are ignored.
+        Computes the maximum card cost within this card list.
+
+        Tip: Warning
+          Cards with variable or no cost are ignored.
+
+        Returns:
+          The maximum card cost within the list of cards.
         '''
         if len(self.data) < 1: return 0
         array = [x.cost for x in self.data if isinstance(x.cost, int)]
@@ -902,8 +1055,13 @@ class CardList(UserList):
 
     def max_defense(self) -> int:
         '''
-        Computes the maximum card defense within this card list. Cards with
-        variable or no defense are ignored.
+        Computes the maximum card defense within this card list.
+
+        Tip: Warning
+          Cards with variable or no defense are ignored.
+
+        Returns:
+          The maximum card defense value within the list of cards.
         '''
         if len(self.data) < 1: return 0
         array = [x.defense for x in self.data if isinstance(x.defense, int)]
@@ -914,8 +1072,13 @@ class CardList(UserList):
 
     def max_health(self) -> int:
         '''
-        Computes the maximum card health within this card list. Cards with
-        variable or no health are ignored.
+        Computes the maximum card health within this card list.
+
+        Tip: Warning
+          Cards with variable or no health are ignored.
+
+        Returns:
+          The maximum card health value within the list of cards.
         '''
         if len(self.data) < 1: return 0
         array = [x.health for x in self.data if isinstance(x.health, int)]
@@ -926,8 +1089,13 @@ class CardList(UserList):
 
     def max_intelligence(self) -> int:
         '''
-        Computes the maximum card intelligence within this card list. Cards with
-        variable or no intelligence are ignored.
+        Computes the maximum card intelligence within this card list.
+
+        Tip: Warning
+          Cards with variable or no intelligence are ignored.
+
+        Returns:
+          The maximum card intelligence value within the list of cards.
         '''
         if len(self.data) < 1: return 0
         array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
@@ -938,8 +1106,13 @@ class CardList(UserList):
 
     def max_pitch(self) -> int:
         '''
-        Computes the maximum card pitch within this card list. Cards with
-        variable or no pitch are ignored.
+        Computes the maximum card pitch within this card list.
+
+        Tip: Warning
+          Cards with variable or no pitch are ignored.
+
+        Returns:
+          The maximum card pitch value within this list of cards.
         '''
         if len(self.data) < 1: return 0
         array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
@@ -950,8 +1123,13 @@ class CardList(UserList):
 
     def max_power(self) -> int:
         '''
-        Computes the maximum card power within this card list. Cards with
-        variable or no power are ignored.
+        Computes the maximum card power within this card list.
+
+        Tip: Warning
+          Cards with variable or no power are ignored.
+
+        Returns:
+          The maximum card power value within this list of cards.
         '''
         if len(self.data) < 1: return 0
         array = [x.power for x in self.data if isinstance(x.power, int)]
@@ -962,11 +1140,16 @@ class CardList(UserList):
 
     def mean_cost(self, precision: int = 2) -> float:
         '''
-        Computes the mean card cost within this card list. Cards with
-        variable or no cost are ignored.
+        Computes the mean card cost within this card list.
+
+        Tip: Warning
+          Cards with variable or no cost are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The mean card cost of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.cost for x in self.data if isinstance(x.cost, int)]
@@ -977,11 +1160,16 @@ class CardList(UserList):
 
     def mean_defense(self, precision: int = 2) -> float:
         '''
-        Computes the mean card defense within this card list. Cards with
-        variable or no defense are ignored.
+        Computes the mean card defense within this card list.
+
+        Tip: Warning
+          Cards with variable or no defense are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The mean defense of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.defense for x in self.data if isinstance(x.defense, int)]
@@ -992,11 +1180,16 @@ class CardList(UserList):
 
     def mean_health(self, precision: int = 2) -> float:
         '''
-        Computes the mean card health within this card list. Cards with
-        variable or no health are ignored.
+        Computes the mean card health within this card list.
+
+        Tip: Warning
+          Cards with variable or no health are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The mean health of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.health for x in self.data if isinstance(x.health, int)]
@@ -1007,11 +1200,16 @@ class CardList(UserList):
 
     def mean_intelligence(self, precision: int = 2) -> float:
         '''
-        Computes the mean card intelligence within this card list. Cards with
-        variable or no intelligence are ignored.
+        Computes the mean card intelligence within this card list.
+
+        Tip: Warning
+          Cards with variable or no intelligence are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The mean intelligence of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
@@ -1022,11 +1220,16 @@ class CardList(UserList):
 
     def mean_pitch(self, precision: int = 2) -> float:
         '''
-        Computes the mean card pitch within this card list. Cards with
-        variable or no pitch are ignored.
+        Computes the mean card pitch within this card list.
+
+        Tip: Warning
+          Cards with variable or no pitch are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The mean pitch value of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
@@ -1037,11 +1240,16 @@ class CardList(UserList):
 
     def mean_power(self, precision: int = 2) -> float:
         '''
-        Computes the mean card power within this card list. Cards with
-        variable or no power are ignored.
+        Computes the mean card power within this card list.
+
+        Tip: Warning
+          Cards with variable or no power are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The mean power of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.power for x in self.data if isinstance(x.power, int)]
@@ -1141,14 +1349,16 @@ class CardList(UserList):
             return 0.0
 
     @staticmethod
-    def merge(*args, unique: bool = False) -> CardList:
+    def merge(*args: list[CardList], unique: bool = False) -> CardList:
         '''
         Merges two or more card lists into a single one.
 
-        If `unique` is set to `True`, then duplicate cards will be deleted.
-
         Args:
           *args: The `CardList` objects to merge.
+          unique: Whether duplicate `Card` objects should be deleted.
+
+        Returns:
+          The merged collection of cards.
         '''
         merged = []
         for card_list in args:
@@ -1235,6 +1445,9 @@ class CardList(UserList):
     def names(self) -> list[str]:
         '''
         Returns the set of all card names in this card list.
+
+        Returns:
+          The unique `list` of card names within the list of cards.
         '''
         return list(set([card.name for card in self.data]))
 
@@ -1242,16 +1455,29 @@ class CardList(UserList):
         '''
         Returns the difference between the pitch and cost values of all cards.
 
-        A positive integer indicates that on average one generates more pitch
-        value than consumes it. This calculation does not take into effect any
-        additional pitch/cost a card might incur in its body text.
+        Note:
+          A positive integer indicates that on average one generates more pitch
+          value than consumes it.
+
+        Tip: Warning
+          This calculation does not take into effect any additional pitch/cost a
+          card might incur in its body text.
+
+        Returns:
+          The pitch-cost difference of the list of cards.
         '''
         return self.total_pitch() - self.total_cost()
 
     def pitch_values(self) -> list[int]:
         '''
         Returns the set of all card pitch values associated with this list of
-        cards (excluding cards with no pitch or with variable pitch).
+        cards.
+
+        Tip: Warning
+          This excludes cards with no pitch or with variable pitch.
+
+        Returns:
+          The unique `list` of card pitch values within the list of cards.
         '''
         res = []
         for card in self.data:
@@ -1263,16 +1489,28 @@ class CardList(UserList):
         Returns the difference between the power and defense values of all
         cards.
 
-        A positive integer indicates the deck prefers an offensive strategy.
-        This calculation does not take into effect any additional power/defense
-        a card might incur in its body text.
+        Note:
+          A positive integer indicates the deck prefers an offensive strategy.
+
+        Tip: Warning
+          This calculation does not take into effect any additional power/defense
+          a card might incur in its body text.
+
+        Returns:
+          The power-defense difference of the list of cards.
         '''
         return self.total_power() - self.total_defense()
 
     def power_values(self) -> list[int]:
         '''
         Returns the set of all card power values associated with this list of
-        cards (excluding cards with no power or with variable power).
+        cards.
+
+        Tip: Warning
+          This excludes cards with no power or with variable power.
+
+        Returns:
+          The unique `list` of power values within the list of cards.
         '''
         res = []
         for card in self.data:
@@ -1294,8 +1532,7 @@ class CardList(UserList):
 
     def sort(self, key: Any = 'name', reverse: bool = False) -> CardList:
         '''
-        Sorts the list of cards, returning a new sorted collection. If `reverse`
-        is set to `True`, then the order is reversed.
+        Sorts the list of cards, returning a new sorted collection.
 
         The `key` parameter may be:
 
@@ -1312,6 +1549,9 @@ class CardList(UserList):
         Args:
           key: The `Card` field to sort by.
           reverse: Whether to reverse the sort order.
+
+        Returns:
+          A new, sorted `CardList` object.
         '''
         if isinstance(key, str):
             contains_none = []
@@ -1341,6 +1581,9 @@ class CardList(UserList):
     def rarities(self) -> list[str]:
         '''
         Returns the set of all card rarities in this card list.
+
+        Returns:
+          A unique `list` of card rarities in the list of cards.
         '''
         res = []
         for card in self.data:
@@ -1351,12 +1594,18 @@ class CardList(UserList):
         '''
         Returns the set of all attack and defense reaction cards in this card
         list.
+
+        Returns:
+          A list of all attack and defense reaction cards within the card list.
         '''
         return CardList([card for card in self.data if card.is_reaction()])
 
     def sets(self) -> list[str]:
         '''
         Returns the set of all card sets in this list.
+
+        Returns:
+          A unique `list` of all card sets within the list of cards.
         '''
         card_sets = []
         for card in self.data:
@@ -1367,8 +1616,15 @@ class CardList(UserList):
         '''
         Computes helpful statistics associated with this collection of cards.
 
+        Note:
+          See the source of this method to get an idea of what the output `dict`
+          looks like.
+
         Args:
           precision: Specifies the number of decimal places any `float` result will be rounded to.
+
+        Returns:
+          A `dict` containing the results of various statistical functions.
         '''
         return {
             'count': len(self.data),
@@ -1505,6 +1761,9 @@ class CardList(UserList):
     def to_json(self) -> str:
         '''
         Converts the list of cards to a JSON string representation.
+
+        Returns:
+          A JSON string representation of the list of cards.
         '''
         return json.dumps(self.to_list())
 
@@ -1512,6 +1771,9 @@ class CardList(UserList):
         '''
         Converts the list of cards into a raw Python list with nested
         dictionaries.
+
+        Returns:
+          A `list` of `dict` objects containing only Python primitives.
         '''
         return [card.to_dict() for card in self.data]
 
