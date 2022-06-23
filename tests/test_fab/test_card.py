@@ -233,6 +233,21 @@ def test_card_list_json_conversion():
     CL_from_json = CardList.from_json(CL_json)
     assert CL_from_json == CL1
 
+def test_card_list_methods():
+    '''
+    Tests common `list` methods on cards.
+    '''
+    CL_append = CardList([C1, C2])
+    CL_append.append(C3)
+    assert CL_append == CardList([C1, C2, C3])
+    CL_extend = CardList([C1])
+    CL_extend.extend(CardList([C2, C3]))
+    assert CL_extend == CardList([C1, C2, C3])
+    CL_pop = CardList([C1, C2, C3])
+    C3_popped = CL_pop.pop()
+    assert C3_popped == C3
+    assert CL_pop == CardList([C1, C2])
+
 def test_card_list_sorting():
     '''
     Tests the `CardList.sort()` method.
