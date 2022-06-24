@@ -12,6 +12,7 @@ import io
 import json
 import os
 
+from collections import UserDict
 from typing import Any, Optional
 
 from .card import Card
@@ -43,12 +44,18 @@ class CardSet:
 
         Args:
           key: The `str` corresponding to the name of the `CardSet` field to access.
+
+        Returns:
+          The value of the associated `CardSet` field.
         '''
         return self.__dict__[key]
 
     def __hash__(self) -> Any:
         '''
         Returns the hash representation of the card set.
+
+        Returns:
+          The hash representation of the card set.
         '''
         return hash((self.identifier, self.name))
 
@@ -57,20 +64,32 @@ class CardSet:
         Returns the string representation of the card set.
 
         This is an alias of the `CardSet.to_json()` method.
+
+        Returns:
+          The JSON string representation of the card set.
         '''
         return self.to_json()
 
     def keys(self) -> list[str]:
         '''
         Returns the dictionary keys associated with this card set class.
+
+        Returns:
+          A `list` of dictionary keys associated with the fields of the set.
         '''
         return list(self.__dict__.keys())
 
     @staticmethod
-    def from_datestr_dict(jsondict: dict) -> CardSet:
+    def from_datestr_dict(jsondict: dict[str, Any]) -> CardSet:
         '''
         Creates a new card set from a dictionary object containing unparsed
         date strings.
+
+        Args:
+          jsondict: A raw `dict` object representing a card set.
+
+        Returns:
+          A new `CardSet` object.
         '''
         rep = copy.deepcopy(jsondict)
         if not rep['release_date'] is None:
@@ -84,6 +103,9 @@ class CardSet:
 
         Args:
           jsonstr: The JSON string representation to parse.
+
+        Returns:
+          A new `CardSet` object from the parsed data.
         '''
         return CardSet.from_datestr_dict(json.loads(jsonstr))
 
@@ -91,6 +113,9 @@ class CardSet:
         '''
         Converts the card set into a dictionary where the `release_date` field
         is set to its string representation.
+
+        Returns:
+          A raw `dict` representing the card set.
         '''
         rep = copy.deepcopy(self.__dict__)
         if not rep['release_date'] is None:
@@ -99,40 +124,33 @@ class CardSet:
 
     def to_json(self) -> str:
         '''
-        Converts this card into a JSON string representation.
+        Converts this card set into a JSON string representation.
+
+        Returns:
+          The JSON string representation of the set.
         '''
         return json.dumps(self.to_datestr_dict())
 
 
-@dataclasses.dataclass
-class CardSetCollection:
+class CardSetCollection(UserDict):
     '''
     Represents a collection of card sets, stored by identifier.
 
+    Note:
+      This class inherits `collections.UserDict`, and thus supports any common
+      `dict` methods.
+
     Attributes:
-      data: The mapping of `str` identifiers to `CardSet` objects.
+      data (dict[str, CardSet]): The mapping of `str` identifiers to `CardSet` objects.
     '''
-    data: dict[str, CardSet]
-
-    def __getitem__(self, key: str) -> CardSet:
-        '''
-        Allows one to access card sets using key notation.
-
-        Args:
-          key: The card set identifier to access.
-        '''
-        return self.data[key]
-
-    def __len__(self) -> int:
-        '''
-        Returns the number of items within this card set collection.
-        '''
-        return len(self.data)
 
     def editions(self) -> list[str]:
         '''
         Returns the set of all card set editions within this card set
         collection.
+
+        Returns:
+          A unique `list` of all card set editions within the set collection.
         '''
         res = []
         for cs in self.data.values():
@@ -147,6 +165,9 @@ class CardSetCollection:
         Args:
           csvstr: The CSV string representation to parse.
           delimiter: An optional `csv.DictReader` delimiter to use when parsing.
+
+        Returns:
+          A new `CardSetCollection` from the parsed data.
         '''
         try:
             csv_data = csv.DictReader(io.StringIO(csvstr), delimiter = delimiter)
@@ -180,6 +201,9 @@ class CardSetCollection:
 
         Args:
           jsonstr: The JSON string representation to parse.
+
+        Returns:
+          A new `CardSetCollection` from the parsed data.
         '''
         new_items = {}
         for k, v in json.loads(jsonstr).items():
@@ -189,11 +213,17 @@ class CardSetCollection:
     def get_release_date(self, card: Card) -> Optional[datetime.date]:
         '''
         Returns the release date for the specified card by looking up its card
-        set(s). The earliest date will be returned for cards released more than
-        once.
+        set(s).
+
+        Note:
+          The earliest date will be returned for cards released more than once.
+          This method returns `None` if no release date is found.
 
         Args:
           card: The card to obtain the release date of.
+
+        Returns:
+          The release date of the specified card, or `None` if not found.
         '''
         if len(self.data) < 1: return None
         release_dates = [s.release_date for i, s in self.data.items() if i in card.sets and not s.release_date is None]
@@ -206,6 +236,9 @@ class CardSetCollection:
         '''
         Returns the set of all card set identifiers within this card set
         collection.
+
+        Returns:
+          The unique `list` of all card set identifiers within the collection.
         '''
         return list(self.data.keys())
 
@@ -214,12 +247,16 @@ class CardSetCollection:
         '''
         Loads a card set collection from the specified `.json` or `.csv` file.
 
-        If `set_catalog` is set to `True`, then a cop of the card set collection
-        will be set as the default `card_set.CATALOG`.
+        Note:
+          If `set_catalog` is set to `True`, then a cop of the card set
+          collection will be set as the default `card_set.CATALOG`.
 
         Args:
           file_path: The file path from which to load the card set collection.
           set_catalog: Whether to set the loaded data as the default card set catalog.
+
+        Returns:
+          A new `CardSetCollection` from the loaded data.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
             if file_path.endswith('.json'):
@@ -236,6 +273,9 @@ class CardSetCollection:
     def names(self) -> list[str]:
         '''
         Returns the set of all card set names within this card set collection.
+
+        Returns:
+          A unique `list` of all card set names within the collection.
         '''
         return list(set([cs.name for cs in self.data.values()]))
 
@@ -243,8 +283,13 @@ class CardSetCollection:
         '''
         Returns the set of all card set release dates within this card set
         collection.
+
+        Returns:
+          A unique `list` of all card set release dates within the collection.
         '''
-        return list(set([cs.release_date for cs in self.data.values() if not cs.release_date is None]))
+        return sorted(list(set(
+            [cs.release_date for cs in self.data.values() if not cs.release_date is None]
+        )))
 
     def save(self, file_path: str):
         '''
@@ -262,6 +307,9 @@ class CardSetCollection:
     def to_json(self) -> str:
         '''
         Computes the JSON string representation of this collection of card sets.
+
+        Returns:
+          The JSON string representation of the collection.
         '''
         new_items = {}
         for k, v in self.data.items():

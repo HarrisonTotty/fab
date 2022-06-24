@@ -53,6 +53,9 @@ class Deck:
 
         Args:
           index: An `int` or `slice` to reference a particular `Card` or sub-`CardList`.
+
+        Returns:
+          A particular `Card` if `index` is an `int`, otherwise a `CardList` if `index` is a `slice`.
         '''
         return self.cards[index]
 
@@ -66,6 +69,9 @@ class Deck:
         '''
         Returns the total number of cards within this deck, excluding tokens or
         the hero.
+
+        Returns:
+          The number of "main" deck and inventory cards.
         '''
         return len(self.cards) + len(self.inventory)
 
@@ -75,25 +81,33 @@ class Deck:
 
         Args:
           include_tokens: Whether to include token cards in the result.
+
+        Returns:
+          A single `CardList` object containing all cards in the deck.
         '''
+        res = CardList([self.hero]) + self.inventory + self.cards
         if include_tokens:
-            return CardList.merge(CardList([self.hero]), self.inventory, self.cards, self.tokens)
+            return res + self.tokens
         else:
-            return CardList.merge(CardList([self.hero]), self.inventory, self.cards)
+            return res
 
     def filter_related(self, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
         '''
         Filters out cards from the specified list which may be included in this
         deck, based on the deck's hero card.
 
-        To be able to accurately compare cards, a card `catalog` must be
-        provided, defaulting to the global catalog `card.CARD_CATALOG` if
-        unspecified.
+        Note:
+          To be able to accurately compare cards, a card `catalog` must be
+          provided, defaulting to the global catalog `card.CARD_CATALOG` if
+          unspecified.
 
         Args:
           cards: The list of cards to filter.
           catalog: An optional `CardList` catalog to use instead of the default catalog.
           include_generic: Whether to include _Generic_ cards in the result.
+
+        Returns:
+          A subset of the specified card list that work with the deck's hero.
         '''
         return CardList.__hero_filter_related(
             hero            = self.hero,
@@ -108,14 +122,18 @@ class Deck:
         Constructs a deck from the given deck list dictionary, where keys
         correspond to the full name of a card and values are their counts.
 
-        To be able to generate cards, a card `catalog` must be provided,
-        defaulting to the global catalog `card.CARD_CATALOG` if unspecified.
+        Note:
+          To be able to generate cards, a card `catalog` must be provided,
+          defaulting to the global catalog `card.CARD_CATALOG` if unspecified.
 
         Args:
           name: The arbitrary name for the new `Deck`.
           deck_list: The deck list to create the `Deck` from.
           catalog: An optional `CardList` catalog to use instead of the default catalog.
           format: The game format of the deck, being any valid `Deck.format`.
+
+        Returns:
+          A new `Deck` built from the specified deck list.
         '''
         cards: list[Card] = []
         inventory: list[Card] = []
@@ -146,6 +164,9 @@ class Deck:
 
         Args:
           jsonstr: The JSON string representation to parse.
+
+        Returns:
+          A new `Deck` from the parsed data.
         '''
         data = json.loads(jsonstr)
         return Deck(
@@ -160,12 +181,15 @@ class Deck:
     def is_valid(self) -> tuple[bool, Optional[str]]:
         '''
         Returns whether this is a valid deck given its format.
-        Returns a tuple of the form `(<answer>, <reason>)`.
 
-        This function currently does not validate any restrictions printed on
-        cards themselves (ex: "Legendary" cards). Also, any restrictions on card
-        rarity might not be accurate, since cards may be printed in multiple
-        rarities.
+        Tip: Warning
+          This function currently does not validate any restrictions printed on
+          cards themselves (ex: "Legendary" cards). Also, any restrictions on
+          card rarity might not be accurate, since cards may be printed in
+          multiple rarities.
+
+        Returns:
+          A `tuple` of the form `(<answer>, <reason>)`.
         '''
         all_cards = self.all_cards()
         # Common
@@ -207,6 +231,9 @@ class Deck:
 
         Args:
           file_path: The file path from which to load.
+
+        Returns:
+          A new `Deck` object from the loaded data.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
             return Deck.from_json(f.read())
@@ -231,6 +258,9 @@ class Deck:
         * `hero` - Contains the intelligence and health of the deck's hero.
         * `inventory_statistics` - `CardList.statistics()` on the inventory cards, with health,
           intelligence, cost, and pitch metrics removed since they aren't applicable.
+
+        Returns:
+          A `dict` encapsulating the analysis results.
         '''
         card_stats = self.cards.statistics(precision)
         inventory_stats = self.inventory.statistics(precision)
@@ -252,12 +282,18 @@ class Deck:
 
         Args:
           include_tokens: Whether to include token cards in the deck list.
+
+        Returns:
+          The deck-list representation of the deck.
         '''
         return self.all_cards(include_tokens).counts()
 
     def to_dict(self)-> dict[str, Any]:
         '''
         Returns the raw dictionary form of the deck.
+
+        Returns:
+          A raw `dict` containing only Python primitives representing the deck.
         '''
         return {
             'cards': self.cards.to_list(),
@@ -271,6 +307,9 @@ class Deck:
     def to_json(self) -> str:
         '''
         Returns the JSON string representation of the deck.
+
+        Returns:
+          The JSON string representation of the deck.
         '''
         return json.dumps(self.to_dict())
 
@@ -281,6 +320,9 @@ class Deck:
 
         Args:
           include_generic: Whether to include the _Generic_ type in the result.
+
+        Returns:
+          A `list` of valid card type strings.
         '''
         if 'Shapeshifter' in self.hero.types:
             raise Exception(f'deck hero "{self.hero.full_name}" is a Shapeshifter')

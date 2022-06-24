@@ -18,10 +18,13 @@ plugins:
       handlers:
         python:
           options:
+            filters: ['!^_[^_]']
             show_signature_annotations: false
             show_source: true
           paths: ['src']
+  - search
 repo_name: HarrisonTotty/fab
 repo_url: https://github.com/HarrisonTotty/fab
 site_name: Flesh and Blood TCG Analysis Library
-theme: material
+theme:
+  name: material

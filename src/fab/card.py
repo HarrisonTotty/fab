@@ -463,9 +463,6 @@ class CardList(UserList):
             keyword arguments. This is the same as passing in a single-element
             list.
 
-          If a keyword argument called `negate` is set to `True`, then each filter
-          specification is reversed.
-
         Args:
           body: A `str` or function to filter by `body`.
           cost: An `int`, `tuple[int, int]`, or function to filter by `cost`.
@@ -476,6 +473,7 @@ class CardList(UserList):
           intelligence: An `int`, `tuple[int, int]`, or function to filter by `intelligence`.
           keywords: A `str`, `list[str]`, or function to filter by `keywords`.
           name: A `str` or function to filter by `name`.
+          negate: Whether to invert the filter specification.
           pitch: An `int`, `tuple[int, int]`, or function to filter by `pitch`.
           power: An `int`, `tuple[int, int]`, or function to filter by `power`.
           sets: A `str`, `list[str]`, or function to filter by `sets`.
@@ -1260,11 +1258,16 @@ class CardList(UserList):
 
     def median_cost(self, precision: int = 2) -> float:
         '''
-        Computes the median card cost within this card list. Cards with
-        variable or no cost are ignored.
+        Computes the median card cost within this card list.
+
+        Tip: Warning
+          Cards with variable or no cost are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The median resource cost of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.cost for x in self.data if isinstance(x.cost, int)]
@@ -1275,11 +1278,16 @@ class CardList(UserList):
 
     def median_defense(self, precision: int = 2) -> float:
         '''
-        Computes the median card defense within this card list. Cards with
-        variable or no defense are ignored.
+        Computes the median card defense within this card list.
+
+        Tip: Warning
+          Cards with variable or no defense are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The median defense value of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.defense for x in self.data if isinstance(x.defense, int)]
@@ -1290,11 +1298,16 @@ class CardList(UserList):
 
     def median_health(self, precision: int = 2) -> float:
         '''
-        Computes the median card health within this card list. Cards with
-        variable or no health are ignored.
+        Computes the median card health within this card list.
+
+        Tip: Warning
+          Cards with variable or no health are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The median health of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.health for x in self if isinstance(x.health, int)]
@@ -1305,11 +1318,16 @@ class CardList(UserList):
 
     def median_intelligence(self, precision: int = 2) -> float:
         '''
-        Computes the median card intelligence within this card list. Cards with
-        variable or no intelligence are ignored.
+        Computes the median card intelligence within this card list.
+
+        Tip: Warning
+          Cards with variable or no intelligence are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The median intelligence of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
@@ -1320,11 +1338,16 @@ class CardList(UserList):
 
     def median_pitch(self, precision: int = 2) -> float:
         '''
-        Computes the median card pitch within this card list. Cards with
-        variable or no pitch are ignored.
+        Computes the median card pitch within this card list.
+
+        Tip: Warning
+          Cards with variable or no pitch are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The median pitch vlaue of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
@@ -1335,11 +1358,16 @@ class CardList(UserList):
 
     def median_power(self, precision: int = 2) -> float:
         '''
-        Computes the median card power within this card list. Cards with
-        variable or no power are ignored.
+        Computes the median card power within this card list.
+
+        Tip: Warning
+          Cards with variable or no power are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The median attack power of cards in the list.
         '''
         if len(self.data) < 1: return 0.0
         array = [x.power for x in self.data if isinstance(x.power, int)]
@@ -1349,7 +1377,7 @@ class CardList(UserList):
             return 0.0
 
     @staticmethod
-    def merge(*args: list[CardList], unique: bool = False) -> CardList:
+    def merge(*args: CardList, unique: bool = False) -> CardList:
         '''
         Merges two or more card lists into a single one.
 
@@ -1372,8 +1400,13 @@ class CardList(UserList):
 
     def min_cost(self) -> int:
         '''
-        Computes the minimum card cost within this card list. Cards with
-        variable or no cost are ignored.
+        Computes the minimum card cost within this card list.
+
+        Tip: Warning
+          Cards with variable or no cost are ignored.
+
+        Returns:
+          The minimum card cost within the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.cost for x in self.data if isinstance(x.cost, int)]
@@ -1384,8 +1417,13 @@ class CardList(UserList):
 
     def min_defense(self) -> int:
         '''
-        Computes the minimum card defense within this card list. Cards with
-        variable or no defense are ignored.
+        Computes the minimum card defense within this card list.
+
+        Tip: Warning
+          Cards with variable or no defense are ignored.
+
+        Returns:
+          The minimum card defense value within the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.defense for x in self.data if isinstance(x.defense, int)]
@@ -1396,8 +1434,13 @@ class CardList(UserList):
 
     def min_health(self) -> int:
         '''
-        Computes the minimum card health within this card list. Cards with
-        variable or no health are ignored.
+        Computes the minimum card health within this card list.
+
+        Tip: Warning
+          Cards with variable or no health are ignored.
+
+        Returns:
+          The minimum card health in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.health for x in self.data if isinstance(x.health, int)]
@@ -1408,8 +1451,13 @@ class CardList(UserList):
 
     def min_intelligence(self) -> int:
         '''
-        Computes the minimum card intelligence within this card list. Cards with
-        variable or no intelligence are ignored.
+        Computes the minimum card intelligence within this card list.
+
+        Tip: Warning
+          Cards with variable or no intelligence are ignored.
+
+        Returns:
+          The minimum intelligence in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
@@ -1420,8 +1468,13 @@ class CardList(UserList):
 
     def min_pitch(self) -> int:
         '''
-        Computes the minimum card pitch within this card list. Cards with
-        variable or no pitch are ignored.
+        Computes the minimum card pitch within this card list.
+
+        Tip: Warning
+          Cards with variable or no pitch are ignored.
+
+        Returns:
+          The minimum pitch value in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
@@ -1432,8 +1485,13 @@ class CardList(UserList):
 
     def min_power(self) -> int:
         '''
-        Computes the minimum card power within this card list. Cards with
-        variable or no power are ignored.
+        Computes the minimum card power within this card list.
+
+        Tip: Warning
+          Cards with variable or no power are ignored.
+
+        Returns:
+          The minimum attack power in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.power for x in self.data if isinstance(x.power, int)]
@@ -1620,6 +1678,10 @@ class CardList(UserList):
           See the source of this method to get an idea of what the output `dict`
           looks like.
 
+        Tip: Warning
+          Cards with variable or no value for certain fields will be excluded
+          from that field's calculations.
+
         Args:
           precision: Specifies the number of decimal places any `float` result will be rounded to.
 
@@ -1670,11 +1732,16 @@ class CardList(UserList):
 
     def stdev_cost(self, precision: int = 2) -> float:
         '''
-        Computes the standard deviation of card cost within this card list. Cards with
-        variable or no cost are ignored.
+        Computes the standard deviation of card cost within this card list.
+
+        Tip: Warning
+          Cards with variable or no cost are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The standard deviation of card cost in the list.
         '''
         if len(self.data) < 2: return 0.0
         array = [x.cost for x in self.data if isinstance(x.cost, int)]
@@ -1685,11 +1752,16 @@ class CardList(UserList):
 
     def stdev_defense(self, precision: int = 2) -> float:
         '''
-        Computes the standard deviation of card defense within this card list. Cards with
-        variable or no defense are ignored.
+        Computes the standard deviation of card defense within this card list.
+
+        Tip: Warning
+          Cards with variable or no defense are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The standard deviation of card defense in the list.
         '''
         if len(self.data) < 2: return 0.0
         array = [x.defense for x in self.data if isinstance(x.defense, int)]
@@ -1700,11 +1772,16 @@ class CardList(UserList):
 
     def stdev_health(self, precision: int = 2) -> float:
         '''
-        Computes the standard deviation of card health within this card list. Cards with
-        variable or no health are ignored.
+        Computes the standard deviation of card health within this card list.
+
+        Tip: Warning
+          Cards with variable or no health are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The standard deviation of health in the list.
         '''
         if len(self.data) < 2: return 0.0
         array = [x.health for x in self.data if isinstance(x.health, int)]
@@ -1715,11 +1792,16 @@ class CardList(UserList):
 
     def stdev_intelligence(self, precision: int = 2) -> float:
         '''
-        Computes the standard deviation of card intelligence within this card list. Cards with
-        variable or no intelligence are ignored.
+        Computes the standard deviation of card intelligence within this card list.
+
+        Tip: Warning
+          Cards with variable or no intelligence are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The standard deviation of intelligence in the list.
         '''
         if len(self.data) < 2: return 0.0
         array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
@@ -1730,11 +1812,16 @@ class CardList(UserList):
 
     def stdev_pitch(self, precision: int = 2) -> float:
         '''
-        Computes the standard deviation of card pitch within this card list. Cards with
-        variable or no pitch are ignored.
+        Computes the standard deviation of card pitch within this card list.
+
+        Tip: Warning
+          Cards with variable or no pitch are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The standard deviation of pitch value in the list.
         '''
         if len(self.data) < 2: return 0.0
         array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
@@ -1745,11 +1832,16 @@ class CardList(UserList):
 
     def stdev_power(self, precision: int = 2) -> float:
         '''
-        Computes the standard deviation of card power within this card list. Cards with
-        variable or no power are ignored.
+        Computes the standard deviation of card power within this card list.
+
+        Tip: Warning
+          Cards with variable or no power are ignored.
 
         Args:
           precision: Specifies the number of decimal places the result will be rounded to.
+
+        Returns:
+          The standard deviation of attack power in the list.
         '''
         if len(self.data) < 2: return 0.0
         array = [x.power for x in self.data if isinstance(x.power, int)]
@@ -1780,13 +1872,21 @@ class CardList(UserList):
     def tokens(self) -> CardList:
         '''
         Returns the set of all token cards in this card list.
+
+        Returns:
+          The set of token cards in the list.
         '''
         return CardList([card for card in self.data if card.is_token()])
 
     def total_cost(self) -> int:
         '''
-        Computes the total card cost within this card list. Cards with
-        variable or no cost are ignored.
+        Computes the total card cost within this card list.
+
+        Tip: Warning
+          Cards with variable or no cost are ignored.
+
+        Returns:
+          The total cost of all cards in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.cost for x in self.data if isinstance(x.cost, int)]
@@ -1797,8 +1897,13 @@ class CardList(UserList):
 
     def total_defense(self) -> int:
         '''
-        Computes the total card defense within this card list. Cards with
-        variable or no defense are ignored.
+        Computes the total card defense within this card list.
+
+        Tip: Warning
+          Cards with variable or no defense are ignored.
+
+        Returns:
+          The total defense of all cards in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.defense for x in self.data if isinstance(x.defense, int)]
@@ -1809,8 +1914,13 @@ class CardList(UserList):
 
     def total_health(self) -> int:
         '''
-        Computes the total card health within this card list. Cards with
-        variable or no health are ignored.
+        Computes the total card health within this card list.
+
+        Tip: Warning
+          Cards with variable or no health are ignored.
+
+        Returns:
+          The total health of all cards in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.health for x in self.data if isinstance(x.health, int)]
@@ -1821,8 +1931,13 @@ class CardList(UserList):
 
     def total_intelligence(self) -> int:
         '''
-        Computes the total card intelligence within this card list. Cards with
-        variable or no intelligence are ignored.
+        Computes the total card intelligence within this card list.
+
+        Tip: Warning
+          Cards with variable or no intelligence are ignored.
+
+        Returns:
+          The total intelligence of all cards in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.intelligence for x in self.data if isinstance(x.intelligence, int)]
@@ -1833,8 +1948,13 @@ class CardList(UserList):
 
     def total_pitch(self) -> int:
         '''
-        Computes the total card pitch within this card list. Cards with
-        variable or no pitch are ignored.
+        Computes the total card pitch within this card list.
+
+        Tip: Warning
+          Cards with variable or no pitch are ignored.
+
+        Returns:
+          The total pitch value of all cards in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.pitch for x in self.data if isinstance(x.pitch, int)]
@@ -1845,8 +1965,13 @@ class CardList(UserList):
 
     def total_power(self) -> int:
         '''
-        Computes the total card power within this card list. Cards with
-        variable or no power are ignored.
+        Computes the total card power within this card list.
+
+        Tip: Warning
+          Cards with variable or no power are ignored.
+
+        Returns:
+          The total attack power of all cards in the list.
         '''
         if len(self.data) < 1: return 0
         array = [x.power for x in self.data if isinstance(x.power, int)]
@@ -1858,6 +1983,9 @@ class CardList(UserList):
     def types(self) -> list[str]:
         '''
         Returns the set of all card types in this card list.
+
+        Returns:
+          The unique `list` of all card types in the list.
         '''
         res = []
         for card in self.data:
@@ -1867,11 +1995,17 @@ class CardList(UserList):
     def type_texts(self) -> list[str]:
         '''
         Returns the set of all type texts in this card list.
+
+        Returns:
+          The unique `list` of all card types in the list.
         '''
         return list(set([card.type_text for card in self.data]))
 
     def weapons(self) -> CardList:
         '''
         Returns the set of all weapon cards in this card list.
+
+        Returns:
+          The set of all weapon cards in the list.
         '''
         return CardList([card for card in self.data if card.is_weapon()])
