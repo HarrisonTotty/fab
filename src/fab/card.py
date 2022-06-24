@@ -12,7 +12,7 @@ import json
 import os
 
 from collections import UserList
-from IPython.display import display, Image
+from IPython.display import display, Image, Markdown
 from statistics import mean, median, stdev
 from typing import Any, Optional
 from unidecode import unidecode
@@ -280,6 +280,46 @@ class Card:
         '''
         return list(self.__dict__.keys())
 
+    def render(self, heading_level: str = '###') -> Any:
+        '''
+        Renders this card into a markdown representation.
+
+        Args:
+          heading_level: Specifies the initial heading level of the card.
+
+        Returns:
+          The IPython-rendered markdown output.
+        '''
+        mdstr = f'{heading_level} {self.name} _({self.type_text})_\n\n'
+        if not self.body is None:
+            mdstr += f'{self.body}\n\n'
+        if not self.flavor_text is None:
+            mdstr += f'{self.flavor_text}\n\n'
+        mdstr += '| Attribute | Value |\n|---|---|\n'
+        if not self.power is None:
+            mdstr += f'| Attack Power | {self.power} |\n'
+        if not self.defense is None:
+            mdstr += f'| Defense | {self.defense} |\n'
+        if not self.health is None:
+            mdstr += f'| Health | {self.health} |\n'
+        if not self.intelligence is None:
+            mdstr += f'| Intelligence | {self.intelligence} |\n'
+        if not self.pitch is None:
+            mdstr += f'| Pitch Value | {self.pitch} |\n'
+        if not self.cost is None:
+            mdstr += f'| Resource Cost | {self.cost} |\n'
+        return display(Markdown(mdstr))
+
+    def render_body(self) -> Any:
+        '''
+        Renders the body text of this card as markdown output.
+
+        Returns:
+          The IPython-rendered markdown output.
+        '''
+        if self.body is None: return 'Specified card does not have any body text.'
+        return display(Markdown(self.body))
+
     def to_dict(self) -> dict[str, Any]:
         '''
         Converts this card into a raw python dictionary.
@@ -359,7 +399,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             if isinstance(card.cost, int): res.append(card.cost)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def counts(self) -> dict[str, int]:
         '''
@@ -400,7 +440,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             if isinstance(card.defense, int): res.append(card.defense)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     @staticmethod
     def empty() -> CardList:
@@ -800,7 +840,7 @@ class CardList(UserList):
         Returns:
           A unique `list` of all full card names within the list of cards.
         '''
-        return list(set([card.full_name for card in self.data]))
+        return sorted(list(set([card.full_name for card in self.data])))
 
     def grants(self) -> list[str]:
         '''
@@ -812,7 +852,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             res.extend(card.grants)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def group(self, by: str = 'type_text') -> dict[int | str, CardList]:
         '''
@@ -823,6 +863,9 @@ class CardList(UserList):
 
           * `str`: `full_name`, `grants`, `keyword`, `name`, `rarity`, `set`, `type`, `type_text`
           * `int`: `cost`, `defense`, `health`, `intelligence`, `pitch`, `power`
+
+          Certain values of `by` accept their plural forms, such as `rarity` or
+          `rarities`.
 
         Tip: Warning
           When grouping by `cost`, `defense`, `health`, `intelligence`, `pitch`,
@@ -844,19 +887,19 @@ class CardList(UserList):
         elif by == 'grants':
             for grants in self.grants():
                 res[grants] = CardList([card for card in self if grants in card.grants]).sort()
-        elif by == 'keyword':
+        elif by in ['keyword', 'keywords']:
             for keyword in self.keywords():
                 res[keyword] = CardList([card for card in self if keyword in card.keywords]).sort()
         elif by == 'name':
             for name in self.names():
                 res[name] = CardList([card for card in self if card.name == name]).sort()
-        elif by == 'rarity':
+        elif by in ['rarity', 'rarities']:
             for rarity in self.rarities():
                 res[rarity] = CardList([card for card in self if rarity in card.rarities]).sort()
-        elif by == 'set':
+        elif by in ['set', 'sets']:
             for card_set in self.sets():
                 res[card_set] = CardList([card for card in self if card_set in card.sets]).sort()
-        elif by == 'type':
+        elif by in ['type', 'types']:
             for type_val in self.types():
                 res[type_val] = CardList([card for card in self if type_val in card.types]).sort()
         elif by == 'type_text':
@@ -897,10 +940,10 @@ class CardList(UserList):
         res = []
         for card in self.data:
             if isinstance(card.health, int): res.append(card.health)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     @staticmethod
-    def __hero_filter_related(hero: Card, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
+    def _hero_filter_related(hero: Card, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
         '''
         A helper function for filtering cards based on a hero.
 
@@ -957,7 +1000,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             res.extend(card.identifiers)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def instants(self) -> CardList:
         '''
@@ -983,7 +1026,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             if isinstance(card.intelligence, int): res.append(card.intelligence)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def item_cards(self) -> CardList:
         '''
@@ -1004,7 +1047,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             res.extend(card.keywords)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     @staticmethod
     def load(file_path: str, set_catalog: bool = False) -> CardList:
@@ -1507,7 +1550,7 @@ class CardList(UserList):
         Returns:
           The unique `list` of card names within the list of cards.
         '''
-        return list(set([card.name for card in self.data]))
+        return sorted(list(set([card.name for card in self.data])))
 
     def pitch_cost_difference(self) -> int:
         '''
@@ -1540,7 +1583,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             if isinstance(card.pitch, int): res.append(card.pitch)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def power_defense_difference(self) -> int:
         '''
@@ -1573,7 +1616,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             if isinstance(card.power, int): res.append(card.power)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def save(self, file_path: str):
         '''
@@ -1646,7 +1689,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             res.extend(card.rarities)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def reactions(self) -> CardList:
         '''
@@ -1668,7 +1711,7 @@ class CardList(UserList):
         card_sets = []
         for card in self.data:
             card_sets.extend(card.sets)
-        return list(set(card_sets))
+        return sorted(list(set(card_sets)))
 
     def statistics(self, precision: int = 2) -> dict[str, int | float]:
         '''
@@ -1990,7 +2033,7 @@ class CardList(UserList):
         res = []
         for card in self.data:
             res.extend(card.types)
-        return list(set(res))
+        return sorted(list(set(res)))
 
     def type_texts(self) -> list[str]:
         '''
@@ -1999,7 +2042,7 @@ class CardList(UserList):
         Returns:
           The unique `list` of all card types in the list.
         '''
-        return list(set([card.type_text for card in self.data]))
+        return sorted(list(set([card.type_text for card in self.data])))
 
     def weapons(self) -> CardList:
         '''

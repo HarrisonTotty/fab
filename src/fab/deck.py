@@ -109,7 +109,7 @@ class Deck:
         Returns:
           A subset of the specified card list that work with the deck's hero.
         '''
-        return CardList.__hero_filter_related(
+        return CardList._hero_filter_related(
             hero            = self.hero,
             cards           = cards,
             catalog         = catalog,

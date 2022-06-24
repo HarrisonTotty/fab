@@ -12,6 +12,8 @@ nav:
       - 'CardSet': card-sets.md
       - 'CardSetCollection': card-set-collections.md
       - 'Deck': decks.md
+      - 'graphics': graphics.md
+      - 'meta': meta.md
 plugins:
   - mkdocstrings:
       default_handler: python

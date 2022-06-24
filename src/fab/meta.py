@@ -1,5 +1,5 @@
 '''
-Contains various useful meta information.
+Contains useful meta information.
 '''
 
 BLITZ_DECK_PRISM_DECKLIST = {
@@ -35,7 +35,37 @@ BLITZ_DECK_PRISM_DECKLIST = {
     'Wartune Herald (3)': 2
 }
 
-CLASS_TYPES = [
+DIVINE_TYPES: list[str] = ['Light', 'Shadow']
+'''
+Contains divine card types, currently only `Light` and `Shadow`.
+'''
+
+ELEMENTAL_TYPES: list[str] = [
+    'Lightning',
+    'Ice',
+    'Earth'
+    # 'Fire' # Technically doesn't exist, but likely to.
+]
+'''
+Contains elemental card types, such as `Earth` or `Ice`.
+
+Note:
+  `Light` and `Shadow` are _not_ considered elemental types, see `DIVINE_TYPES`
+  instead.
+'''
+
+EQUIPMENT_SLOT_TYPES: list[str] = [
+    'Arms',
+    'Chest',
+    'Head',
+    'Legs',
+    'Off-Hand'
+]
+'''
+Contains types associated with equipment slots, such as `Head`.
+'''
+
+CLASS_TYPES: list[str] = [
     'Bard',
     'Brute',
     'Guardian',
@@ -49,3 +79,26 @@ CLASS_TYPES = [
     'Warrior',
     'Wizard'
 ]
+'''
+Contains card types associated with the various hero classes, such as `Ninja`.
+'''
+
+WEAPON_TYPES: list[str] = [
+    'Axe',
+    'Bow',
+    'Claw',
+    'Club',
+    'Dagger',
+    'Flail',
+    'Gun',
+    'Hammer',
+    'Orb',
+    'Pistol',
+    'Scepter',
+    'Scythe',
+    'Staff',
+    'Sword'
+]
+'''
+Contains card types associated with the subtypes of weapons, such as `Sword`.
+'''
