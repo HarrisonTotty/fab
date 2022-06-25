@@ -15,10 +15,13 @@ import os
 from collections import UserDict
 from typing import Any, Optional
 
+from IPython.utils.text import indent
+
 from .card import Card
 
 CARD_SET_CATALOG: Optional[CardSetCollection] = None
 DATE_FORMAT = '%Y/%m/%d'
+JSON_INDENT: Optional[int] = 2
 
 @dataclasses.dataclass
 class CardSet:
@@ -129,7 +132,7 @@ class CardSet:
         Returns:
           The JSON string representation of the set.
         '''
-        return json.dumps(self.to_datestr_dict())
+        return json.dumps(self.to_datestr_dict(), indent=JSON_INDENT)
 
 
 class CardSetCollection(UserDict):
@@ -314,4 +317,4 @@ class CardSetCollection(UserDict):
         new_items = {}
         for k, v in self.data.items():
             new_items[k] = v.to_datestr_dict()
-        return json.dumps(new_items)
+        return json.dumps(new_items, indent=JSON_INDENT)

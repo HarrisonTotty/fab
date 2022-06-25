@@ -12,17 +12,19 @@ from typing import Any, Optional
 
 from .card import Card, CardList
 
-VALID_FORMATS = [
+EXCLUDE_TYPES: list[str] = [
+    'Adult',
+    'Hero',
+    'Young'
+]
+
+JSON_INDENT: Optional[int] = 2
+
+VALID_FORMATS: list[str] = [
     'Blitz',
     'Classic Constructed',
     'Commoner',
     'Ulimate Pit Fight'
-]
-
-EXCLUDE_TYPES = [
-    'Adult',
-    'Hero',
-    'Young'
 ]
 
 @dataclasses.dataclass
@@ -311,7 +313,7 @@ class Deck:
         Returns:
           The JSON string representation of the deck.
         '''
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), indent=JSON_INDENT)
 
     def valid_types(self, include_generic: bool = True) -> list[str]:
         '''

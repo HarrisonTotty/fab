@@ -19,6 +19,8 @@ from unidecode import unidecode
 
 CARD_CATALOG: Optional[CardList] = None
 
+JSON_INDENT: Optional[int] = 2
+
 RARITY_VALUE: dict[str, int] = {
     'P': 0,
     'T': 1,
@@ -29,7 +31,6 @@ RARITY_VALUE: dict[str, int] = {
     'L': 6,
     'F': 7,
 }
-
 
 @dataclasses.dataclass
 class Card:
@@ -336,7 +337,7 @@ class Card:
         Returns:
           A JSON string representation of the card.
         '''
-        return json.dumps(self.__dict__)
+        return json.dumps(self.__dict__, indent=JSON_INDENT)
 
 
 class CardList(UserList):
@@ -1900,7 +1901,7 @@ class CardList(UserList):
         Returns:
           A JSON string representation of the list of cards.
         '''
-        return json.dumps(self.to_list())
+        return json.dumps(self.to_list(), indent=JSON_INDENT)
 
     def to_list(self) -> list[dict[str, Any]]:
         '''
