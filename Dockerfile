@@ -39,7 +39,6 @@ WORKDIR /project
 
 RUN poetry install \
     --no-ansi \
-    --no-dev \
     --no-interaction \
     --no-root \
     && poetry build \
@@ -51,8 +50,7 @@ FROM build as test
 
 ENV MYPY_CACHE_DIR=/tmp/mypy-cache
 
-RUN poetry install --no-ansi --no-interaction --no-root && \
-    mypy --install-types --non-interactive && \
+RUN mypy --install-types --non-interactive && \
     pytest
 
 
