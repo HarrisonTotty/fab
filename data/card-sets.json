@@ -1,1 +1,231 @@
-{"FAB": {"editions": ["N"], "identifier": "FAB", "name": "Promos", "release_date": null}, "HER": {"editions": ["N"], "identifier": "HER", "name": "Hero Card Promos", "release_date": null}, "LGS": {"editions": ["N"], "identifier": "LGS", "name": "Local Game Store Promos", "release_date": null}, "LSS": {"editions": ["N"], "identifier": "LSS", "name": "LSS Promos", "release_date": null}, "OXO": {"editions": ["N"], "identifier": "OXO", "name": "Slingshot Underground Promos", "release_date": null}, "XXX": {"editions": ["N"], "identifier": "XXX", "name": "OP Event Tokens", "release_date": null}, "BOL": {"editions": ["N"], "identifier": "BOL", "name": "Boltyn Blitz Deck", "release_date": "2021/05/07"}, "BRI": {"editions": ["N"], "identifier": "BRI", "name": "Briar Blitz Deck", "release_date": "2021/11/24"}, "BVO": {"editions": ["N"], "identifier": "BVO", "name": "Bravo Hero Deck", "release_date": "2019/10/11"}, "CHN": {"editions": ["N"], "identifier": "CHN", "name": "Chane Blitz Deck", "release_date": "2021/05/07"}, "IRA": {"editions": ["N"], "identifier": "IRA", "name": "Ira Welcome Deck", "release_date": "2019/08/31"}, "KSU": {"editions": ["N"], "identifier": "KSU", "name": "Katsu Hero Deck", "release_date": "2019/10/11"}, "LEV": {"editions": ["N"], "identifier": "LEV", "name": "Levia Blitz Deck", "release_date": "2021/05/07"}, "LXI": {"editions": ["N"], "identifier": "LXI", "name": "Lexi Blitz Deck", "release_date": "2021/11/24"}, "OLD": {"editions": ["N"], "identifier": "OLD", "name": "Oldhim Blitz Deck", "release_date": "2021/11/24"}, "PSM": {"editions": ["N"], "identifier": "PSM", "name": "Prism Blitz Deck", "release_date": "2021/05/07"}, "RNR": {"editions": ["N"], "identifier": "RNR", "name": "Rhinar Hero Deck", "release_date": "2019/10/11"}, "TEA": {"editions": ["N"], "identifier": "TEA", "name": "Dorinthea Hero Deck", "release_date": "2019/10/11"}, "DVR": {"editions": ["N"], "identifier": "DVR", "name": "Classic Battles: Rhinar vs Dorinthea \u2013 Dorinthea", "release_date": "2022/05/27"}, "RVD": {"editions": ["N"], "identifier": "RVD", "name": "Classic Battles: Rhinar vs Dorinthea \u2013 Rhinar", "release_date": "2022/05/27"}, "1HP": {"editions": ["N"], "identifier": "1HP", "name": "History Pack 1", "release_date": "2022/05/06"}, "WTR": {"editions": ["A", "U"], "identifier": "WTR", "name": "Welcome to Rathe", "release_date": "2019/10/11"}, "ARC": {"editions": ["F", "U"], "identifier": "ARC", "name": "Arcane Rising", "release_date": "2020/03/27"}, "CRU": {"editions": ["F", "U"], "identifier": "CRU", "name": "Crucible of War", "release_date": "2020/08/28"}, "MON": {"editions": ["F", "U"], "identifier": "MON", "name": "Monarch", "release_date": "2021/05/07"}, "ELE": {"editions": ["F", "U"], "identifier": "ELE", "name": "Tales of Aria", "release_date": "2021/09/24"}, "EVR": {"editions": ["F"], "identifier": "EVR", "name": "Everfest", "release_date": "2022/02/04"}, "UPR": {"editions": ["N"], "identifier": "UPR", "name": "Uprising", "release_date": "2022/06/24"}}
+{
+  "FAB": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "FAB",
+    "name": "Promos",
+    "release_date": null
+  },
+  "HER": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "HER",
+    "name": "Hero Card Promos",
+    "release_date": null
+  },
+  "LGS": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "LGS",
+    "name": "Local Game Store Promos",
+    "release_date": null
+  },
+  "LSS": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "LSS",
+    "name": "LSS Promos",
+    "release_date": null
+  },
+  "OXO": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "OXO",
+    "name": "Slingshot Underground Promos",
+    "release_date": null
+  },
+  "XXX": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "XXX",
+    "name": "OP Event Tokens",
+    "release_date": null
+  },
+  "BOL": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "BOL",
+    "name": "Boltyn Blitz Deck",
+    "release_date": "2021/05/07"
+  },
+  "BRI": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "BRI",
+    "name": "Briar Blitz Deck",
+    "release_date": "2021/11/24"
+  },
+  "BVO": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "BVO",
+    "name": "Bravo Hero Deck",
+    "release_date": "2019/10/11"
+  },
+  "CHN": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "CHN",
+    "name": "Chane Blitz Deck",
+    "release_date": "2021/05/07"
+  },
+  "IRA": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "IRA",
+    "name": "Ira Welcome Deck",
+    "release_date": "2019/08/31"
+  },
+  "KSU": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "KSU",
+    "name": "Katsu Hero Deck",
+    "release_date": "2019/10/11"
+  },
+  "LEV": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "LEV",
+    "name": "Levia Blitz Deck",
+    "release_date": "2021/05/07"
+  },
+  "LXI": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "LXI",
+    "name": "Lexi Blitz Deck",
+    "release_date": "2021/11/24"
+  },
+  "OLD": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "OLD",
+    "name": "Oldhim Blitz Deck",
+    "release_date": "2021/11/24"
+  },
+  "PSM": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "PSM",
+    "name": "Prism Blitz Deck",
+    "release_date": "2021/05/07"
+  },
+  "RNR": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "RNR",
+    "name": "Rhinar Hero Deck",
+    "release_date": "2019/10/11"
+  },
+  "TEA": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "TEA",
+    "name": "Dorinthea Hero Deck",
+    "release_date": "2019/10/11"
+  },
+  "DVR": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "DVR",
+    "name": "Classic Battles: Rhinar vs Dorinthea \u2013 Dorinthea",
+    "release_date": "2022/05/27"
+  },
+  "RVD": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "RVD",
+    "name": "Classic Battles: Rhinar vs Dorinthea \u2013 Rhinar",
+    "release_date": "2022/05/27"
+  },
+  "1HP": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "1HP",
+    "name": "History Pack 1",
+    "release_date": "2022/05/06"
+  },
+  "WTR": {
+    "editions": [
+      "A",
+      "U"
+    ],
+    "identifier": "WTR",
+    "name": "Welcome to Rathe",
+    "release_date": "2019/10/11"
+  },
+  "ARC": {
+    "editions": [
+      "F",
+      "U"
+    ],
+    "identifier": "ARC",
+    "name": "Arcane Rising",
+    "release_date": "2020/03/27"
+  },
+  "CRU": {
+    "editions": [
+      "F",
+      "U"
+    ],
+    "identifier": "CRU",
+    "name": "Crucible of War",
+    "release_date": "2020/08/28"
+  },
+  "MON": {
+    "editions": [
+      "F",
+      "U"
+    ],
+    "identifier": "MON",
+    "name": "Monarch",
+    "release_date": "2021/05/07"
+  },
+  "ELE": {
+    "editions": [
+      "F",
+      "U"
+    ],
+    "identifier": "ELE",
+    "name": "Tales of Aria",
+    "release_date": "2021/09/24"
+  },
+  "EVR": {
+    "editions": [
+      "F"
+    ],
+    "identifier": "EVR",
+    "name": "Everfest",
+    "release_date": "2022/02/04"
+  },
+  "UPR": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "UPR",
+    "name": "Uprising",
+    "release_date": "2022/06/24"
+  }
+}
