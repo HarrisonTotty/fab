@@ -54,7 +54,7 @@ library treats all reprints, alternative artworks, and foiling under the same
 | `grants`       | `list[str]`             | A list of key words this card grants to _other cards_.                         |
 | `health`       | `int` or `None`         | The health value of this card (for heroes and minions).                        |
 | `identifiers`  | `list[str]`             | A list of card identifiers, such as `RNR012`.                                  |
-| `image_urls`   | `dict[str, str]`        | A dictionary of card image URLs, by card identifier.                           |
+| `image_urls`   | `list[str]`             | A list of card image URLs.                                                     |
 | `intelligence` | `int` or `None`         | The intelligence value of the card (for heroes).                               |
 | `keywords`     | `list[str]`             | A list of key words associated with this card, such as `Dominate`.             |
 | `name`         | `str`                   | The name of this card, excluding pitch value.                                  |
@@ -84,7 +84,7 @@ card = Card(
   grants       = [],
   health       = None,
   identifiers  = ['TEA024', 'WTR143'],
-  image_urls   = {'TEA024 - N': 'https://...', 'WTR143 - A': 'https://...', 'WTR143 - U': 'https://...'},
+  image_urls   = ['https://...', 'https://...', 'https://...'],
   intelligence = None,
   keywords     = ['Go again'],
   name         = 'Sharpen Steel',

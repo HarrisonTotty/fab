@@ -46,7 +46,7 @@ class Card:
       grants: A list of keywords this card grants to other cards.
       health: The health value of the card.
       identifiers: The list of card identifiers, such as `RNR012`.
-      image_urls: A dictionary of card image URLs, by card identifier.
+      image_urls: A list of card image URLs.
       intelligence: The intelligence value of the card.
       keywords: A list of keywords associated with the card, such as `Dominate`.
       name: The name of the card, excluding pitch value.
@@ -67,7 +67,7 @@ class Card:
     grants: list[str]
     health: Optional[int]
     identifiers: list[str]
-    image_urls: dict[str, str]
+    image_urls: list[str]
     intelligence: Optional[int]
     keywords: list[str]
     name: str
@@ -147,22 +147,19 @@ class Card:
         '''
         return Card(**json.loads(jsonstr))
 
-    def image(self, identifier: Optional[str] = None) -> Any:
+    def image(self, index: int = -1) -> Any:
         '''
         Display an image of this card, optionally providing an alternative
-        identifier to use.
+        index to use.
 
         Args:
-          identifier: The target card identifier to fetch image data for.
+          index: The target `image_urls` index to fetch image data for.
 
         Returns:
           The image representation of the card.
         '''
         if not self.image_urls: return 'No images available'
-        if isinstance(identifier, str):
-            return display(Image(self.image_urls[identifier]))
-        else:
-            return display(Image(self.image_urls[list(self.image_urls.keys())[-1]]))
+        return display(Image(self.image_urls[index]))
 
     def is_action(self) -> bool:
         '''
@@ -777,18 +774,19 @@ class CardList(UserList):
                 return int(inputstr)
             else:
                 return inputstr
-        def image_url_parser(inputstr: str) -> dict[str, str]:
+        def image_url_parser(inputstr: str) -> list[str]:
             '''
-            A helper function for parsing our the image URL dictionary.
+            A helper function for parsing our the image URL list.
             '''
-            if not inputstr: return {}
-            result = {}
+            if not inputstr: return []
+            result = []
             if ',' in inputstr:
                 for substrings in [x.split(' - ', 1) for x in unidecode(inputstr).split(',') if ' - ' in x]:
-                    result[substrings[1].strip()] = substrings[0].strip()
+                    url = substrings[0].strip()
+                    result.append(url)
             elif ' - ' in inputstr:
-                substring = unidecode(inputstr).split(' - ', 1)
-                result[substring[1].strip()] = substring[0].strip()
+                url = unidecode(inputstr).split(' - ', 1)[0].strip()
+                result.append(url)
             return result
         cards = []
         for entry in csv_data:

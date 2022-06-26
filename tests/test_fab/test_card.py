@@ -46,7 +46,7 @@ def test_card_dict_rep():
         'grants': [],
         'health': None,
         'identifiers': ['1HP050', 'WTR043'],
-        'image_urls': {'1HP050 - N': 'https://storage.googleapis.com/fabmaster/media/images/1HP050.width-450.png', 'WTR043 - A': 'https://storage.googleapis.com/fabmaster/media/images/WTR_43.width-450.png', 'WTR043 - U': 'https://storage.googleapis.com/fabmaster/media/images/U-WTR43.width-450.png'},
+        'image_urls': ['https://storage.googleapis.com/fabmaster/media/images/1HP050.width-450.png', 'https://storage.googleapis.com/fabmaster/media/images/WTR_43.width-450.png', 'https://storage.googleapis.com/fabmaster/media/images/U-WTR43.width-450.png'],
         'intelligence': None,
         'keywords': ['Bravo Specialization', 'Crush'],
         'name': 'Crippling Crush',
