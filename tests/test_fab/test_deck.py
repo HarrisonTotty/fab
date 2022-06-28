@@ -19,7 +19,7 @@ def test_deck_rep():
     assert len(D1)      == 2
     assert D1.to_dict() == {
         'cards': [C1.to_dict(), C2.to_dict()],
-        'format': 'Blitz',
+        'format': 'B',
         'hero': C3.to_dict(),
         'inventory': [],
         'name': 'Test',

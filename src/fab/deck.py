@@ -28,7 +28,7 @@ class Deck:
 
     Attributes:
       cards: The "main" part of the deck from which one draws cards.
-      format: The game format associated with the deck (see `meta.GAME_FORMATS`).
+      format: The game format code associated with the deck (see `meta.GAME_FORMATS`).
       hero: The hero card associated with the deck.
       inventory: The list of weapon/equipment cards associated with the deck (not including items).
       name: An arbitrary name for the deck.
@@ -38,7 +38,7 @@ class Deck:
     name: str
     hero: Card
     cards: CardList = CardList.empty()
-    format: str = 'Blitz'
+    format: str = 'B'
     inventory: CardList = CardList.empty()
     tokens: CardList = CardList.empty()
 
@@ -113,7 +113,7 @@ class Deck:
         )
 
     @staticmethod
-    def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'Blitz') -> Deck:
+    def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'B') -> Deck:
         '''
         Constructs a deck from the given deck list dictionary, where keys
         correspond to the full name of a card and values are their counts.
@@ -201,22 +201,22 @@ class Deck:
             for card in self.all_cards(include_tokens=True):
                 if card == self.hero: continue
                 if not any(t in valid_types for t in card.types): return (False, f'Common: Card "{card.full_name}" is not one of the following types: {valid_types}')
-        if self.format == 'Blitz':
+        if self.format == 'B':
             if len(self.cards) != 40: return (False, 'Blitz: Main deck may only contain 40 cards.')
             if len(self.inventory) > 11: return (False, 'Blitz: Inventory deck may not contain more than 11 cards.')
             if not 'Young' in self.hero.types: return (False, 'Blitz: Deck must use a "young" hero.')
             if any(v > 2 for v in all_cards.counts().values()): return (False, 'Blitz: Only up to two copies of each unique card are allowed.')
-        elif self.format == 'Classic Constructed':
+        elif self.format == 'CC':
             if len(self) > 80: return (False, 'Classic Constructed: Deck may not contain more than 80 cards (including inventory).')
             if len(self.cards) < 60: return (False, 'Classic Constructed: Main Deck must contain at least 60 cards (excluding inventory).')
             if any(v > 3 for v in all_cards.counts().values()): return (False, 'Classic Constructed: Only up to three copies of each unique card are allowed.')
-        elif self.format == 'Commoner':
+        elif self.format == 'C':
             if len(self.cards) != 40: return (False, 'Commoner: Main deck may only contain 40 cards.')
             if len(self.inventory) > 11: return (False, 'Commoner: Inventory deck may not contain more than 11 cards.')
             if not 'Young' in self.hero.types: return (False, 'Commoner: Deck must use a "young" hero.')
             if any(v > 2 for v in all_cards.counts().values()): return (False, 'Commoner: Only up to two copies of each unique card are allowed.')
             if any(not 'C' in card.rarities for card in self.cards): return (False, 'Commoner: Main deck may only contain "Common" cards.')
-        elif self.format == 'Ultimate Pit Fight':
+        elif self.format == 'UPF':
             return (True, 'Ultimate Pit Fight: Warning, UPF has not been implemented, only common checks have been validated.')
         return (True, None)
 

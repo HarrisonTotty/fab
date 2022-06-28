@@ -1,43 +1,20 @@
 '''
-Contains useful meta information.
+Contains useful meta information in the form of constants.
 '''
-
-BLITZ_DECK_PRISM_DECKLIST = {
-    'Prism': 1,
-    'Dream Weavers': 1,
-    'Enigma Chimera (2)': 2,
-    'Enigma Chimera (3)': 2,
-    'Halo of Illumination': 1,
-    'Heartened Cross Strap': 1,
-    'Herald of Judgment (2)': 1,
-    'Herald of Protection (1)': 2,
-    'Herald of Protection (3)': 2,
-    'Herald of Ravages (1)': 2,
-    'Herald of Ravages (3)': 2,
-    'Herald of Rebirth (1)': 2,
-    'Herald of Rebirth (3)': 2,
-    'Herald of Tenacity (1)': 2,
-    'Herald of Tenacity (3)': 2,
-    'Illuminate (1)': 2,
-    'Illuminate (3)': 2,
-    'Iris of Reality': 1,
-    'Merciful Retribution (2)': 1,
-    'Ode to Wrath (2)': 1,
-    'Phantasmify (1)': 1,
-    'Prismatic Shield (1)': 2,
-    'Prismatic Shield (3)': 1,
-    'Rising Solartide (2)': 2,
-    'Seek Enlightenment (1)': 2,
-    'Spears of Surreality (3)': 2,
-    'Spell Fray Leggings': 1,
-    'The Librarian': 1,
-    'Wartune Herald (1)': 2,
-    'Wartune Herald (3)': 2
-}
 
 DIVINE_TYPES: list[str] = ['Light', 'Shadow']
 '''
 Contains divine card types, currently only `Light` and `Shadow`.
+'''
+
+EDITIONS: dict[str, str] = {
+    'A': 'Alpha',
+    'F': 'First',
+    'N': 'None',
+    'U': 'Unlimited'
+}
+'''
+Contains a mapping of card set edition codes to their full name.
 '''
 
 ELEMENTAL_TYPES: list[str] = [
@@ -65,6 +42,16 @@ EQUIPMENT_SLOT_TYPES: list[str] = [
 Contains types associated with equipment slots, such as `Head`.
 '''
 
+FOILINGS: dict[str, str] = {
+    'S': 'Standard',
+    'R': 'Rainbow Foil',
+    'C': 'Cold Foil',
+    'G': 'Gold Cold Foil'
+}
+'''
+Contains a mapping of card foiling codes to their full names.
+'''
+
 CLASS_TYPES: list[str] = [
     'Bard',
     'Brute',
@@ -83,14 +70,28 @@ CLASS_TYPES: list[str] = [
 Contains card types associated with the various hero classes, such as `Ninja`.
 '''
 
-GAME_FORMATS: list[str] = [
-    'Blitz',
-    'Classic Constructed',
-    'Commoner',
-    'Ultimate Pit Fight'
-]
+GAME_FORMATS: dict[str, str] = {
+    'B': 'Blitz',
+    'C': 'Commoner',
+    'CC': 'Classic Constructed',
+    'UPF': 'Ultimate Pit Fight'
+}
 '''
-Contains the names of the various game formats, such as `Blitz`.
+Contains a mapping of game format codes to their full name.
+'''
+
+RARITIES: dict[str, str] = {
+    'P': 'Promotion',
+    'T': 'Token',
+    'C': 'Common',
+    'R': 'Rare',
+    'S': 'Super Rare',
+    'M': 'Majestic',
+    'L': 'Legendary',
+    'F': 'Fabled'
+}
+'''
+Contains a mapping of card rarity codes to their full name.
 '''
 
 WEAPON_TYPES: list[str] = [

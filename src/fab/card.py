@@ -7,7 +7,6 @@ from __future__ import annotations
 import csv
 import copy
 import dataclasses
-import datetime
 import io
 import json
 import os
@@ -259,7 +258,7 @@ class Card:
         `None`, returns `False` if this card is banned in _any_ format.
 
         Args:
-          format: The name of the card format to check, or `None` to check all formats.
+          format: The code of the card format to check, or `None` to check all formats.
 
         Returns:
           Whether the card is legal.
@@ -829,10 +828,10 @@ class CardList(UserList):
             cc_banned = True if csv_entry['CC Banned'] else False
             commoner_legal = not csv_entry['Commoner Legal'].lower() in ['no', 'false']
             commoner_banned = True if csv_entry['Commoner Banned'] else False
-            res['Blitz'] = blitz_legal and not blitz_ll and not blitz_banned
-            res['Classic Constructed'] = cc_legal and not cc_ll and not cc_banned
-            res['Commoner'] = commoner_legal and not commoner_banned
-            res['Ultimate Pit Fight'] = res['Classic Constructed']
+            res['B'] = blitz_legal and not blitz_ll and not blitz_banned
+            res['CC'] = cc_legal and not cc_ll and not cc_banned
+            res['C'] = commoner_legal and not commoner_banned
+            res['UPF'] = res['CC']
             return res
         cards = []
         for entry in csv_data:

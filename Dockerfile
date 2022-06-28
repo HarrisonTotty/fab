@@ -21,7 +21,8 @@ RUN jupyter labextension install \
 
 FROM python:3.9 as poetry
 
-ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
+ENV MYPY_CACHE_DIR=/tmp/mypy-cache \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_NO_CACHE_DIR=false \
     POETRY_VIRTUALENVS_CREATE=false \
     PYTHONFAULTHANDLER=1 \
@@ -43,15 +44,9 @@ RUN poetry install \
     --no-root \
     && poetry build \
     --format wheel \
-    && pip install dist/*.whl
-
-
-FROM build as test
-
-ENV MYPY_CACHE_DIR=/tmp/mypy-cache
-
-RUN mypy --install-types --non-interactive && \
-    pytest
+    && pip install dist/*.whl \
+    && mypy --install-types --non-interactive \
+    && pytest
 
 
 FROM jupyter as install
