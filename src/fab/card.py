@@ -7,6 +7,7 @@ from __future__ import annotations
 import csv
 import copy
 import dataclasses
+import datetime
 import io
 import json
 import os
@@ -16,6 +17,8 @@ from IPython.display import display, Image, Markdown
 from statistics import mean, median, stdev
 from typing import Any, Optional
 from unidecode import unidecode
+
+from .meta import GAME_FORMATS
 
 CARD_CATALOG: Optional[CardList] = None
 
@@ -37,6 +40,12 @@ class Card:
     '''
     Represents a Flesh and Blood card.
 
+    Note:
+      `fab` treats all prints and versions of a card as under the same `Card`
+      object. If any change is made to the card's body text or attributes
+      between prints, it can be assumed that `fab` lists the latest print of the
+      card.
+
     Attributes:
       body: The full body text of the card, excluding flavor text.
       cost: The resource cost of the card.
@@ -49,6 +58,7 @@ class Card:
       image_urls: A list of card image URLs.
       intelligence: The intelligence value of the card.
       keywords: A list of keywords associated with the card, such as `Dominate`.
+      legality: Whether this card is _currently_ legal for various formats (see `meta.GAME_FORMATS`).
       name: The name of the card, excluding pitch value.
       pitch: The pitch value of the card.
       power: The (attack) power of the card.
@@ -70,6 +80,7 @@ class Card:
     image_urls: list[str]
     intelligence: Optional[int]
     keywords: list[str]
+    legality: dict[str, bool]
     name: str
     pitch: Optional[int]
     power: int | str | None
@@ -241,6 +252,23 @@ class Card:
           Whether the card contains the _Item_ type.
         '''
         return 'Item' in self.types
+
+    def is_legal(self, format: Optional[str] = None) -> bool:
+        '''
+        Whether this card is legal for the specified format, or if `format` is
+        `None`, returns `False` if this card is banned in _any_ format.
+
+        Args:
+          format: The name of the card format to check, or `None` to check all formats.
+
+        Returns:
+          Whether the card is legal.
+        '''
+        if not self.legality: return True
+        if format is None:
+            return False in self.legality.values()
+        else:
+            return self.legality[format]
 
     def is_reaction(self) -> bool:
         '''
@@ -788,6 +816,24 @@ class CardList(UserList):
                 url = unidecode(inputstr).split(' - ', 1)[0].strip()
                 result.append(url)
             return result
+        def legality_parser(csv_entry: dict[str, Any]) -> dict[str, bool]:
+            '''
+            A helper function for parsing card legality.
+            '''
+            res = {}
+            blitz_legal = not csv_entry['Blitz Legal'].lower() in ['no', 'false']
+            blitz_ll = True if csv_entry['Blitz Living Legend'] else False
+            blitz_banned = True if csv_entry['Blitz Banned'] else False
+            cc_legal = not csv_entry['CC Legal'].lower() in ['no', 'false']
+            cc_ll = True if csv_entry['CC Living Legend'] else False
+            cc_banned = True if csv_entry['CC Banned'] else False
+            commoner_legal = not csv_entry['Commoner Legal'].lower() in ['no', 'false']
+            commoner_banned = True if csv_entry['Commoner Banned'] else False
+            res['Blitz'] = blitz_legal and not blitz_ll and not blitz_banned
+            res['Classic Constructed'] = cc_legal and not cc_ll and not cc_banned
+            res['Commoner'] = commoner_legal and not commoner_banned
+            res['Ultimate Pit Fight'] = res['Classic Constructed']
+            return res
         cards = []
         for entry in csv_data:
             try:
@@ -803,6 +849,7 @@ class CardList(UserList):
                   intelligence = int(entry['Intelligence']) if entry['Intelligence'].isdigit() else None,
                   image_urls   = image_url_parser(entry['Image URLs']),
                   keywords     = list(set(([x.strip() for x in entry['Card Keywords'].split(',')] if entry['Card Keywords'] else []) + ([x.strip() for x in entry['Ability and Effect Keywords'].split(',')] if entry['Ability and Effect Keywords'] else []))),
+                  legality     = legality_parser(entry),
                   name         = unidecode(entry['Name'].strip()),
                   pitch        = int(entry['Pitch']) if entry['Pitch'].isdigit() else None,
                   power        = int_str_or_none(entry['Power']),
@@ -944,7 +991,8 @@ class CardList(UserList):
     @staticmethod
     def _hero_filter_related(hero: Card, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
         '''
-        A helper function for filtering cards based on a hero.
+        A helper function for filtering cards based on a hero. Do not call this
+        function directly, instead use `Deck.filter_related`.
 
         Note:
           This function needs a card catalog to work properly and will fall back
@@ -1047,6 +1095,22 @@ class CardList(UserList):
         for card in self.data:
             res.extend(card.keywords)
         return sorted(list(set(res)))
+
+    def legality(self) -> dict[str, bool]:
+        '''
+        Computes the legality of this list of cards for each game format.
+
+        Note:
+          A `CardList` is not considered legal for a format if it contains _any_
+          cards not legal for that format.
+
+        Returns:
+          A `dict` of game format `str` keys and their `bool` legal status.
+        '''
+        res = {}
+        for f in GAME_FORMATS:
+            res[f] = not (False in [card.is_legal(f) for card in self.data])
+        return res
 
     @staticmethod
     def load(file_path: str, set_catalog: bool = False) -> CardList:

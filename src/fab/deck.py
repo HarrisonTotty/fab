@@ -11,6 +11,7 @@ import os
 from typing import Any, Optional
 
 from .card import Card, CardList
+from .meta import GAME_FORMATS
 
 EXCLUDE_TYPES: list[str] = [
     'Adult',
@@ -20,13 +21,6 @@ EXCLUDE_TYPES: list[str] = [
 
 JSON_INDENT: Optional[int] = 2
 
-VALID_FORMATS: list[str] = [
-    'Blitz',
-    'Classic Constructed',
-    'Commoner',
-    'Ulimate Pit Fight'
-]
-
 @dataclasses.dataclass
 class Deck:
     '''
@@ -34,7 +28,7 @@ class Deck:
 
     Attributes:
       cards: The "main" part of the deck from which one draws cards.
-      format: The game format associated with the deck, being `Blitz`, `Classic Constructed`, `Commoner`, or `Ultimate Pit Fight`.
+      format: The game format associated with the deck (see `meta.GAME_FORMATS`).
       hero: The hero card associated with the deck.
       inventory: The list of weapon/equipment cards associated with the deck (not including items).
       name: An arbitrary name for the deck.
@@ -195,7 +189,7 @@ class Deck:
         '''
         all_cards = self.all_cards()
         # Common
-        if not self.format in VALID_FORMATS: return (False, f'Common: Specified deck format is not one of {VALID_FORMATS}.')
+        if not self.format in GAME_FORMATS: return (False, f'Common: Specified deck format is not one of {GAME_FORMATS}.')
         if len(self.cards) < 1: return (False, 'Common: Deck does not contain any "main" cards.')
         if any(card.is_equipment() or card.is_weapon() or card.is_hero() for card in self.cards): return (False, 'Common: Main deck contains invalid cards (like equipment) - move these cards to their appropriate field, even when playing Classic Constructed.')
         if len(self.inventory) < 1: return (False, 'Common: Deck does not contain any inventory cards.')

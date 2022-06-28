@@ -83,6 +83,16 @@ CLASS_TYPES: list[str] = [
 Contains card types associated with the various hero classes, such as `Ninja`.
 '''
 
+GAME_FORMATS: list[str] = [
+    'Blitz',
+    'Classic Constructed',
+    'Commoner',
+    'Ultimate Pit Fight'
+]
+'''
+Contains the names of the various game formats, such as `Blitz`.
+'''
+
 WEAPON_TYPES: list[str] = [
     'Axe',
     'Bow',

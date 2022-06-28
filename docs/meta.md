@@ -5,4 +5,5 @@
         - 'ELEMENTAL_TYPES'
         - 'EQUIPMENT_SLOT_TYPES'
         - 'CLASS_TYPES'
+        - 'GAME_FORMATS'
         - 'WEAPON_TYPES'
