@@ -1179,7 +1179,7 @@ class CardList(UserList):
           A `dict` of game format `str` keys and their `bool` legal status.
         '''
         res = {}
-        for f in GAME_FORMATS:
+        for f in GAME_FORMATS.keys():
             res[f] = not (False in [card.is_legal(f) for card in self.data])
         return res
 
