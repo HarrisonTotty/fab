@@ -568,6 +568,7 @@ class CardList(UserList):
             health: Optional[Any] = None,
             intelligence: Optional[Any] = None,
             keywords: Optional[Any] = None,
+            legality: Optional[Any] = None,
             name: Optional[Any] = None,
             negate: bool = False,
             pitch: Optional[Any] = None,
@@ -582,24 +583,25 @@ class CardList(UserList):
         Filters a list of cards according to a function against a particular
         `Card` field.
 
-        Note:
-          In addition to functions/lambdas, you can also specify:
+        In addition to functions/lambdas, you can also specify:
 
-          * A `str` for the `body`, `full_name`, `name`, or `type_text` keyword
-            arguments. These comparisons are case-insentitive and will match
-            substrings.
-          * An `int` for the `cost`, `defense`, `health`, `intelligence`,
-            `pitch`, or `power` keyword arguments. `None` and `str` values
-            will not be included in the results.
-          * A `tuple[int, int]` for the `cost`, `defense`, `health`,
-            `intelligence`, `pitch`, or `power` keyword arguments. This defines
-            a range of values to include (inclusive).
-          * A `list[str]` for the `grants`, `keywords`, `rarities`, `sets`,
-            `tags`, and `types` keyword arguments. At least one value of the
-            list must be present for an item to be included.
-          * A `str` for the `grants`, `keywords`, `rarities`, `sets`, `tags`,
-            and `types` keyword arguments. This is the same as passing in a
-            single-element list.
+        * A `str` for the `body`, `full_name`, `name`, or `type_text` keyword
+          arguments. These comparisons are case-insentitive and will match
+          substrings.
+        * An `int` for the `cost`, `defense`, `health`, `intelligence`,
+          `pitch`, or `power` keyword arguments. `None` and `str` values
+          will not be included in the results.
+        * A `tuple[int, int]` for the `cost`, `defense`, `health`,
+          `intelligence`, `pitch`, or `power` keyword arguments. This defines
+          a range of values to include (inclusive).
+        * A `list[str]` for the `grants`, `keywords`, `rarities`, `sets`,
+          `tags`, and `types` keyword arguments. At least one value of the
+          list must be present for an item to be included.
+        * A `str` for the `grants`, `keywords`, `rarities`, `sets`, `tags`,
+          and `types` keyword arguments. This is the same as passing in a
+          single-element list.
+        * A `str` for the `legality` keyword, corresponding to a format code
+          that the card must be legal in to be included.
 
         Args:
           body: A `str` or function to filter by `body`.
@@ -610,6 +612,7 @@ class CardList(UserList):
           health: An `int`, `tuple[int, int]`, or function to filter by `health`.
           intelligence: An `int`, `tuple[int, int]`, or function to filter by `intelligence`.
           keywords: A `str`, `list[str]`, or function to filter by `keywords`.
+          legality: A `str` or function to filter by `legality`.
           name: A `str` or function to filter by `name`.
           negate: Whether to invert the filter specification.
           pitch: An `int`, `tuple[int, int]`, or function to filter by `pitch`.
@@ -744,6 +747,17 @@ class CardList(UserList):
                         if keywords(c.keywords): continue
                     else:
                         if not keywords(c.keywords): continue
+            if not legality is None:
+                if isinstance(legality, str):
+                    if negate:
+                        if c.legality[legality]: continue
+                    else:
+                        if not c.legality[legality]: continue
+                else:
+                    if negate:
+                        if legality(c.legality): continue
+                    else:
+                        if not legality(c.legality): continue
             if not name is None:
                 if isinstance(name, str):
                     if negate:
