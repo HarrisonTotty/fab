@@ -2,6 +2,24 @@
 Contains useful meta information in the form of constants.
 '''
 
+CLASS_TYPES: list[str] = [
+    'Bard',
+    'Brute',
+    'Guardian',
+    'Illusionist',
+    'Mechanologist',
+    'Merchant',
+    'Ninja',
+    'Ranger',
+    'Runeblade',
+    'Shapeshifter',
+    'Warrior',
+    'Wizard'
+]
+'''
+Contains card types associated with the various hero classes, such as `Ninja`.
+'''
+
 DIVINE_TYPES: list[str] = ['Light', 'Shadow']
 '''
 Contains divine card types, currently only `Light` and `Shadow`.
@@ -52,24 +70,6 @@ FOILINGS: dict[str, str] = {
 Contains a mapping of card foiling codes to their full names.
 '''
 
-CLASS_TYPES: list[str] = [
-    'Bard',
-    'Brute',
-    'Guardian',
-    'Illusionist',
-    'Mechanologist',
-    'Merchant',
-    'Ninja',
-    'Ranger',
-    'Runeblade',
-    'Shapeshifter',
-    'Warrior',
-    'Wizard'
-]
-'''
-Contains card types associated with the various hero classes, such as `Ninja`.
-'''
-
 GAME_FORMATS: dict[str, str] = {
     'B': 'Blitz',
     'C': 'Commoner',
@@ -78,6 +78,17 @@ GAME_FORMATS: dict[str, str] = {
 }
 '''
 Contains a mapping of game format codes to their full name.
+'''
+
+ICON_CODES: dict[str, str] = {
+    '{d}': 'Defense Value',
+    '{h}': 'Health Value',
+    '{i}': 'Intelligence Value',
+    '{p}': 'Attack Power',
+    '{r}': 'Resource Point',
+}
+'''
+Contains a mapping of card body icon codes to their name.
 '''
 
 RARITIES: dict[str, str] = {
