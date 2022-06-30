@@ -4,9 +4,11 @@ Contains the definition of a Flesh and Blood card deck.
 
 from __future__ import annotations
 
+import copy
 import dataclasses
 import json
 import os
+import random
 
 from typing import Any, Optional
 
@@ -20,6 +22,29 @@ EXCLUDE_TYPES: list[str] = [
 ]
 
 JSON_INDENT: Optional[int] = 2
+
+MAX_ITERATIONS = 100000
+
+MAX_SAME_CARD: dict[str, int] = {
+    'B': 2,
+    'C': 2,
+    'CC': 3,
+    'UPF': 3
+}
+
+TARGET_DECK_SIZE: dict[str, int] = {
+    'B': 40,
+    'C': 40,
+    'CC': 60,
+    'UPF': 60
+}
+
+TARGET_INV_SIZE: dict[str, int] = {
+    'B': 11,
+    'C': 11,
+    'CC': 20,
+    'UPF': 20
+}
 
 @dataclasses.dataclass
 class Deck:
@@ -86,6 +111,152 @@ class Deck:
             return res + self.tokens
         else:
             return res
+
+    def auto_build(
+        self,
+        cards: CardList,
+        catalog: Optional[CardList] = None,
+        honor_counts: bool = False,
+        max_generic_count: Optional[int] = None,
+        only_legal: bool = True,
+        replace: bool = True,
+        target_deck_size: Optional[int] = None,
+        target_inventory_size: Optional[int] = None,
+        target_pitch_cost_difference: Optional[int] = None,
+        target_power_defense_difference: Optional[int] = None,
+    ) -> None:
+        '''
+        Automatically populates this deck with cards based on its hero, by
+        selecting cards from the specified list.
+
+        This method updates the `Deck` object calling it directly, rather than
+        returning any object. Cards are mostly chosen at random, however it will
+        ensure that you have at least one card for each inventory slot and meet
+        all of the count/type requirements for the deck. Any cards that mention
+        a token by name will have that token included.
+
+        For the `target_pitch_cost_difference` and
+        `target_power_defense_difference` arguments, randomly selected cards
+        will be discarded if they push the relevant statistic away from the
+        target value (if not `None`). When selecting a value for cost-pitch, you
+        may want to refer to the following formula:
+
+        ```
+        target = 0
+                 + {total additional cost from card body texts}
+                 + {total cost of using equipment}
+                 + ({number of times you plan on using weapon} * {cost of using weapon})
+                 + ({number of times you plan on using hero ability} * {cost of hero ability})
+                 - {additional resource points generated from card body texts}
+        ```
+
+        Of course the above formula isn't perfect, but you should get the general
+        idea. In theory, a perfectly balanced deck should expect to generate the
+        minimum number of resources for their typical combos every turn.
+        Currently, this method will "give up" attempting to meet these targets
+        after 100 tries and will accept a random card before resuming attempts.
+
+        Note:
+          To be able to accurately compare cards, a card `catalog` must be
+          provided, defaulting to the global catalog `card.CARD_CATALOG` if
+          unspecified.
+
+          This method ignores the current legality of the deck's hero.
+
+        Args:
+          cards: The input list of cards from which to choose from.
+          catalog: An optional `CardList` catalog to use instead of the default catalog.
+          honor_counts: Whether to honor the number of copies of each card in the specified input list.
+          max_generic_count: Overrides the maximum number of generic cards to include in the main deck, defaulting to at most 20% of the deck.
+          only_legal: Whether to only select cards that are currently legal (not banned, suspended, or living legend).
+          replace: Whether to replace cards that may already exist within the deck.
+          target_deck_size: Overrides the target number of cards to include in the main deck.
+          target_inventory_size: Overrides the target number of cards to include in the deck's inventory.
+          target_pitch_cost_difference: Specifies the target pitch-cost difference of the main deck, or `None` to disable.
+          target_power_defense_difference: Specifies the target power-defense difference of the main deck, or `None` to disable.
+        '''
+        # First, let's set up all of the variables we need to work with.
+        related = copy.deepcopy(self.filter_related(cards, catalog=catalog, only_legal=only_legal))
+        if self.format == 'C': related.filter(rarities='C')
+        related_types = related.types()
+        tgt_deck_size = target_deck_size if not target_deck_size is None else TARGET_DECK_SIZE[self.format]
+        tgt_inv_size  = target_inventory_size if not target_inventory_size is None else TARGET_INV_SIZE[self.format]
+        max_gen       = max_generic_count if not max_generic_count is None else tgt_deck_size // 5
+        curr_deck     = copy.deepcopy(self.cards) if not replace else CardList.empty()
+        curr_inv      = copy.deepcopy(self.inventory) if not replace else CardList.empty()
+        curr_tokens   = copy.deepcopy(self.tokens) if not replace else CardList.empty()
+        curr_iterations = 0
+        # Start by building up our inventory.
+        while len(curr_inv) < tgt_inv_size:
+            curr_iterations += 1
+            if curr_iterations > MAX_ITERATIONS: raise Exception('hit maximum iterations while building deck inventory')
+            curr_inv_types = curr_inv.types()
+            if not 'Weapon' in curr_inv_types and 'Weapon' in related_types:
+                choice = random.choice(related.filter(types='Weapon'))
+            elif not 'Head' in curr_inv_types and 'Head' in related_types:
+                choice = random.choice(related.filter(types='Head'))
+            elif not 'Legs' in curr_inv_types and 'Legs' in related_types:
+                choice = random.choice(related.filter(types='Legs'))
+            elif not 'Arms' in curr_inv_types and 'Arms' in related_types:
+                choice = random.choice(related.filter(types='Arms'))
+            elif not 'Chest' in curr_inv_types and 'Chest' in related_types:
+                choice = random.choice(related.filter(types='Chest'))
+            else:
+                choice = random.choice(related.filter(types=['Equipment', 'Weapon']))
+            curr_inv.append(choice)
+            if honor_counts: related.remove(choice)
+        # Now lets build up our main deck.
+        pitch_cost_attempts = 0
+        power_def_attempts  = 0
+        while len(curr_deck) < tgt_deck_size:
+            curr_iterations += 1
+            if curr_iterations > MAX_ITERATIONS: raise Exception('hit maximum iterations while building main deck')
+            counts = curr_deck.counts()
+            curr_gen = len(curr_deck.filter(types='Generic'))
+            choice = random.choice(related.filter(types=['Equipment', 'Weapon', 'Token'], negate=True))
+            if counts.get(choice.full_name, 0) >= MAX_SAME_CARD[self.format]: continue
+            if 'Generic' in choice.types and curr_gen >= max_gen: continue
+            curr_stats = curr_deck.statistics()
+            if not target_pitch_cost_difference is None and pitch_cost_attempts < 100:
+                choice_pitch_cost = (choice.pitch if isinstance(choice.pitch, int) else 0) - (choice.cost if isinstance(choice.cost, int) else 0)
+                if curr_stats['pitch_cost_difference'] > target_pitch_cost_difference and choice_pitch_cost > 0:
+                    pitch_cost_attempts += 1
+                    continue
+                if curr_stats['pitch_cost_difference'] < target_pitch_cost_difference and choice_pitch_cost < 0:
+                    pitch_cost_attempts += 1
+                    continue
+                if curr_stats['pitch_cost_difference'] == target_pitch_cost_difference and choice_pitch_cost != 0:
+                    pitch_cost_attempts += 1
+                    continue
+            if not target_power_defense_difference is None and power_def_attempts < 100:
+                choice_power_def = (choice.power if isinstance(choice.power, int) else 0) - (choice.defense if isinstance(choice.defense, int) else 0)
+                if curr_stats['power_defense_difference'] > target_power_defense_difference and choice_power_def > 0:
+                    power_def_attempts += 1
+                    continue
+                if curr_stats['power_defense_difference'] < target_power_defense_difference and choice_power_def < 0:
+                    power_def_attempts += 1
+                    continue
+                if curr_stats['power_defense_difference'] == target_power_defense_difference and choice_power_def != 0:
+                    power_def_attempts += 1
+                    continue
+            pitch_cost_attempts = 0
+            power_def_attempts  = 0
+            curr_deck.append(choice)
+            if honor_counts: related.remove(choice)
+        # Finally make sure we have a copy of any token card that was referenced.
+        # We don't need to worry about honoring counts here because we're only
+        # adding 1 token.
+        for token in related.filter(types='Token'):
+            if not token in curr_tokens:
+                if any(token.name.lower() in card.body.lower() for card in curr_deck if isinstance(card.body, str)):
+                    curr_tokens.append(token)
+                elif isinstance(self.hero.body, str) and token.name.lower() in self.hero.body.lower():
+                    curr_tokens.append(token)
+        # Now replace our current field values.
+        self.cards     = curr_deck.sort()
+        self.inventory = curr_inv.sort()
+        self.tokens    = curr_tokens.sort()
+
 
     def filter_related(self, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True, only_legal: bool = True) -> CardList:
         '''
