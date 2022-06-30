@@ -236,6 +236,46 @@ def distribution_plot(
     return fig
 
 
+def pie_chart(
+    cards: CardList,
+    by: str = 'types',
+    only: list[str] = [],
+    statistic: str = 'count',
+    title: Optional[str] = None
+) -> Any:
+    '''
+    Produces a pie chart comparing the specified statistic between members of a
+    certain grouping.
+
+    Note:
+      In general, only `int`-typed statistics produce meaningful representations
+      in this kind of plot.
+
+    Args:
+      cards: The list of cards to plot.
+      by: The `Card` field to group by, being `grants`, `keywords`, `rarities`, or `types`.
+      only: Restricts the values specified in `by` to only displaying those specified.
+      statistic: The `Card` statistic to consider the "value" of each slice. May be any statistic produced by `CardList.statistics()`.
+      title: An optional title for the chart.
+
+    Returns:
+      A plotly pie chart figure.
+    '''
+    groups = cards.group(by=by)
+    labels = []
+    values = []
+    for group_name, group_cards in groups.items():
+        if only and not group_name in only: continue
+        labels.append(group_name)
+        values.append(group_cards.statistics()[statistic])
+    fig = go.Figure(data=[go.Pie(
+        labels = labels,
+        values = values
+    )])
+    fig.update_layout(title=title)
+    return fig
+
+
 def scatter_plot(
     cards: CardList,
     x: str,
