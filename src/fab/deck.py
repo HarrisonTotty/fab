@@ -87,10 +87,13 @@ class Deck:
         else:
             return res
 
-    def filter_related(self, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True) -> CardList:
+    def filter_related(self, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True, only_legal: bool = True) -> CardList:
         '''
         Filters out cards from the specified list which may be included in this
         deck, based on the deck's hero card.
+
+        Tip: Warning
+          This method does not validate the legality of the deck's hero card.
 
         Note:
           To be able to accurately compare cards, a card `catalog` must be
@@ -101,16 +104,21 @@ class Deck:
           cards: The list of cards to filter.
           catalog: An optional `CardList` catalog to use instead of the default catalog.
           include_generic: Whether to include _Generic_ cards in the result.
+          only_legal: Whether to include only cards that are currently legal (not banned, suspended, or living legend).
 
         Returns:
           A subset of the specified card list that work with the deck's hero.
         '''
-        return CardList._hero_filter_related(
+        initial = CardList._hero_filter_related(
             hero            = self.hero,
             cards           = cards,
             catalog         = catalog,
             include_generic = include_generic
         )
+        if only_legal:
+            return CardList([card for card in initial if card.is_legal(self.format)])
+        else:
+            return initial
 
     @staticmethod
     def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'B') -> Deck:
@@ -189,18 +197,22 @@ class Deck:
         '''
         all_cards = self.all_cards()
         # Common
-        if not self.format in GAME_FORMATS: return (False, f'Common: Specified deck format is not one of {GAME_FORMATS}.')
+        if not self.format in GAME_FORMATS: return (False, f'Common: Specified deck format code is not one of {list(GAME_FORMATS.keys())}.')
         if len(self.cards) < 1: return (False, 'Common: Deck does not contain any "main" cards.')
         if any(card.is_equipment() or card.is_weapon() or card.is_hero() for card in self.cards): return (False, 'Common: Main deck contains invalid cards (like equipment) - move these cards to their appropriate field, even when playing Classic Constructed.')
         if len(self.inventory) < 1: return (False, 'Common: Deck does not contain any inventory cards.')
         if any(not (card.is_equipment() or card.is_weapon()) for card in self.inventory): return (False, 'Common: Inventory deck contains non-equipment/weapon cards - move these cards to their appropriate field.')
         if not self.hero.is_hero(): return (False, 'Common: Deck `hero` is not a hero card.')
+        if not self.hero.is_legal(self.format): return (False, f'{GAME_FORMATS[self.format]}: Hero "{self.hero.name}" is not currently legal in this format.')
         if any(not card.is_token() for card in self.tokens): return (False, 'Common: Token deck contains non-token cards - move these cards to their appropriate field.')
         if not 'Shapeshifter' in self.hero.types:
             valid_types = self.valid_types()
             for card in self.all_cards(include_tokens=True):
                 if card == self.hero: continue
                 if not any(t in valid_types for t in card.types): return (False, f'Common: Card "{card.full_name}" is not one of the following types: {valid_types}')
+        for card in all_cards:
+            if not card.is_legal(self.format):
+                return (False, f'{GAME_FORMATS[self.format]}: Card "{card.full_name}" is not currently legal in this format.')
         if self.format == 'B':
             if len(self.cards) != 40: return (False, 'Blitz: Main deck may only contain 40 cards.')
             if len(self.inventory) > 11: return (False, 'Blitz: Inventory deck may not contain more than 11 cards.')
@@ -221,28 +233,60 @@ class Deck:
         return (True, None)
 
     @staticmethod
-    def load(file_path: str) -> Deck:
+    def load(file_path: str, name: Optional[str] = None, format: Optional[str] = None) -> Deck:
         '''
-        Loads a deck from the specified JSON file.
+        Loads a deck from the specified JSON or TXT file.
+
+        Note:
+          When loading from a TXT file, the name and format of the deck must
+          be specified. TXT files loaded by this method expect a file with
+          entries of the following form separated by new lines:
+
+          ```
+          {count} {full_name}
+          ```
+
+          where `count` is the number of copies of the specified card and
+          `full_name` is the full name of the card (see `Card.full_name`).
 
         Args:
           file_path: The file path from which to load.
+          name: The name of the resulting deck, if loading from TXT file.
+          format: The format code of the resulting deck, if loading from TXT file.
 
         Returns:
           A new `Deck` object from the loaded data.
         '''
         with open(os.path.expanduser(file_path), 'r') as f:
-            return Deck.from_json(f.read())
+            if file_path.endswith('.json'):
+                return Deck.from_json(f.read())
+            elif file_path.endswith('.txt'):
+                if name is None or format is None:
+                    raise Exception('"name" and "format" must be specified when loading a deck from TXT file')
+                deck_list = {}
+                for l in f.readlines():
+                    if not l.strip(): continue
+                    ls = l.strip().split(' ', 1)
+                    deck_list[ls[1].strip()] = int(ls[0].strip())
+                return Deck.from_deck_list(name, deck_list, format=format)
+            else:
+                raise Exception('specified file path is not a JSON or TXT file')
 
     def save(self, file_path: str):
         '''
-        Saves this deck to the specified JSON file.
+        Saves this deck to the specified JSON or TXT file.
 
         Args:
           file_path: The file path to save to.
         '''
         with open(os.path.expanduser(file_path), 'w') as f:
-            f.write(self.to_json())
+            if file_path.endswith('.json'):
+                f.write(self.to_json())
+            elif file_path.endswith('.txt'):
+                for k, v in self.to_deck_list():
+                    f.write(f'{v} {k}\n')
+            else:
+                raise Exception('specified file path is not a JSON or TXT file')
 
     def statistics(self, precision: int = 2) -> dict[str, Any]:
         '''

@@ -1,5 +1,5 @@
 '''
-Contains the definition of a Flesh and Blood card.
+Contains the definitions of Flesh and Blood cards and card lists.
 '''
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ import dataclasses
 import io
 import json
 import os
+import random
 
 from collections import UserList
 from IPython.display import display, Image, Markdown
@@ -143,6 +144,29 @@ class Card:
         if not full_name in grouped:
             raise Exception(f'specified card catalog does not contain a card will full name "{full_name}"')
         return copy.deepcopy(grouped[full_name][0])
+
+    @staticmethod
+    def from_identifier(identifier: str, catalog: Optional[CardList] = None) -> Card:
+        '''
+        Creates a new card from its identifier.
+
+        Note:
+          To instantiate the card this way, a card catalog (`CardList`) must be
+          provided, defaulting to `card.CARD_CATALOG`.
+
+        Args:
+          identifier: The identifier of the card.
+          catalog: The card catalog to use as a reference, defaulting to `card.CARD_CATALOG` if `None`.
+
+        Returns:
+          A new `Card` object.
+        '''
+        _catalog = CARD_CATALOG if catalog is None else catalog
+        if _catalog is None: raise Exception('specified card catalog has not been initialized')
+        for card in _catalog:
+            if identifier in card.identifiers:
+                return copy.deepcopy(card)
+        raise Exception(f'no card in catalog found with identifier "{identifier}"')
 
     @staticmethod
     def from_json(jsonstr: str) -> Card:
@@ -466,6 +490,54 @@ class CardList(UserList):
         for card in self.data:
             if isinstance(card.defense, int): res.append(card.defense)
         return sorted(list(set(res)))
+
+    def draw(self, num: int, order: int = 0, remove: bool = False) -> CardList:
+        '''
+        Draws the specified number of cards from the list, optionally removing
+        the cards drawn.
+
+        Note:
+          If `order` is set to `-1`, then cards will be drawn from the _end_ of
+          the list, as if calling `list.pop()`. When `order` is `1`, cards are
+          drawn from the beginning of the list. If `order` is `0`, then cards
+          are drawn from random positions. Even when `remove` is `False`, when
+          drawing with `order=0`, this method will ensure that the same card
+          will not be drawn more times than it actually exists in the list.
+
+        Args:
+          num: The number of cards to draw from the list.
+          order: Specifies the method/order in which cards are drawn from the list (see note).
+          remove: Whether to remove the cards drawn from the list.
+
+        Returns:
+          The list of cards drawn.
+        '''
+        if num <= 0:
+            raise Exception('specified number of cards must be a positive integer')
+        res = []
+        if order == -1:
+            if remove:
+                for _ in range(0, num):
+                    res.append(self.pop())
+            else:
+                res = self.data[-num:]
+        elif order == 0:
+            if remove:
+                for _ in range(0, num):
+                    res.append(self.pop(random.randrange(len(self.data))))
+            else:
+                potential = [c for c in self.data]
+                for _ in range(0, num):
+                    res.append(potential.pop(random.randrange(len(potential))))
+        elif order == 1:
+            if remove:
+                for _ in range(0, num):
+                    res.append(self.pop(0))
+            else:
+                res = self.data[num:]
+        else:
+            raise Exception('specified "order" must be -1, 0, or 1')
+        return CardList(res)
 
     @staticmethod
     def empty() -> CardList:
@@ -1774,6 +1846,12 @@ class CardList(UserList):
         for card in self.data:
             card_sets.extend(card.sets)
         return sorted(list(set(card_sets)))
+
+    def shuffle(self) -> None:
+        '''
+        Shuffles this list of cards in-place.
+        '''
+        random.shuffle(self.data)
 
     def statistics(self, precision: int = 2) -> dict[str, int | float]:
         '''
