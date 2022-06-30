@@ -572,6 +572,7 @@ class CardList(UserList):
             negate: bool = False,
             pitch: Optional[Any] = None,
             power: Optional[Any] = None,
+            rarities: Optional[Any] = None,
             sets: Optional[Any] = None,
             tags: Optional[Any] = None,
             type_text: Optional[Any] = None,
@@ -593,12 +594,12 @@ class CardList(UserList):
           * A `tuple[int, int]` for the `cost`, `defense`, `health`,
             `intelligence`, `pitch`, or `power` keyword arguments. This defines
             a range of values to include (inclusive).
-          * A `list[str]` for the `grants`, `keywords`, `sets`, `tags`, and
-            `types` keyword arguments. At least one value of the list must be
-            present for an item to be included.
-          * A `str` for the `grants`, `keywords`, `sets`, `tags`, and `types`
-            keyword arguments. This is the same as passing in a single-element
-            list.
+          * A `list[str]` for the `grants`, `keywords`, `rarities`, `sets`,
+            `tags`, and `types` keyword arguments. At least one value of the
+            list must be present for an item to be included.
+          * A `str` for the `grants`, `keywords`, `rarities`, `sets`, `tags`,
+            and `types` keyword arguments. This is the same as passing in a
+            single-element list.
 
         Args:
           body: A `str` or function to filter by `body`.
@@ -613,6 +614,7 @@ class CardList(UserList):
           negate: Whether to invert the filter specification.
           pitch: An `int`, `tuple[int, int]`, or function to filter by `pitch`.
           power: An `int`, `tuple[int, int]`, or function to filter by `power`.
+          rarities: A `str`, `list[str]` or function to filter by `rarities`.
           sets: A `str`, `list[str]`, or function to filter by `sets`.
           tags: A `str`, `list[str]`, or function to filter by `tags`.
           type_text: A `str` or function to filter by `type_text`.
@@ -785,6 +787,22 @@ class CardList(UserList):
                         if power(c.power): continue
                     else:
                         if not power(c.power): continue
+            if not rarities is None:
+                if isinstance(rarities, str):
+                    if negate:
+                        if rarities in c.rarities: continue
+                    else:
+                        if not rarities in c.rarities: continue
+                elif isinstance(rarities, list):
+                    if negate:
+                        if True in [(x in c.rarities) for x in rarities]: continue
+                    else:
+                        if not (True in [(x in c.rarities) for x in rarities]): continue
+                else:
+                    if negate:
+                        if rarities(c.rarities): continue
+                    else:
+                        if not rarities(c.rarities): continue
             if not sets is None:
                 if isinstance(sets, str):
                     if negate:
