@@ -182,15 +182,19 @@ class Deck:
             tokens    = CardList([Card(**c) for c in data['tokens']])
         )
 
-    def is_valid(self) -> tuple[bool, Optional[str]]:
+    def is_valid(self, ignore_hero_legality: bool = False, ignore_legality: bool = False) -> tuple[bool, Optional[str]]:
         '''
-        Returns whether this is a valid deck given its format.
+        Returns whether this is a valid and legal deck given its format.
 
         Tip: Warning
           This function currently does not validate any restrictions printed on
           cards themselves (ex: "Legendary" cards). Also, any restrictions on
           card rarity might not be accurate, since cards may be printed in
           multiple rarities.
+
+        Args:
+          ignore_hero_legality: Whether to ignore the current legal status of the hero card.
+          ignore_legality: Whether to ignore the current legal status of cards (not including the hero).
 
         Returns:
           A `tuple` of the form `(<answer>, <reason>)`.
@@ -203,16 +207,19 @@ class Deck:
         if len(self.inventory) < 1: return (False, 'Common: Deck does not contain any inventory cards.')
         if any(not (card.is_equipment() or card.is_weapon()) for card in self.inventory): return (False, 'Common: Inventory deck contains non-equipment/weapon cards - move these cards to their appropriate field.')
         if not self.hero.is_hero(): return (False, 'Common: Deck `hero` is not a hero card.')
-        if not self.hero.is_legal(self.format): return (False, f'{GAME_FORMATS[self.format]}: Hero "{self.hero.name}" is not currently legal in this format.')
+        if not ignore_hero_legality:
+            if not self.hero.is_legal(self.format): return (False, f'{GAME_FORMATS[self.format]}: Hero "{self.hero.name}" is not currently legal in this format.')
         if any(not card.is_token() for card in self.tokens): return (False, 'Common: Token deck contains non-token cards - move these cards to their appropriate field.')
         if not 'Shapeshifter' in self.hero.types:
             valid_types = self.valid_types()
             for card in self.all_cards(include_tokens=True):
                 if card == self.hero: continue
                 if not any(t in valid_types for t in card.types): return (False, f'Common: Card "{card.full_name}" is not one of the following types: {valid_types}')
-        for card in all_cards:
-            if not card.is_legal(self.format):
-                return (False, f'{GAME_FORMATS[self.format]}: Card "{card.full_name}" is not currently legal in this format.')
+        if not ignore_legality:
+            for card in all_cards:
+                if card == self.hero: continue
+                if not card.is_legal(self.format):
+                    return (False, f'{GAME_FORMATS[self.format]}: Card "{card.full_name}" is not currently legal in this format.')
         if self.format == 'B':
             if len(self.cards) != 40: return (False, 'Blitz: Main deck may only contain 40 cards.')
             if len(self.inventory) > 11: return (False, 'Blitz: Inventory deck may not contain more than 11 cards.')
