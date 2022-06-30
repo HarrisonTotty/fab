@@ -22,7 +22,7 @@ Documentation](https://fablib.readthedocs.io/en/latest/).
 ### Installing Locally
 
 ```bash
-export VERSION=0.1.9
+export VERSION=0.2.0
 curl "https://github.com/HarrisonTotty/fab/releases/download/v${VERSION}/fab-${VERSION}-py3-none-any.whl" -o fab.whl
 pip install fab.whl
 ```
