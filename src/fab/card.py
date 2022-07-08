@@ -493,7 +493,7 @@ class CardList(UserList):
             if isinstance(card.defense, int): res.append(card.defense)
         return sorted(list(set(res)))
 
-    def draw(self, num: int, order: int = 0, remove: bool = False) -> CardList:
+    def draw(self, num: int, order: int = -1, remove: bool = False) -> CardList:
         '''
         Draws the specified number of cards from the list, optionally removing
         the cards drawn.
