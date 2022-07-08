@@ -397,8 +397,10 @@ class CardList(UserList):
       `list` methods.
 
     Attributes:
-      data (list[Card]): The raw `list` of `Card` objects contained within the object.
+      data: The raw `list` of `Card` objects contained within the object.
     '''
+    data: list[Card]
+
     def actions(self) -> CardList:
         '''
         Returns the set of all action cards in this card list.
