@@ -7,11 +7,15 @@ markdown_extensions:
 nav:
   - 'Home': index.md
   - 'API Reference':
+      - 'Arena': arena.md
       - 'Card': cards.md
       - 'CardList': card-lists.md
       - 'CardSet': card-sets.md
       - 'CardSetCollection': card-set-collections.md
+      - 'ChainLink': chain-link.md
+      - 'CombatChain': combat-chain.md
       - 'Deck': decks.md
+      - 'PlayerSpace': player-space.md
       - 'graphics': graphics.md
       - 'meta': meta.md
 plugins:
