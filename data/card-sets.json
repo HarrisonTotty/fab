@@ -15,6 +15,14 @@
     "name": "Hero Card Promos",
     "release_date": null
   },
+  "JDG": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "JDG",
+    "name": "Judge Unique Promos",
+    "release_date": null
+  },
   "LGS": {
     "editions": [
       "N"
@@ -37,6 +45,14 @@
     ],
     "identifier": "OXO",
     "name": "Slingshot Underground Promos",
+    "release_date": null
+  },
+  "WIN": {
+    "editions": [
+      "N"
+    ],
+    "identifier": "WIN",
+    "name": "Worlds / Pro Tour Prize Cards",
     "release_date": null
   },
   "XXX": {
