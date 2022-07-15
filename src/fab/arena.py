@@ -29,12 +29,55 @@ class Arena:
       keep this distinction in mind.
 
     Attributes:
-      chain: The global combat chain.
-      players: A `dict` of player spaces, organized by an arbitrary name.
+      combat_chain: The global combat chain.
+      player_spaces: A `dict` of player spaces, organized by an arbitrary name.
     '''
-    chain: CombatChain
-    players: dict[str, PlayerSpace]
+    combat_chain: CombatChain = CombatChain.empty()
+    player_spaces: dict[str, PlayerSpace] = dataclasses.field(default_factory=dict)
 
+    def add_player_space(self, name: str, space: Optional[PlayerSpace] = None) -> None:
+        '''
+        Adds the specified player's space to the arena.
+
+        Args:
+          name: The arbitrary name string of the player to add.
+          space: An optional player space instance to assign to the player, creating a new blank one if `None`.
+        '''
+        if not name in self.player_spaces:
+            self.player_spaces[name] = space if not space is None else PlayerSpace()
+        else:
+            raise Exception(f'player "{name}" already exists in the arena')
+
+    def remove_player_space(self, name: str) -> PlayerSpace:
+        '''
+        Removes the specified player space, by name.
+
+        Args:
+          name: The name of the player space to remove.
+
+        Returns:
+          A reference to the `PlayerSpace` object that was removed.
+        '''
+        if name in self.player_spaces:
+            return self.player_spaces.pop(name)
+        else:
+            raise Exception(f'specified player space "{name}" does not exist')
+
+    def reset_combat_chain(self) -> None:
+        '''
+        Resets (empties) the global combat chain.
+        '''
+        self.combat_chain = CombatChain.empty()
+
+    def reset_player_spaces(self) -> None:
+        '''
+        Resets the player spaces to their original configuration.
+
+        This method calls the `.reset_zones()` method on each player space. See
+        that method for more details.
+        '''
+        for s in self.player_spaces.values():
+            s.reset_zones()
 
 
 @dataclasses.dataclass
@@ -62,10 +105,10 @@ class PlayerSpace:
       head: Any cards in the head equipment zone.
       hero: Any cards in the hero zone.
       legs: Any cards in the legs equipment zone.
+      permanent: Any cards in the permanent zone (typically active tokens, items, or allies).
       pitch: Any cards currently in the player's pitch zone.
       primary_weapon: Any cards in the primary weapon zone.
       secondary_weapon: Any cards in the secondary weapon zone.
-      tokens: Any active token cards.
     '''
     arms: CardList = CardList.empty()
     arsenal: CardList = CardList.empty()
@@ -77,10 +120,10 @@ class PlayerSpace:
     head: CardList = CardList.empty()
     hero: CardList = CardList.empty()
     legs: CardList = CardList.empty()
+    permanent: CardList = CardList.empty()
     pitch: CardList = CardList.empty()
     primary_weapon: CardList = CardList.empty()
     secondary_weapon: CardList = CardList.empty()
-    tokens: CardList = CardList.empty()
 
     def clear_pitch(self, order: Optional[list[int]] = [], return_to_hand: bool = False) -> None:
         '''
@@ -213,6 +256,61 @@ class PlayerSpace:
         self.hand = CardList.empty()
         self.shuffle_deck()
         self.draw_hand(int_modifier=int_modifier)
+
+    def reset_zones(self) -> None:
+        '''
+        Resets the zones of the player space.
+
+        This method moves all cards from the pitch, graveyard and banished zones
+        back into the deck (or other appropriate place), which is then shuffled.
+        In addition:
+          * Any cards in hand will be returned to the deck.
+          * Equipment cards will be returned to their appropriate zone.
+          * Token cards will deleted.
+          * Non-token cards in the permanent zone will be returned to their appropriate zone.
+        '''
+        collected: CardList = copy.deepcopy(
+            self.arms +
+            self.arsenal +
+            self.banished +
+            self.chest +
+            self.graveyard +
+            self.hand +
+            self.head +
+            self.hero +
+            self.legs +
+            self.permanent +
+            self.pitch +
+            self.primary_weapon +
+            self.secondary_weapon
+        )
+        self.arms = collected.filter(types='Arms')
+        self.arsenal = CardList.empty()
+        self.banished = CardList.empty()
+        self.chest = collected.filter(types='Chest')
+        self.graveyard = CardList.empty()
+        self.hand = CardList.empty()
+        self.head = collected.filter(types='Head')
+        self.hero = collected.filter(types='Hero')
+        self.legs = collected.filter(types='Legs')
+        self.permanent = CardList.empty()
+        self.pitch = CardList.empty()
+        weapons = collected.filter(types=['Weapon', 'Off-Hand'])
+        if len(weapons) == 0:
+            self.primary_weapon = CardList.empty()
+            self.secondary_weapon = CardList.empty()
+        elif len(weapons) == 1:
+            self.primary_weapon = weapons
+            self.secondary_weapon = CardList.empty()
+        elif len(weapons) == 2:
+            self.primary_weapon = CardList([weapons[0]])
+            self.secondary_weapon = CardList([weapons[1]])
+        else:
+            raise Exception('somehow the reset_zone method detected more than 2 weapon-zone cards')
+        self.deck.extend(
+            collected.filter(types=['Arms', 'Chest', 'Head', 'Hero', 'Legs', 'Off-Hand', 'Token', 'Weapon'], negate=True)
+        )
+        self.shuffle_deck()
 
     def secondary_weapon_card(self) -> Card:
         '''
