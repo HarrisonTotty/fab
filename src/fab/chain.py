@@ -73,3 +73,22 @@ class CombatChain(UserList):
       data: The raw `list` of `ChainLink` objects contained within the object.
     '''
     data: list[ChainLink]
+
+    def current_link(self) -> ChainLink:
+        '''
+        Gets the current link of the combat chain.
+
+        Returns:
+          A mutable reference to the current link of the combat chain.
+        '''
+        return self.data[-1]
+
+    @staticmethod
+    def empty() -> CombatChain:
+        '''
+        Creates a new empty combat chain.
+
+        Returns:
+          A new empty `CombatChain` object.
+        '''
+        return CombatChain([])
