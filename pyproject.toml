@@ -32,6 +32,7 @@ plotly          = "*"
 python          = "^3.9"
 python-dateutil = "*"
 pyyaml          = "*"
+requests        = "*"
 unidecode       = "*"
 
 [tool.poetry.dev-dependencies]

@@ -9,6 +9,7 @@ import dataclasses
 import json
 import os
 import random
+import requests
 
 from typing import Any, Optional
 
@@ -20,6 +21,13 @@ EXCLUDE_TYPES: list[str] = [
     'Hero',
     'Young'
 ]
+
+FABDB_API = 'https://api.fabdb.net/decks'
+
+FABDB_FORMATS = {
+    'blitz': 'B',
+    'constructed': 'CC'
+}
 
 JSON_INDENT: Optional[int] = 2
 
@@ -330,6 +338,40 @@ class Deck:
             inventory = CardList(inventory),
             name = name,
             tokens = CardList(tokens)
+        )
+
+    @staticmethod
+    def from_fabdb(url: str, catalog: Optional[CardList] = None) -> Deck:
+        '''
+        Imports a deck from [FaB DB](https://fabdb.net).
+
+        Decks may be imported by providing either their full URL
+        (`https://fabdb.net/decks/VGkQMojg`) or unique identifier (`VGkQMojg`).
+
+        Note:
+          To be able to generate cards, a card `catalog` must be provided,
+          defaulting to the global catalog `card.CARD_CATALOG` if unspecified.
+
+        Args:
+          catalog: An optional `CardList` catalog to use instead of the default catalog.
+          url: The full URL or unique identifier of the deck to import.
+
+        Returns:
+          The imported `Deck` object.
+        '''
+        identifier = url.rsplit('/', 1)[-1]
+        data = requests.get(f'{FABDB_API}/{identifier}').json()
+        deck_list = {}
+        for card in data['cards']:
+            full_name = card['name']
+            if 'resource' in card['stats']:
+                full_name += f' ({card["stats"]["resource"]})'
+            deck_list[full_name] = card['total']
+        return Deck.from_deck_list(
+            name = data['name'],
+            deck_list = deck_list,
+            catalog = catalog,
+            format = FABDB_FORMATS.get(data['format'], 'B')
         )
 
     @staticmethod
