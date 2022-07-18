@@ -24,6 +24,8 @@ EXCLUDE_TYPES: list[str] = [
 
 FABDB_API = 'https://api.fabdb.net/decks'
 
+FABDB_API_ALT = 'https://fabdb.net/api/decks'
+
 FABDB_FORMATS = {
     'blitz': 'B',
     'constructed': 'CC'
@@ -507,6 +509,72 @@ class Deck:
                     f.write(f'{v} {k}\n')
             else:
                 raise Exception('specified file path is not a JSON or TXT file')
+
+    @staticmethod
+    def search_fabdb(hero: Card | str, cursor: Optional[str] = None, format: str = 'B', kind: Optional[str] = 'competitive', max_results: int = 30, order: str = 'popular-all') -> dict[str, Any]:
+        '''
+        Searches [FaB DB](https://fabdb.net) for decks matching the specified constraints.
+
+        The result of this method is a `dict` containing two primary keys:
+
+          * `cursor` - A `str` which may be re-passed to the method (along with
+            the same set of other arguments) to retrieve the "next page" of
+            results.
+          * `decks` - A `list` of deck specifications.
+
+        Each deck specification is also a `dict` containing the following keys:
+
+          * `creator` - The FaB DB user name of the deck creator.
+          * `format` - The game format associated with the deck.
+          * `gem_id` - The Gem ID of the deck creator (if available).
+          * `hero` - The full name of the hero.
+          * `id` - The ID of the deck, as would be passed to
+            `Deck.from_fabdb()`.
+          * `kind` - The kind of deck.
+          * `name` - The name of the deck.
+          * `notes` - Any notes associated with the deck (in markdown format).
+          * `url` - The full URL corresponding to the deck.
+
+        Args:
+          cursor: An optional cursor string for iterating through multi-page responses.
+          format: The game format identifier (as would be specified for `Deck` objects).
+          hero: A `Card` or full name string corresponding to the target hero.
+          kind: The type of deck to search for (`"casual"`, `"competitive"`, `"janky"`, `"meme"`, or `None` for no restriction).
+          max_results: The maximum number of results to include in the response.
+          order: The method by which to order search results (`"newest"`, `"popular-7"`, or `"popular-all"`).
+
+        Returns:
+          The results of the search.
+        '''
+        if max_results > 100:
+            raise Exception('please do not exceed 100 max results per request')
+        hero_name = hero if isinstance(hero, str) else hero.full_name
+        if not format in GAME_FORMATS:
+            raise Exception(f'specified format code is not one of {list(GAME_FORMATS.keys())}')
+        fabdb_format = [k for k, v in FABDB_FORMATS.items() if v == format][0]
+        fabdb_kind = '' if kind is None else kind
+        full_url = f'{FABDB_API_ALT}?hero={hero_name}&order={order}&label={fabdb_kind}&format={fabdb_format}&per_page={max_results}'
+        if not cursor is None:
+            full_url += f'&cursor={cursor}'
+        data = requests.get(full_url).json()
+        decks = []
+        for d in data['data']:
+            decks.append({
+                'creator': d['user']['name'],
+                'format': FABDB_FORMATS[d['format']],
+                'gem_id': int(d['user']['gemId']) if d['user']['gemId'] else None,
+                'hero': d['hero']['name'],
+                'id': d['slug'],
+                'kind': d['label'],
+                'name': d['name'],
+                'notes': d['notes'] if d['notes'] else None,
+                'url': f'https://fabdb.net/decks/{d["slug"]}',
+            })
+        return {
+            'cursor': data['links']['next'].rsplit('=', 1)[-1] if not data['links']['next'] is None else None,
+            'decks': decks
+        }
+
 
     def statistics(self, precision: int = 2) -> dict[str, Any]:
         '''
