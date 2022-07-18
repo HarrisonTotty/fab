@@ -35,6 +35,8 @@ RARITY_VALUE: dict[str, int] = {
     'F': 7,
 }
 
+TCGPLAYER_BASE_URL = 'https://www.tcgplayer.com/search/flesh-and-blood-tcg/product?q='
+
 @dataclasses.dataclass
 class Card:
     '''
@@ -368,6 +370,15 @@ class Card:
         '''
         if self.body is None: return 'Specified card does not have any body text.'
         return display(Markdown(self.body))
+
+    def tcgplayer_url(self) -> str:
+        '''
+        Computes the [TCG Player](https://www.tcgplayer.com/) URL for the card.
+
+        Returns:
+          The URL used to search for the card on TCG Player.
+        '''
+        return TCGPLAYER_BASE_URL + self.name
 
     def to_dict(self) -> dict[str, Any]:
         '''

@@ -303,3 +303,11 @@ def test_card_list_statistics():
     assert CL1.pitch_cost_difference()    == -4
     assert CL1.power_defense_difference() == 5
     assert CL1.statistics()['stdev_cost'] == 4.95
+
+def test_tcgplayer_integration():
+    '''
+    Tests methods on cards and card lists associated with TCG Player.
+    '''
+    assert C1.tcgplayer_url() == 'https://www.tcgplayer.com/search/flesh-and-blood-tcg/product?q=Crippling Crush'
+    assert C2.tcgplayer_url() == 'https://www.tcgplayer.com/search/flesh-and-blood-tcg/product?q=Flic Flak'
+    assert C3.tcgplayer_url() == 'https://www.tcgplayer.com/search/flesh-and-blood-tcg/product?q=Chane'
