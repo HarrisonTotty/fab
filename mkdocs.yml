@@ -15,6 +15,7 @@ nav:
       - 'ChainLink': chain-link.md
       - 'CombatChain': combat-chain.md
       - 'Deck': decks.md
+      - 'PlayerProfile': player-profile.md
       - 'PlayerSpace': player-space.md
       - 'graphics': graphics.md
       - 'meta': meta.md
