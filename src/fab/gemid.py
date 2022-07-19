@@ -60,7 +60,10 @@ class PlayerProfile:
         Returns:
           A player profile record associated with the specified Gem ID.
         '''
-        results = [p for p in PlayerProfile.search(id) if p.id == id]
+        try:
+            results = [p for p in PlayerProfile.search(id) if p.id == id]
+        except Exception as e:
+            raise Exception(f'unable to fetch player profile - {e}')
         if not results:
             raise Exception(f'unable to locate player profile associated with id "{id}"')
         return results[0]
@@ -79,9 +82,12 @@ class PlayerProfile:
         '''
         agg_data: dict[int, PlayerProfile] = {}
         for mode in ['xpall', 'xp90', 'elo_cons', 'elo_lim']:
-            data = pandas.read_html(
-                f'{LEADERBOARDS_URL}/?mode={mode}&query={query}'
-            )[0].to_dict('records')
+            try:
+                data = pandas.read_html(
+                    f'{LEADERBOARDS_URL}/?mode={mode}&query={query}'
+                )[0].to_dict('records')
+            except Exception as e:
+                raise Exception(f'unable to fetch leaderboard data - {e}')
             for entry in data:
                 name_parts = entry['Name'].rsplit(' ', 1)
                 name = name_parts[0]
