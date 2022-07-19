@@ -25,6 +25,7 @@ repository  = "https://github.com/HarrisonTotty/fab"
 version     = "0.2.2"
 
 [tool.poetry.dependencies]
+html5lib        = "*"
 IPython         = "*"
 lxml            = "*"
 numpy           = "*"
