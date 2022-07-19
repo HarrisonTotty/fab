@@ -8,6 +8,7 @@ import dataclasses
 import pandas
 
 from typing import Optional
+from urllib.parse import quote
 
 LEADERBOARDS_URL = 'https://fabtcg.com/leaderboards'
 
@@ -81,11 +82,14 @@ class PlayerProfile:
           A list of player profiles matching the search query.
         '''
         agg_data: dict[int, PlayerProfile] = {}
+        _query = quote(query) if isinstance(query, str) else str(query)
         for mode in ['xpall', 'xp90', 'elo_cons', 'elo_lim']:
             try:
                 data = pandas.read_html(
-                    f'{LEADERBOARDS_URL}/?mode={mode}&query={query}'
+                    f'{LEADERBOARDS_URL}/?mode={mode}&query={_query}'
                 )[0].to_dict('records')
+            except ValueError:
+                pass
             except Exception as e:
                 raise Exception(f'unable to fetch leaderboard data - {e}')
             for entry in data:
@@ -99,15 +103,15 @@ class PlayerProfile:
                         name = name
                     )
                 if mode == 'xpall':
-                    agg_data[gem_id].rank_xp = entry['Rank (Lifetime)']
-                    agg_data[gem_id].xp = entry['XP (Lifetime)']
+                    agg_data[gem_id].rank_xp = entry.get('Rank (Lifetime)')
+                    agg_data[gem_id].xp = entry.get('XP (Lifetime)')
                 elif mode == 'xp90':
-                    agg_data[gem_id].rank_xp = entry['Rank (90 Days)']
-                    agg_data[gem_id].xp = entry['XP (90 Days)']
+                    agg_data[gem_id].rank_xp = entry.get('Rank (90 Days)')
+                    agg_data[gem_id].xp = entry.get('XP (90 Days)')
                 elif mode == 'elo_cons':
-                    agg_data[gem_id].elo_cc = entry['Rating']
-                    agg_data[gem_id].rank_elo_cc = entry['Rank']
+                    agg_data[gem_id].elo_cc = entry.get('Rating')
+                    agg_data[gem_id].rank_elo_cc = entry.get('Rank')
                 elif mode == 'elo_lim':
-                    agg_data[gem_id].elo_lim = entry['Rating']
-                    agg_data[gem_id].rank_elo_lim = entry['Rank']
+                    agg_data[gem_id].elo_lim = entry.get('Rating')
+                    agg_data[gem_id].rank_elo_lim = entry.get('Rank')
         return list(agg_data.values())
