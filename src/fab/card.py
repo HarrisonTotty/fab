@@ -184,19 +184,21 @@ class Card:
         '''
         return Card(**json.loads(jsonstr))
 
-    def image(self, index: int = -1) -> Any:
+    def image(self, height: int = 314, index: int = -1, width: int = 225) -> Any:
         '''
         Display an image of this card, optionally providing an alternative
         index to use.
 
         Args:
+          height: The height to scale the resulting image to, in pixels.
           index: The target `image_urls` index to fetch image data for.
+          width: The width to scale the resulting image to, in pixels.
 
         Returns:
           The image representation of the card.
         '''
         if not self.image_urls: return 'No images available'
-        return display(Image(self.image_urls[index]))
+        return display(Image(self.image_urls[index], height=height, width=width))
 
     def is_action(self) -> bool:
         '''
