@@ -11,6 +11,7 @@ import os
 import random
 import requests
 
+from IPython.display import display, Markdown
 from typing import Any, Optional
 
 from .card import Card, CardList
@@ -67,6 +68,7 @@ class Deck:
       hero: The hero card associated with the deck.
       inventory: The list of weapon/equipment cards associated with the deck (not including items).
       name: An arbitrary name for the deck.
+      notes: Any additional notes to include about the deck, in Markdown format.
       tokens: Any token cards associated with the deck.
     '''
 
@@ -75,6 +77,7 @@ class Deck:
     cards: CardList = CardList.empty()
     format: str = 'B'
     inventory: CardList = CardList.empty()
+    notes: Optional[str] = None
     tokens: CardList = CardList.empty()
 
     def __getitem__(self, index: int | slice) -> Card | CardList:
@@ -302,7 +305,7 @@ class Deck:
             return initial
 
     @staticmethod
-    def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'B') -> Deck:
+    def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'B', notes: Optional[str] = None) -> Deck:
         '''
         Constructs a deck from the given deck list dictionary, where keys
         correspond to the full name of a card and values are their counts.
@@ -316,6 +319,7 @@ class Deck:
           deck_list: The deck list to create the `Deck` from.
           catalog: An optional `CardList` catalog to use instead of the default catalog.
           format: The game format of the deck, being any valid `Deck.format`.
+          notes: Any additional notes to include with the deck, in Markdown format.
 
         Returns:
           A new `Deck` built from the specified deck list.
@@ -339,6 +343,7 @@ class Deck:
             hero = hero,
             inventory = CardList(inventory),
             name = name,
+            notes = notes,
             tokens = CardList(tokens)
         )
 
@@ -373,7 +378,8 @@ class Deck:
             name = data['name'],
             deck_list = deck_list,
             catalog = catalog,
-            format = FABDB_FORMATS.get(data['format'], 'B')
+            format = FABDB_FORMATS.get(data['format'], 'B'),
+            notes = data['notes'] if data['notes'] else None
         )
 
     @staticmethod
@@ -394,6 +400,7 @@ class Deck:
             hero      = Card(**data['hero']),
             inventory = CardList([Card(**c) for c in data['inventory']]),
             name      = data['name'],
+            notes     = data.get('notes'),
             tokens    = CardList([Card(**c) for c in data['tokens']])
         )
 
@@ -493,6 +500,18 @@ class Deck:
                 return Deck.from_deck_list(name, deck_list, format=format)
             else:
                 raise Exception('specified file path is not a JSON or TXT file')
+
+    def render_notes(self) -> Any:
+        '''
+        Renders the notes of this deck as a Markdown cell.
+
+        Returns:
+          The IPython-rendered markdown output.
+        '''
+        if not self.notes is None:
+            return display(Markdown(self.notes))
+        else:
+            raise Exception('specified deck does not contain any notes')
 
     def save(self, file_path: str):
         '''
@@ -629,6 +648,7 @@ class Deck:
             'hero': self.hero.to_dict(),
             'inventory': self.inventory.to_list(),
             'name': self.name,
+            'notes': self.notes,
             'tokens': self.tokens.to_list()
         }
 

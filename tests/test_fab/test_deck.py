@@ -23,6 +23,7 @@ def test_deck_rep():
         'hero': C3.to_dict(),
         'inventory': [],
         'name': 'Test',
+        'notes': None,
         'tokens': []
     }
 
