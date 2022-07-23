@@ -368,12 +368,13 @@ class Card:
         '''
         return [RARITIES[r] for r in self.rarities]
 
-    def render(self, heading_level: str = '###') -> Any:
+    def render(self, heading_level: str = '###', icon_size: int = 11) -> Any:
         '''
         Renders this card into a markdown representation.
 
         Args:
           heading_level: Specifies the initial heading level of the card.
+          icon_size: Specified the target width of icon images.
 
         Returns:
           The IPython-rendered markdown output.
@@ -382,7 +383,7 @@ class Card:
         if not self.body is None:
             with_images = self.body
             for k, v in ICON_CODE_IMAGE_URLS.items():
-                with_images = with_images.replace(k, f'![{k}]({v})')
+                with_images = with_images.replace(k, f'<img src="{v}" alt="{k}" width="{icon_size}"/>')
             mdstr += f'{with_images}\n\n'
         if not self.flavor_text is None:
             mdstr += f'{self.flavor_text}\n\n'
@@ -401,9 +402,12 @@ class Card:
             mdstr += f'| Resource Cost | {self.cost} |\n'
         return display(Markdown(mdstr))
 
-    def render_body(self) -> Any:
+    def render_body(self, icon_size: int = 11) -> Any:
         '''
         Renders the body text of this card as markdown output.
+
+        Args:
+          icon_size: Specified the target width of icon images.
 
         Returns:
           The IPython-rendered markdown output.
@@ -411,7 +415,7 @@ class Card:
         if self.body is None: return 'Specified card does not have any body text.'
         with_images = self.body
         for k, v in ICON_CODE_IMAGE_URLS.items():
-            with_images = with_images.replace(k, f'![{k}]({v})')
+            with_images = with_images.replace(k, f'<img src="{v}" alt="{k}" width="{icon_size}"/>')
         return display(Markdown(with_images))
 
     def tcgplayer_url(self) -> str:
