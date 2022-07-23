@@ -77,8 +77,10 @@ def test_card_methods():
     '''
     assert C1.is_action()
     assert C1.is_attack()
+    assert C1.is_red()
     assert not C1.is_attack_reaction()
     assert not C1.is_aura()
+    assert not C1.is_blue()
     assert not C1.is_defense_reaction()
     assert not C1.is_equipment()
     assert not C1.is_hero()
@@ -87,16 +89,20 @@ def test_card_methods():
     assert not C1.is_reaction()
     assert not C1.is_token()
     assert not C1.is_weapon()
+    assert not C1.is_yellow()
     assert C2.is_defense_reaction()
     assert C2.is_reaction()
+    assert C2.is_yellow()
     assert not C2.is_action()
     assert not C2.is_attack()
     assert not C2.is_attack_reaction()
     assert not C2.is_aura()
+    assert not C2.is_blue()
     assert not C2.is_equipment()
     assert not C2.is_hero()
     assert not C2.is_instant()
     assert not C2.is_item()
+    assert not C2.is_red()
     assert not C2.is_token()
     assert not C2.is_weapon()
     assert C3.is_hero()
@@ -104,13 +110,16 @@ def test_card_methods():
     assert not C3.is_attack()
     assert not C3.is_attack_reaction()
     assert not C3.is_aura()
+    assert not C3.is_blue()
     assert not C3.is_defense_reaction()
     assert not C3.is_equipment()
     assert not C3.is_instant()
     assert not C3.is_item()
     assert not C3.is_reaction()
+    assert not C3.is_red()
     assert not C3.is_token()
     assert not C3.is_weapon()
+    assert not C3.is_yellow()
 
 def test_card_values():
     '''
@@ -202,6 +211,8 @@ def test_card_list_filtering():
     # pitch
     assert set(CL1.filter(pitch=(1,2)))                         == set([C1, C2])
     assert set(CL1.filter(pitch=(1,2), negate=True))               == set([C3])
+    assert set(CL1.filter(pitch='red'))                         == set([C1])
+    assert set(CL1.filter(pitch='y'))                           == set([C2])
     # power
     assert set(CL1.filter(power=11))                            == set([C1])
     assert set(CL1.filter(power=11, negate=True))                  == set([C2, C3])
@@ -288,6 +299,9 @@ def test_card_list_statistics():
     assert CL1.min_intelligence()    == 4
     assert CL1.min_pitch()           == 1
     assert CL1.min_power()           == 11
+    assert CL1.num_blue()            == 0
+    assert CL1.num_red()             == 1
+    assert CL1.num_yellow()          == 1
     assert CL1.stdev_cost()          == 4.95
     assert CL1.stdev_defense()       == 0.0
     assert CL1.stdev_health()        == 0.0
