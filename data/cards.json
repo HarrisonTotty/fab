@@ -710,8 +710,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Intimidate",
-      "Rhinar Specialization"
+      "Rhinar Specialization",
+      "Intimidate"
     ],
     "legality": {
       "B": true,
@@ -1209,8 +1209,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -1259,8 +1259,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -1311,8 +1311,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -1957,8 +1957,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -2003,8 +2003,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -2047,8 +2047,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -4238,8 +4238,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Attack"
+      "Attack",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -4536,8 +4536,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5032,9 +5032,9 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
+      "Dominate",
       "Combo",
-      "Dominate"
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5078,9 +5078,9 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
+      "Dominate",
       "Combo",
-      "Dominate"
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5122,9 +5122,9 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
+      "Dominate",
       "Combo",
-      "Dominate"
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5466,8 +5466,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5517,8 +5517,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5566,8 +5566,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5765,8 +5765,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5820,8 +5820,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -5873,8 +5873,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -6263,8 +6263,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Dorinthea Specialization"
+      "Dorinthea Specialization",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -6354,8 +6354,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Reprise",
-      "Dorinthea Specialization"
+      "Dorinthea Specialization",
+      "Reprise"
     ],
     "legality": {
       "B": true,
@@ -11340,8 +11340,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Legendary",
-      "Opt 2"
+      "Opt 2",
+      "Legendary"
     ],
     "legality": {
       "B": true,
@@ -11497,8 +11497,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Attack"
+      "Attack",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -11551,8 +11551,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Battleworn",
-      "Go again"
+      "Go again",
+      "Battleworn"
     ],
     "legality": {
       "B": true,
@@ -12140,8 +12140,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Arcane Barrier 2"
+      "Arcane Barrier 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -13301,9 +13301,9 @@
     "intelligence": null,
     "keywords": [
       "Opt 1",
+      "Blade Break",
       "Arcane Barrier 1",
-      "Go again",
-      "Blade Break"
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -13538,8 +13538,8 @@
     "intelligence": null,
     "keywords": [
       "Azalea Specialization",
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -13887,8 +13887,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -13935,8 +13935,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -13981,8 +13981,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -15021,8 +15021,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Battleworn",
-      "Go again"
+      "Go again",
+      "Battleworn"
     ],
     "legality": {
       "B": true,
@@ -15117,8 +15117,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Dominate",
-      "Viserai Specialization"
+      "Viserai Specialization",
+      "Dominate"
     ],
     "legality": {
       "B": true,
@@ -15250,8 +15250,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Viserai Specialization"
+      "Viserai Specialization",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -19676,8 +19676,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -19720,8 +19720,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -19764,8 +19764,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -20716,8 +20716,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -20759,8 +20759,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -20802,8 +20802,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -21138,8 +21138,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 3"
+      "Opt 3",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -21184,8 +21184,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -21228,8 +21228,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Legendary",
-      "Viserai Specialization"
+      "Viserai Specialization",
+      "Legendary"
     ],
     "legality": {
       "B": true,
@@ -21326,8 +21326,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Attack"
+      "Attack",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -21378,8 +21378,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Arcane Barrier 2"
+      "Arcane Barrier 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -22119,8 +22119,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Temper"
+      "Temper",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -23055,8 +23055,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Attack"
+      "Attack",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -23110,8 +23110,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Attack"
+      "Attack",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -23256,8 +23256,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -23487,8 +23487,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -23534,8 +23534,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -23581,8 +23581,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -24133,8 +24133,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Ira Specialization"
+      "Ira Specialization",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -24334,8 +24334,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Temper"
+      "Temper",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -25147,8 +25147,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Attack"
+      "Attack",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -25195,8 +25195,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Arcane Barrier 2"
+      "Arcane Barrier 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -26002,8 +26002,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blade Break"
+      "Blade Break",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -26092,8 +26092,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -28318,8 +28318,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Legendary"
+      "Legendary",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -28972,8 +28972,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Legendary"
+      "Legendary",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -30578,8 +30578,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Boltyn Specialization"
+      "Boltyn Specialization",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -30623,8 +30623,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Charge",
-      "Boltyn Specialization"
+      "Boltyn Specialization",
+      "Charge"
     ],
     "legality": {
       "B": true,
@@ -33011,8 +33011,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Spellvoid 1"
+      "Spellvoid 1",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -33834,8 +33834,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Battleworn",
-      "Go again"
+      "Go again",
+      "Battleworn"
     ],
     "legality": {
       "B": true,
@@ -35319,8 +35319,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -35365,8 +35365,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -35411,8 +35411,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -36022,8 +36022,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -36284,8 +36284,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 3"
+      "Opt 3",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -36327,8 +36327,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Opt 2"
+      "Opt 2",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -36415,8 +36415,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -36462,8 +36462,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -36509,8 +36509,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -37098,8 +37098,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -37144,8 +37144,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -37188,8 +37188,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -37234,8 +37234,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -37281,8 +37281,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -37326,8 +37326,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -37556,8 +37556,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Chane Specialization",
-      "Legendary"
+      "Legendary",
+      "Chane Specialization"
     ],
     "legality": {
       "B": true,
@@ -37944,9 +37944,9 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Chane Specialization",
+      "Go again",
       "Legendary",
-      "Go again"
+      "Chane Specialization"
     ],
     "legality": {
       "B": true,
@@ -37992,8 +37992,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -38036,8 +38036,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -38078,8 +38078,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Blood Debt"
+      "Blood Debt",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -38868,8 +38868,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Attack"
+      "Attack",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -39324,8 +39324,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Battleworn",
-      "Go again"
+      "Go again",
+      "Battleworn"
     ],
     "legality": {
       "B": true,
@@ -42331,8 +42331,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Spellvoid 1"
+      "Spellvoid 1",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -42669,8 +42669,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Legendary"
+      "Legendary",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -42860,8 +42860,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Ice Fusion",
-      "Oldhim Specialization"
+      "Oldhim Specialization",
+      "Ice Fusion"
     ],
     "legality": {
       "B": true,
@@ -42904,8 +42904,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Dominate",
-      "Earth and Ice Fusion"
+      "Earth and Ice Fusion",
+      "Dominate"
     ],
     "legality": {
       "B": true,
@@ -43793,8 +43793,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Ice Fusion"
+      "Ice Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -43837,8 +43837,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Ice Fusion"
+      "Ice Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -43881,8 +43881,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Ice Fusion"
+      "Ice Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -43929,8 +43929,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Earth Fusion"
+      "Earth Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -43977,8 +43977,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Earth Fusion"
+      "Earth Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -44023,8 +44023,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Earth Fusion"
+      "Earth Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -44076,8 +44076,8 @@
     ],
     "intelligence": 4,
     "keywords": [
-      "Go again",
-      "Essence of Ice and Lightning"
+      "Essence of Ice and Lightning",
+      "Go again"
     ],
     "legality": {
       "B": false,
@@ -44131,8 +44131,8 @@
     ],
     "intelligence": 4,
     "keywords": [
-      "Go again",
-      "Essence of Ice and Lightning"
+      "Essence of Ice and Lightning",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -44368,8 +44368,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Ice and Lightning Fusion"
+      "Ice and Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45093,8 +45093,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45140,8 +45140,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45185,8 +45185,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45658,8 +45658,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45701,9 +45701,9 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
+      "Briar Specialization",
       "Earth Fusion",
-      "Briar Specialization"
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45880,8 +45880,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45926,8 +45926,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -45970,8 +45970,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -46555,8 +46555,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Earth Fusion"
+      "Earth Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -46600,8 +46600,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Earth Fusion"
+      "Earth Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -46645,8 +46645,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Earth Fusion"
+      "Earth Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -46818,8 +46818,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Earth and/or Lightning Fusion"
+      "Earth and/or Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -46862,8 +46862,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Ice and/or Lightning Fusion"
+      "Ice and/or Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -47208,8 +47208,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -47255,8 +47255,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -47298,8 +47298,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Lightning Fusion"
+      "Lightning Fusion",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -47784,8 +47784,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Legendary"
+      "Legendary",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -49123,9 +49123,9 @@
     ],
     "intelligence": null,
     "keywords": [
+      "Blade Break",
       "Arcane Barrier 1",
-      "Go again",
-      "Blade Break"
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -49216,8 +49216,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Channel Ice"
+      "Channel Ice",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -50467,8 +50467,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Channel Lightning"
+      "Channel Lightning",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -52228,8 +52228,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -52274,8 +52274,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -52318,8 +52318,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -52364,8 +52364,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -52408,8 +52408,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -52450,8 +52450,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Reload"
+      "Reload",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -53245,8 +53245,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Kayo Specialization"
+      "Kayo Specialization",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -53326,8 +53326,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -53367,8 +53367,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -53408,8 +53408,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -53810,9 +53810,9 @@
     ],
     "intelligence": 4,
     "keywords": [
+      "Ice",
       "Essence of Earth",
-      "and Lightning",
-      "Ice"
+      "and Lightning"
     ],
     "legality": {
       "B": false,
@@ -54073,8 +54073,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Battleworn",
-      "Temper"
+      "Temper",
+      "Battleworn"
     ],
     "legality": {
       "B": true,
@@ -54693,8 +54693,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Benji Specialization"
+      "Benji Specialization",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -54778,8 +54778,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -54821,8 +54821,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -54864,8 +54864,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Combo"
+      "Combo",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -55959,8 +55959,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Opt 1",
-      "Data Doll Specialization"
+      "Data Doll Specialization",
+      "Opt 1"
     ],
     "legality": {
       "B": true,
@@ -56325,8 +56325,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Boost",
-      "Opt X"
+      "Opt X",
+      "Boost"
     ],
     "legality": {
       "B": true,
@@ -56367,8 +56367,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Boost",
-      "Opt X"
+      "Opt X",
+      "Boost"
     ],
     "legality": {
       "B": true,
@@ -56409,8 +56409,8 @@
     ],
     "intelligence": null,
     "keywords": [
-      "Boost",
-      "Opt X"
+      "Opt X",
+      "Boost"
     ],
     "legality": {
       "B": true,
@@ -61109,8 +61109,8 @@
     "image_urls": [],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Dorinthea Specialization"
+      "Dorinthea Specialization",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -61725,8 +61725,8 @@
     "image_urls": [],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Intimidate"
+      "Intimidate",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -65997,8 +65997,8 @@
     "image_urls": [],
     "intelligence": null,
     "keywords": [
-      "Rupture",
-      "Dromai or Fai Specialization"
+      "Dromai or Fai Specialization",
+      "Rupture"
     ],
     "legality": {
       "B": true,
@@ -66038,9 +66038,9 @@
     "image_urls": [],
     "intelligence": null,
     "keywords": [
+      "Dromai or Fai Specialization",
       "Rupture",
-      "Dominate",
-      "Dromai or Fai Specialization"
+      "Dominate"
     ],
     "legality": {
       "B": true,
@@ -66735,8 +66735,8 @@
     "image_urls": [],
     "intelligence": null,
     "keywords": [
-      "Ice Fusion",
-      "Iyslander Specialization"
+      "Iyslander Specialization",
+      "Ice Fusion"
     ],
     "legality": {
       "B": true,
@@ -67825,8 +67825,8 @@
     "image_urls": [],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Freeze"
+      "Freeze",
+      "Go again"
     ],
     "legality": {
       "B": true,
@@ -67865,8 +67865,8 @@
     "image_urls": [],
     "intelligence": null,
     "keywords": [
-      "Go again",
-      "Channel Ice"
+      "Channel Ice",
+      "Go again"
     ],
     "legality": {
       "B": true,
