@@ -13,6 +13,7 @@ import json
 import os
 
 from collections import UserDict
+from pandas import DataFrame
 from typing import Any, Optional
 
 from IPython.utils.text import indent
@@ -306,6 +307,15 @@ class CardSetCollection(UserDict):
                 f.write(self.to_json())
             else:
                 raise Exception('specified file path is not a JSON file')
+
+    def to_dataframe(self) -> DataFrame:
+        '''
+        Converts the list of card sets into a [pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html).
+
+        Returns:
+          A pandas `DataFrame` object representing the list of card sets.
+        '''
+        return DataFrame(self.data)
 
     def to_json(self) -> str:
         '''

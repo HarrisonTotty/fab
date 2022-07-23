@@ -14,6 +14,7 @@ import random
 
 from collections import UserList
 from IPython.display import display, Image, Markdown
+from pandas import DataFrame, Series
 from statistics import mean, median, stdev
 from typing import Any, Optional
 from unidecode import unidecode
@@ -233,6 +234,15 @@ class Card:
         '''
         return 'Aura' in self.types
 
+    def is_blue(self) -> bool:
+        '''
+        Whether this is a blue card.
+
+        Returns:
+          Whether this card pitches for 3 resources.
+        '''
+        return self.pitch == 3 if isinstance(self.pitch, int) else False
+
     def is_defense_reaction(self) -> bool:
         '''
         Whether this card is a defense reaction card.
@@ -304,6 +314,15 @@ class Card:
         '''
         return self.is_attack_reaction() or self.is_defense_reaction()
 
+    def is_red(self) -> bool:
+        '''
+        Whether this is a red card.
+
+        Returns:
+          Whether this card pitches for 1 resource.
+        '''
+        return self.pitch == 1 if isinstance(self.pitch, int) else False
+
     def is_token(self) -> bool:
         '''
         Whether this card is a token card.
@@ -321,6 +340,15 @@ class Card:
           Whether the card contains the _Weapon_ type.
         '''
         return 'Weapon' in self.types
+
+    def is_yellow(self) -> bool:
+        '''
+        Whether this is a yellow card.
+
+        Returns:
+          Whether this card pitches for 2 resources.
+        '''
+        return self.pitch == 2 if isinstance(self.pitch, int) else False
 
     def keys(self) -> list[str]:
         '''
@@ -397,6 +425,16 @@ class Card:
           A JSON string representation of the card.
         '''
         return json.dumps(self.__dict__, indent=JSON_INDENT)
+
+    def to_series(self) -> Series:
+        '''
+        Converts the card into a [pandas Series
+        object](https://pandas.pydata.org/docs/reference/series.html).
+
+        Returns:
+          A pandas `Series` object associated with the card.
+        '''
+        return Series(self.to_dict())
 
 
 class CardList(UserList):
@@ -599,7 +637,7 @@ class CardList(UserList):
         In addition to functions/lambdas, you can also specify:
 
         * A `str` for the `body`, `full_name`, `name`, or `type_text` keyword
-          arguments. These comparisons are case-insentitive and will match
+          arguments. These comparisons are case-insensitive and will match
           substrings.
         * An `int` for the `cost`, `defense`, `health`, `intelligence`,
           `pitch`, or `power` keyword arguments. `None` and `str` values
@@ -613,8 +651,11 @@ class CardList(UserList):
         * A `str` for the `grants`, `keywords`, `rarities`, `sets`, `tags`,
           and `types` keyword arguments. This is the same as passing in a
           single-element list.
-        * A `str` for the `legality` keyword, corresponding to a format code
-          that the card must be legal in to be included.
+        * A `str` for the `legality` keyword argument, corresponding to a format
+          code that the card must be legal in to be included.
+        * The strings `r`, `red`, `y`, `yellow`, `b`, or `blue` for the `pitch`
+          keyword argument, corresponding to the color of the card
+          (case-insensitive).
 
         Args:
           body: A `str` or function to filter by `body`.
@@ -628,7 +669,7 @@ class CardList(UserList):
           legality: A `str` or function to filter by `legality`.
           name: A `str` or function to filter by `name`.
           negate: Whether to invert the filter specification.
-          pitch: An `int`, `tuple[int, int]`, or function to filter by `pitch`.
+          pitch: An `int`, `str`, `tuple[int, int]`, or function to filter by `pitch`.
           power: An `int`, `tuple[int, int]`, or function to filter by `power`.
           rarities: A `str`, `list[str]` or function to filter by `rarities`.
           sets: A `str`, `list[str]`, or function to filter by `sets`.
@@ -788,6 +829,18 @@ class CardList(UserList):
                         if isinstance(c.pitch, int) and pitch == c.pitch: continue
                     else:
                         if not isinstance(c.pitch, int) or pitch != c.pitch: continue
+                elif isinstance(pitch, str):
+                    pl = pitch.lower()
+                    if not pl in ['r', 'red', 'y', 'yellow', 'b', 'blue']:
+                        raise Exception(f'unknown pitch filter string "{pitch}"')
+                    if negate:
+                        if pl.startswith('b') and c.is_blue(): continue
+                        elif pl.startswith('r') and c.is_red(): continue
+                        elif pl.startswith('y') and c.is_yellow(): continue
+                    else:
+                        if pl.startswith('b') and not c.is_blue(): continue
+                        elif pl.startswith('r') and not c.is_red(): continue
+                        elif pl.startswith('y') and not c.is_yellow(): continue
                 elif isinstance(pitch, tuple):
                     if negate:
                         if isinstance(c.pitch, int) and c.pitch >= pitch[0] and c.pitch <= pitch[1]: continue
@@ -1731,6 +1784,33 @@ class CardList(UserList):
         '''
         return sorted(list(set([card.name for card in self.data])))
 
+    def num_blue(self) -> int:
+        '''
+        Returns the number of "blue" cards (pitch 3) in this card list.
+
+        Returns:
+          The number of cards in this card list that pitch for 3 resources.
+        '''
+        return len(self.filter(pitch=3))
+
+    def num_red(self) -> int:
+        '''
+        Returns the number of "red" cards (pitch 1) in this card list.
+
+        Returns:
+          The number of cards in this card list that pitch for 1 resource.
+        '''
+        return len(self.filter(pitch=1))
+
+    def num_yellow(self) -> int:
+        '''
+        Returns the number of "yellow" cards (pitch 2) in this card list.
+
+        Returns:
+          The number of cards in this card list that pitch for 2 resources.
+        '''
+        return len(self.filter(pitch=2))
+
     def pitch_cost_difference(self) -> int:
         '''
         Returns the difference between the pitch and cost values of all cards.
@@ -1942,6 +2022,9 @@ class CardList(UserList):
             'min_intelligence': self.min_intelligence(),
             'min_pitch': self.min_pitch(),
             'min_power': self.min_power(),
+            'num_blue': self.num_blue(),
+            'num_red': self.num_red(),
+            'num_yellow': self.num_yellow(),
             'pitch_cost_difference': self.pitch_cost_difference(),
             'power_defense_difference': self.power_defense_difference(),
             'stdev_cost': self.stdev_cost(precision),
@@ -2077,6 +2160,15 @@ class CardList(UserList):
             return round(stdev(array), precision)
         else:
             return 0.0
+
+    def to_dataframe(self) -> DataFrame:
+        '''
+        Converts the list of cards into a [pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html).
+
+        Returns:
+          A pandas `DataFrame` object representing the list of cards.
+        '''
+        return DataFrame(self.data)
 
     def to_json(self) -> str:
         '''
