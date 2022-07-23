@@ -19,7 +19,7 @@ from statistics import mean, median, stdev
 from typing import Any, Optional
 from unidecode import unidecode
 
-from .meta import GAME_FORMATS
+from .meta import GAME_FORMATS, ICON_CODE_IMAGE_URLS, RARITIES
 
 CARD_CATALOG: Optional[CardList] = None
 
@@ -359,6 +359,15 @@ class Card:
         '''
         return list(self.__dict__.keys())
 
+    def rarity_names(self) -> list[str]:
+        '''
+        Returns the full names of the rarities associated with this card.
+
+        Returns:
+          A `list` of card rarity names associated with the card.
+        '''
+        return [RARITIES[r] for r in self.rarities]
+
     def render(self, heading_level: str = '###') -> Any:
         '''
         Renders this card into a markdown representation.
@@ -371,7 +380,10 @@ class Card:
         '''
         mdstr = f'{heading_level} {self.name} _({self.type_text})_\n\n'
         if not self.body is None:
-            mdstr += f'{self.body}\n\n'
+            with_images = self.body
+            for k, v in ICON_CODE_IMAGE_URLS.items():
+                with_images = with_images.replace(k, f'![{k}]({v})')
+            mdstr += f'{with_images}\n\n'
         if not self.flavor_text is None:
             mdstr += f'{self.flavor_text}\n\n'
         mdstr += '| Attribute | Value |\n|---|---|\n'
@@ -397,7 +409,10 @@ class Card:
           The IPython-rendered markdown output.
         '''
         if self.body is None: return 'Specified card does not have any body text.'
-        return display(Markdown(self.body))
+        with_images = self.body
+        for k, v in ICON_CODE_IMAGE_URLS.items():
+            with_images = with_images.replace(k, f'![{k}]({v})')
+        return display(Markdown(with_images))
 
     def tcgplayer_url(self) -> str:
         '''

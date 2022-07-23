@@ -40,6 +40,7 @@ MAX_SAME_CARD: dict[str, int] = {
     'B': 2,
     'C': 2,
     'CC': 3,
+    'D': 2,
     'UPF': 3
 }
 
@@ -47,6 +48,7 @@ TARGET_DECK_SIZE: dict[str, int] = {
     'B': 40,
     'C': 40,
     'CC': 60,
+    'D': 30,
     'UPF': 60
 }
 
@@ -54,6 +56,7 @@ TARGET_INV_SIZE: dict[str, int] = {
     'B': 11,
     'C': 11,
     'CC': 20,
+    'D': 5,
     'UPF': 20
 }
 
@@ -404,9 +407,30 @@ class Deck:
             tokens    = CardList([Card(**c) for c in data['tokens']])
         )
 
-    def is_valid(self, ignore_hero_legality: bool = False, ignore_legality: bool = False) -> tuple[bool, Optional[str]]:
+    def is_valid(
+        self,
+        ignore_copy_limits: bool = False,
+        ignore_hero_legality: bool = False,
+        ignore_inv_size_limits: bool = False,
+        ignore_legality: bool = False,
+        ignore_size_limits: bool = False,
+    ) -> tuple[bool, Optional[str]]:
         '''
         Returns whether this is a valid and legal deck given its format.
+
+        Unless otherwise specified, in general this method ensures:
+
+          1. The deck contains at least one hero, inventory card, and main deck
+             card.
+          2. The deck has a valid game format code.
+          3. The deck doesn't have any invalid card placements (like inventory
+             cards in the main deck).
+          4. All cards (including hero) are currently legal for play.
+          5. Main deck and inventory deck sizes conform to the specified format.
+          6. The deck doesn't contain too many copies of a particular card
+             (according to the specified format).
+          7. The deck only contains cards which adhere to the specified format's
+             rarity requirements.
 
         Tip: Warning
           This function currently does not validate any restrictions printed on
@@ -415,8 +439,11 @@ class Deck:
           multiple rarities.
 
         Args:
+          ignore_copy_limits: Whether to ignore limits around the allowed number of card copies.
           ignore_hero_legality: Whether to ignore the current legal status of the hero card.
+          ignore_inv_size_limits: Whether to ignore any maximum/minimum inventory deck size limits.
           ignore_legality: Whether to ignore the current legal status of cards (not including the hero).
+          ignore_size_limits: Whether to ignore any maximum/minimum size limits of the main deck.
 
         Returns:
           A `tuple` of the form `(<answer>, <reason>)`.
@@ -424,9 +451,9 @@ class Deck:
         all_cards = self.all_cards()
         # Common
         if not self.format in GAME_FORMATS: return (False, f'Common: Specified deck format code is not one of {list(GAME_FORMATS.keys())}.')
-        if len(self.cards) < 1: return (False, 'Common: Deck does not contain any "main" cards.')
+        if not ignore_size_limits and len(self.cards) < 1: return (False, 'Common: Deck does not contain any "main" cards.')
         if any(card.is_equipment() or card.is_weapon() or card.is_hero() for card in self.cards): return (False, 'Common: Main deck contains invalid cards (like equipment) - move these cards to their appropriate field, even when playing Classic Constructed.')
-        if len(self.inventory) < 1: return (False, 'Common: Deck does not contain any inventory cards.')
+        if not ignore_inv_size_limits and len(self.inventory) < 1: return (False, 'Common: Deck does not contain any inventory cards.')
         if any(not (card.is_equipment() or card.is_weapon()) for card in self.inventory): return (False, 'Common: Inventory deck contains non-equipment/weapon cards - move these cards to their appropriate field.')
         if not self.hero.is_hero(): return (False, 'Common: Deck `hero` is not a hero card.')
         if not ignore_hero_legality:
@@ -443,20 +470,46 @@ class Deck:
                 if not card.is_legal(self.format):
                     return (False, f'{GAME_FORMATS[self.format]}: Card "{card.full_name}" is not currently legal in this format.')
         if self.format == 'B':
-            if len(self.cards) != 40: return (False, 'Blitz: Main deck may only contain 40 cards.')
-            if len(self.inventory) > 11: return (False, 'Blitz: Inventory deck may not contain more than 11 cards.')
-            if not 'Young' in self.hero.types: return (False, 'Blitz: Deck must use a "young" hero.')
-            if any(v > 2 for v in all_cards.counts().values()): return (False, 'Blitz: Only up to two copies of each unique card are allowed.')
-        elif self.format == 'CC':
-            if len(self) > 80: return (False, 'Classic Constructed: Deck may not contain more than 80 cards (including inventory).')
-            if len(self.cards) < 60: return (False, 'Classic Constructed: Main Deck must contain at least 60 cards (excluding inventory).')
-            if any(v > 3 for v in all_cards.counts().values()): return (False, 'Classic Constructed: Only up to three copies of each unique card are allowed.')
+            if not ignore_size_limits and len(self.cards) != 40:
+                return (False, 'Blitz: Main deck may only contain 40 cards.')
+            if not ignore_inv_size_limits and len(self.inventory) > 11:
+                return (False, 'Blitz: Inventory deck may not contain more than 11 cards.')
+            if not 'Young' in self.hero.types:
+                return (False, 'Blitz: Deck must use a "young" hero.')
+            if not ignore_copy_limits and any(v > 2 for v in all_cards.counts().values()):
+                return (False, 'Blitz: Only up to two copies of each unique card are allowed.')
         elif self.format == 'C':
-            if len(self.cards) != 40: return (False, 'Commoner: Main deck may only contain 40 cards.')
-            if len(self.inventory) > 11: return (False, 'Commoner: Inventory deck may not contain more than 11 cards.')
-            if not 'Young' in self.hero.types: return (False, 'Commoner: Deck must use a "young" hero.')
-            if any(v > 2 for v in all_cards.counts().values()): return (False, 'Commoner: Only up to two copies of each unique card are allowed.')
-            if any(not 'C' in card.rarities for card in self.cards): return (False, 'Commoner: Main deck may only contain "Common" cards.')
+            if not ignore_size_limits and len(self.cards) != 40:
+                return (False, 'Commoner: Main deck may only contain 40 cards.')
+            if not ignore_inv_size_limits and len(self.inventory) > 11:
+                return (False, 'Commoner: Inventory deck may not contain more than 11 cards.')
+            if not 'Young' in self.hero.types:
+                return (False, 'Commoner: Deck must use a "young" hero.')
+            if not ignore_copy_limits and any(v > 2 for v in all_cards.counts().values()):
+                return (False, 'Commoner: Only up to two copies of each unique card are allowed.')
+            if any(not 'C' in card.rarities for card in self.cards):
+                return (False, 'Commoner: Main deck may only contain "Common" cards.')
+        elif self.format == 'CC':
+            if not ignore_size_limits and not ignore_inv_size_limits:
+                if len(self) > 80:
+                    return (False, 'Classic Constructed: Deck may not contain more than 80 cards (including inventory).')
+                if len(self.cards) < 60:
+                    return (False, 'Classic Constructed: Main Deck must contain at least 60 cards (excluding inventory).')
+            elif not ignore_size_limits and ignore_inv_size_limits:
+                if len(self.cards) > 80:
+                    return (False, 'Classic Constructed: Main Deck may not contain more than 80 cards (when ignoring inventory deck size).')
+                if len(self.cards) < 60:
+                    return (False, 'Classic Constructed: Main Deck must contain at least 60 cards (excluding inventory).')
+            elif ignore_size_limits and not ignore_inv_size_limits:
+                if len(self.inventory) > 20:
+                    return (False, 'Classic Constructed: Inventory deck cannot contain more than 20 cards (when ignoring main deck size).')
+            if not ignore_copy_limits and any(v > 3 for v in all_cards.counts().values()):
+                return (False, 'Classic Constructed: Only up to three copies of each unique card are allowed.')
+        elif self.format == 'D':
+            if not ignore_size_limits and len(self.cards) < 30:
+                return (False, 'Draft: Main deck must contain at least 30 cards.')
+            if not 'Young' in self.hero.types:
+                return (False, 'Draft: Deck must use a "young" hero.')
         elif self.format == 'UPF':
             return (True, 'Ultimate Pit Fight: Warning, UPF has not been implemented, only common checks have been validated.')
         return (True, None)

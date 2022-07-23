@@ -74,6 +74,7 @@ GAME_FORMATS: dict[str, str] = {
     'B': 'Blitz',
     'C': 'Commoner',
     'CC': 'Classic Constructed',
+    'D': 'Draft',
     'UPF': 'Ultimate Pit Fight'
 }
 '''
@@ -89,6 +90,17 @@ ICON_CODES: dict[str, str] = {
 }
 '''
 Contains a mapping of card body icon codes to their name.
+'''
+
+ICON_CODE_IMAGE_URLS: dict[str, str] = {
+    '{d}': 'https://fabdb.net/img/defense.png',
+    '{h}': 'https://fabdb.net/img/life.png',
+    '{i}': 'https://fabdb.net/img/intellect.png',
+    '{p}': 'https://fabdb.net/img/attack.png',
+    '{r}': 'https://fabdb.net/img/resource.png',
+}
+'''
+Contains a mapping of card body icon codes to their image URLs.
 '''
 
 RARITIES: dict[str, str] = {
