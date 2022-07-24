@@ -24,7 +24,7 @@ Documentation](https://fablib.readthedocs.io/en/latest/).
 Ensure that you have Python 3.9+ and `pip` installed and then run:
 
 ```bash
-export VERSION=0.2.2
+export VERSION=0.3.0
 curl "https://github.com/HarrisonTotty/fab/releases/download/v${VERSION}/fab-${VERSION}-py3-none-any.whl" -o fab.whl
 pip install fab.whl
 ```
