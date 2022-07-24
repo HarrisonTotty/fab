@@ -1,0 +1,1 @@
+::: fab.inventory.InventoryItem

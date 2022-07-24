@@ -7,17 +7,24 @@ markdown_extensions:
 nav:
   - 'Home': index.md
   - 'API Reference':
-      - 'Arena': arena.md
+    - 'Cards & Decks':
       - 'Card': cards.md
       - 'CardList': card-lists.md
       - 'CardSet': card-sets.md
       - 'CardSetCollection': card-set-collections.md
+      - 'Deck': decks.md
+    - 'Card Inventory':
+      - 'CardInventory': card-inventories.md
+      - 'InventoryItem': inventory-items.md
+    - 'Game State':
+      - 'Arena': arena.md
       - 'ChainLink': chain-link.md
       - 'CombatChain': combat-chain.md
-      - 'Deck': decks.md
-      - 'PlayerProfile': player-profile.md
       - 'PlayerSpace': player-space.md
+    - 'Graphical Analysis':
       - 'graphics': graphics.md
+    - 'Metadata':
+      - 'PlayerProfile': player-profile.md
       - 'meta': meta.md
 plugins:
   - mkdocstrings:
