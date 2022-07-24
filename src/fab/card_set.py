@@ -145,8 +145,9 @@ class CardSetCollection(UserDict):
       `dict` methods.
 
     Attributes:
-      data (dict[str, CardSet]): The mapping of `str` identifiers to `CardSet` objects.
+      data: The mapping of `str` identifiers to `CardSet` objects.
     '''
+    data: dict[str, CardSet]
 
     def editions(self) -> list[str]:
         '''
