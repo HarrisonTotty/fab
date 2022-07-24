@@ -13,3 +13,4 @@ from .card_set import CardSet, CardSetCollection
 from .chain import ChainLink, CombatChain
 from .deck import Deck
 from .gemid import PlayerProfile
+from .inventory import CardInventory, InventoryItem

@@ -4,6 +4,7 @@ Module Unit Tests
 
 import datetime
 import fab
+from fab.inventory import CardInventory
 
 def test_module_name():
     '''
@@ -124,3 +125,27 @@ D1 = fab.Deck(
     hero  = C3,
     name  = 'Test'
 )
+
+
+# ----- Example Card Inventory Items ------
+
+INVI1 = fab.InventoryItem(
+    identifier = 'WTR043',
+    rarity = 'M'
+)
+
+INVI2 = fab.InventoryItem(
+    identifier = 'WTR093',
+    rarity = 'R'
+)
+
+INVI3 = fab.InventoryItem(
+    identifier = 'CHN001',
+    rarity = 'R',
+    foiling = 'R'
+)
+
+
+# ----- Example Card Inventory Collections -----
+
+INV1 = fab.CardInventory({INVI1: 1, INVI2: 1, INVI3: 1})
