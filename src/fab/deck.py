@@ -12,10 +12,11 @@ import random
 import requests
 
 from IPython.display import display, Markdown
-from typing import Any, Optional
+from typing import Any, cast, Optional
 
-from .card import Card, CardList
-from .meta import GAME_FORMATS
+from .card import Card
+from .card_list import CardList
+from .meta import GAME_FORMATS, TALENT_SUPERTYPES
 
 EXCLUDE_TYPES: list[str] = [
     'Adult',
@@ -128,184 +129,194 @@ class Deck:
         else:
             return res
 
-    def auto_build(
-        self,
-        cards: CardList,
-        catalog: Optional[CardList] = None,
-        honor_counts: bool = False,
-        max_generic_count: Optional[int] = None,
-        only_legal: bool = True,
-        replace: bool = True,
-        target_deck_size: Optional[int] = None,
-        target_inventory_size: Optional[int] = None,
-        target_pitch_cost_difference: Optional[int] = None,
-        target_power_defense_difference: Optional[int] = None,
-    ) -> None:
+    # def auto_build(
+    #     self,
+    #     cards: CardList,
+    #     catalog: Optional[CardList] = None,
+    #     honor_counts: bool = False,
+    #     max_generic_count: Optional[int] = None,
+    #     only_legal: bool = True,
+    #     replace: bool = True,
+    #     target_deck_size: Optional[int] = None,
+    #     target_inventory_size: Optional[int] = None,
+    #     target_pitch_cost_difference: Optional[int] = None,
+    #     target_power_defense_difference: Optional[int] = None,
+    # ) -> None:
+    #     '''
+    #     Automatically populates this deck with cards based on its hero, by
+    #     selecting cards from the specified list.
+
+    #     This method updates the `Deck` object calling it directly, rather than
+    #     returning any object. Cards are mostly chosen at random, however it will
+    #     ensure that you have at least one card for each inventory slot and meet
+    #     all of the count/type requirements for the deck. Any cards that mention
+    #     a token by name will have that token included.
+
+    #     For the `target_pitch_cost_difference` and
+    #     `target_power_defense_difference` arguments, randomly selected cards
+    #     will be discarded if they push the relevant statistic away from the
+    #     target value (if not `None`). When selecting a value for cost-pitch, you
+    #     may want to refer to the following formula:
+
+    #     ```
+    #     target = 0
+    #              + {total additional cost from card body texts}
+    #              + {total cost of using equipment}
+    #              + ({number of times you plan on using weapon} * {cost of using weapon})
+    #              + ({number of times you plan on using hero ability} * {cost of hero ability})
+    #              - {additional resource points generated from card body texts}
+    #     ```
+
+    #     Of course the above formula isn't perfect, but you should get the general
+    #     idea. In theory, a perfectly balanced deck should expect to generate the
+    #     minimum number of resources for their typical combos every turn.
+    #     Currently, this method will "give up" attempting to meet these targets
+    #     after 100 tries and will accept a random card before resuming attempts.
+
+    #     Note:
+    #       To be able to accurately compare cards, a card `catalog` must be
+    #       provided, defaulting to the global catalog `card.CARD_CATALOG` if
+    #       unspecified.
+
+    #       This method ignores the current legality of the deck's hero.
+
+    #     Args:
+    #       cards: The input list of cards from which to choose from.
+    #       catalog: An optional `CardList` catalog to use instead of the default catalog.
+    #       honor_counts: Whether to honor the number of copies of each card in the specified input list.
+    #       max_generic_count: Overrides the maximum number of generic cards to include in the main deck, defaulting to at most 20% of the deck.
+    #       only_legal: Whether to only select cards that are currently legal (not banned, suspended, or living legend).
+    #       replace: Whether to replace cards that may already exist within the deck.
+    #       target_deck_size: Overrides the target number of cards to include in the main deck.
+    #       target_inventory_size: Overrides the target number of cards to include in the deck's inventory.
+    #       target_pitch_cost_difference: Specifies the target pitch-cost difference of the main deck, or `None` to disable.
+    #       target_power_defense_difference: Specifies the target power-defense difference of the main deck, or `None` to disable.
+    #     '''
+    #     # First, let's set up all of the variables we need to work with.
+    #     related = copy.deepcopy(self.filter_related(cards, catalog=catalog, only_legal=only_legal))
+    #     if self.format == 'C': related.filter(rarities='C')
+    #     related_types = related.types()
+    #     tgt_deck_size = target_deck_size if not target_deck_size is None else TARGET_DECK_SIZE[self.format]
+    #     tgt_inv_size  = target_inventory_size if not target_inventory_size is None else TARGET_INV_SIZE[self.format]
+    #     max_gen       = max_generic_count if not max_generic_count is None else tgt_deck_size // 5
+    #     curr_deck     = copy.deepcopy(self.cards) if not replace else CardList.empty()
+    #     curr_inv      = copy.deepcopy(self.inventory) if not replace else CardList.empty()
+    #     curr_tokens   = copy.deepcopy(self.tokens) if not replace else CardList.empty()
+    #     curr_iterations = 0
+    #     # Start by building up our inventory.
+    #     while len(curr_inv) < tgt_inv_size:
+    #         curr_iterations += 1
+    #         if curr_iterations > MAX_ITERATIONS: raise Exception('hit maximum iterations while building deck inventory')
+    #         curr_inv_types = curr_inv.types()
+    #         if not 'Weapon' in curr_inv_types and 'Weapon' in related_types:
+    #             choice = random.choice(related.filter(types='Weapon'))
+    #         elif not 'Head' in curr_inv_types and 'Head' in related_types:
+    #             choice = random.choice(related.filter(types='Head'))
+    #         elif not 'Legs' in curr_inv_types and 'Legs' in related_types:
+    #             choice = random.choice(related.filter(types='Legs'))
+    #         elif not 'Arms' in curr_inv_types and 'Arms' in related_types:
+    #             choice = random.choice(related.filter(types='Arms'))
+    #         elif not 'Chest' in curr_inv_types and 'Chest' in related_types:
+    #             choice = random.choice(related.filter(types='Chest'))
+    #         else:
+    #             choice = random.choice(related.filter(types=['Equipment', 'Weapon']))
+    #         curr_inv.append(choice)
+    #         if honor_counts: related.remove(choice)
+    #     # Now lets build up our main deck.
+    #     pitch_cost_attempts = 0
+    #     power_def_attempts  = 0
+    #     while len(curr_deck) < tgt_deck_size:
+    #         curr_iterations += 1
+    #         if curr_iterations > MAX_ITERATIONS: raise Exception('hit maximum iterations while building main deck')
+    #         counts = curr_deck.counts()
+    #         curr_gen = len(curr_deck.filter(types='Generic'))
+    #         choice = random.choice(related.filter(types=['Equipment', 'Weapon', 'Token'], negate=True))
+    #         if counts.get(choice.full_name, 0) >= MAX_SAME_CARD[self.format]: continue
+    #         if 'Generic' in choice.types and curr_gen >= max_gen: continue
+    #         curr_stats = curr_deck.statistics()
+    #         if not target_pitch_cost_difference is None and pitch_cost_attempts < 100:
+    #             choice_pitch_cost = (choice.pitch if isinstance(choice.pitch, int) else 0) - (choice.cost if isinstance(choice.cost, int) else 0)
+    #             if curr_stats['pitch_cost_difference'] > target_pitch_cost_difference and choice_pitch_cost > 0:
+    #                 pitch_cost_attempts += 1
+    #                 continue
+    #             if curr_stats['pitch_cost_difference'] < target_pitch_cost_difference and choice_pitch_cost < 0:
+    #                 pitch_cost_attempts += 1
+    #                 continue
+    #             if curr_stats['pitch_cost_difference'] == target_pitch_cost_difference and choice_pitch_cost != 0:
+    #                 pitch_cost_attempts += 1
+    #                 continue
+    #         if not target_power_defense_difference is None and power_def_attempts < 100:
+    #             choice_power_def = (choice.power if isinstance(choice.power, int) else 0) - (choice.defense if isinstance(choice.defense, int) else 0)
+    #             if curr_stats['power_defense_difference'] > target_power_defense_difference and choice_power_def > 0:
+    #                 power_def_attempts += 1
+    #                 continue
+    #             if curr_stats['power_defense_difference'] < target_power_defense_difference and choice_power_def < 0:
+    #                 power_def_attempts += 1
+    #                 continue
+    #             if curr_stats['power_defense_difference'] == target_power_defense_difference and choice_power_def != 0:
+    #                 power_def_attempts += 1
+    #                 continue
+    #         pitch_cost_attempts = 0
+    #         power_def_attempts  = 0
+    #         curr_deck.append(choice)
+    #         if honor_counts: related.remove(choice)
+    #     # Finally make sure we have a copy of any token card that was referenced.
+    #     # We don't need to worry about honoring counts here because we're only
+    #     # adding 1 token.
+    #     for token in related.filter(types='Token'):
+    #         if not token in curr_tokens:
+    #             if any(token.name.lower() in card.body.lower() for card in curr_deck if isinstance(card.body, str)):
+    #                 curr_tokens.append(token)
+    #             elif isinstance(self.hero.body, str) and token.name.lower() in self.hero.body.lower():
+    #                 curr_tokens.append(token)
+    #     # Now replace our current field values.
+    #     self.cards     = curr_deck.sort()
+    #     self.inventory = curr_inv.sort()
+    #     self.tokens    = curr_tokens.sort()
+
+    def supporting_cards(self, include_generic: bool = True, only_legal: bool = True) -> CardList:
         '''
-        Automatically populates this deck with cards based on its hero, by
-        selecting cards from the specified list.
-
-        This method updates the `Deck` object calling it directly, rather than
-        returning any object. Cards are mostly chosen at random, however it will
-        ensure that you have at least one card for each inventory slot and meet
-        all of the count/type requirements for the deck. Any cards that mention
-        a token by name will have that token included.
-
-        For the `target_pitch_cost_difference` and
-        `target_power_defense_difference` arguments, randomly selected cards
-        will be discarded if they push the relevant statistic away from the
-        target value (if not `None`). When selecting a value for cost-pitch, you
-        may want to refer to the following formula:
-
-        ```
-        target = 0
-                 + {total additional cost from card body texts}
-                 + {total cost of using equipment}
-                 + ({number of times you plan on using weapon} * {cost of using weapon})
-                 + ({number of times you plan on using hero ability} * {cost of hero ability})
-                 - {additional resource points generated from card body texts}
-        ```
-
-        Of course the above formula isn't perfect, but you should get the general
-        idea. In theory, a perfectly balanced deck should expect to generate the
-        minimum number of resources for their typical combos every turn.
-        Currently, this method will "give up" attempting to meet these targets
-        after 100 tries and will accept a random card before resuming attempts.
-
-        Note:
-          To be able to accurately compare cards, a card `catalog` must be
-          provided, defaulting to the global catalog `card.CARD_CATALOG` if
-          unspecified.
-
-          This method ignores the current legality of the deck's hero.
-
-        Args:
-          cards: The input list of cards from which to choose from.
-          catalog: An optional `CardList` catalog to use instead of the default catalog.
-          honor_counts: Whether to honor the number of copies of each card in the specified input list.
-          max_generic_count: Overrides the maximum number of generic cards to include in the main deck, defaulting to at most 20% of the deck.
-          only_legal: Whether to only select cards that are currently legal (not banned, suspended, or living legend).
-          replace: Whether to replace cards that may already exist within the deck.
-          target_deck_size: Overrides the target number of cards to include in the main deck.
-          target_inventory_size: Overrides the target number of cards to include in the deck's inventory.
-          target_pitch_cost_difference: Specifies the target pitch-cost difference of the main deck, or `None` to disable.
-          target_power_defense_difference: Specifies the target power-defense difference of the main deck, or `None` to disable.
-        '''
-        # First, let's set up all of the variables we need to work with.
-        related = copy.deepcopy(self.filter_related(cards, catalog=catalog, only_legal=only_legal))
-        if self.format == 'C': related.filter(rarities='C')
-        related_types = related.types()
-        tgt_deck_size = target_deck_size if not target_deck_size is None else TARGET_DECK_SIZE[self.format]
-        tgt_inv_size  = target_inventory_size if not target_inventory_size is None else TARGET_INV_SIZE[self.format]
-        max_gen       = max_generic_count if not max_generic_count is None else tgt_deck_size // 5
-        curr_deck     = copy.deepcopy(self.cards) if not replace else CardList.empty()
-        curr_inv      = copy.deepcopy(self.inventory) if not replace else CardList.empty()
-        curr_tokens   = copy.deepcopy(self.tokens) if not replace else CardList.empty()
-        curr_iterations = 0
-        # Start by building up our inventory.
-        while len(curr_inv) < tgt_inv_size:
-            curr_iterations += 1
-            if curr_iterations > MAX_ITERATIONS: raise Exception('hit maximum iterations while building deck inventory')
-            curr_inv_types = curr_inv.types()
-            if not 'Weapon' in curr_inv_types and 'Weapon' in related_types:
-                choice = random.choice(related.filter(types='Weapon'))
-            elif not 'Head' in curr_inv_types and 'Head' in related_types:
-                choice = random.choice(related.filter(types='Head'))
-            elif not 'Legs' in curr_inv_types and 'Legs' in related_types:
-                choice = random.choice(related.filter(types='Legs'))
-            elif not 'Arms' in curr_inv_types and 'Arms' in related_types:
-                choice = random.choice(related.filter(types='Arms'))
-            elif not 'Chest' in curr_inv_types and 'Chest' in related_types:
-                choice = random.choice(related.filter(types='Chest'))
-            else:
-                choice = random.choice(related.filter(types=['Equipment', 'Weapon']))
-            curr_inv.append(choice)
-            if honor_counts: related.remove(choice)
-        # Now lets build up our main deck.
-        pitch_cost_attempts = 0
-        power_def_attempts  = 0
-        while len(curr_deck) < tgt_deck_size:
-            curr_iterations += 1
-            if curr_iterations > MAX_ITERATIONS: raise Exception('hit maximum iterations while building main deck')
-            counts = curr_deck.counts()
-            curr_gen = len(curr_deck.filter(types='Generic'))
-            choice = random.choice(related.filter(types=['Equipment', 'Weapon', 'Token'], negate=True))
-            if counts.get(choice.full_name, 0) >= MAX_SAME_CARD[self.format]: continue
-            if 'Generic' in choice.types and curr_gen >= max_gen: continue
-            curr_stats = curr_deck.statistics()
-            if not target_pitch_cost_difference is None and pitch_cost_attempts < 100:
-                choice_pitch_cost = (choice.pitch if isinstance(choice.pitch, int) else 0) - (choice.cost if isinstance(choice.cost, int) else 0)
-                if curr_stats['pitch_cost_difference'] > target_pitch_cost_difference and choice_pitch_cost > 0:
-                    pitch_cost_attempts += 1
-                    continue
-                if curr_stats['pitch_cost_difference'] < target_pitch_cost_difference and choice_pitch_cost < 0:
-                    pitch_cost_attempts += 1
-                    continue
-                if curr_stats['pitch_cost_difference'] == target_pitch_cost_difference and choice_pitch_cost != 0:
-                    pitch_cost_attempts += 1
-                    continue
-            if not target_power_defense_difference is None and power_def_attempts < 100:
-                choice_power_def = (choice.power if isinstance(choice.power, int) else 0) - (choice.defense if isinstance(choice.defense, int) else 0)
-                if curr_stats['power_defense_difference'] > target_power_defense_difference and choice_power_def > 0:
-                    power_def_attempts += 1
-                    continue
-                if curr_stats['power_defense_difference'] < target_power_defense_difference and choice_power_def < 0:
-                    power_def_attempts += 1
-                    continue
-                if curr_stats['power_defense_difference'] == target_power_defense_difference and choice_power_def != 0:
-                    power_def_attempts += 1
-                    continue
-            pitch_cost_attempts = 0
-            power_def_attempts  = 0
-            curr_deck.append(choice)
-            if honor_counts: related.remove(choice)
-        # Finally make sure we have a copy of any token card that was referenced.
-        # We don't need to worry about honoring counts here because we're only
-        # adding 1 token.
-        for token in related.filter(types='Token'):
-            if not token in curr_tokens:
-                if any(token.name.lower() in card.body.lower() for card in curr_deck if isinstance(card.body, str)):
-                    curr_tokens.append(token)
-                elif isinstance(self.hero.body, str) and token.name.lower() in self.hero.body.lower():
-                    curr_tokens.append(token)
-        # Now replace our current field values.
-        self.cards     = curr_deck.sort()
-        self.inventory = curr_inv.sort()
-        self.tokens    = curr_tokens.sort()
-
-
-    def filter_related(self, cards: CardList, catalog: Optional[CardList] = None, include_generic: bool = True, only_legal: bool = True) -> CardList:
-        '''
-        Filters out cards from the specified list which may be included in this
-        deck, based on the deck's hero card.
+        Returns the list of all cards which may be used in this deck.
 
         Tip: Warning
           This method does not validate the legality of the deck's hero card.
 
         Note:
-          To be able to accurately compare cards, a card `catalog` must be
-          provided, defaulting to the global catalog `card.CARD_CATALOG` if
-          unspecified.
+          This method requires the default card catalog to be initialized.
 
         Args:
-          cards: The list of cards to filter.
-          catalog: An optional `CardList` catalog to use instead of the default catalog.
           include_generic: Whether to include _Generic_ cards in the result.
           only_legal: Whether to include only cards that are currently legal (not banned, suspended, or living legend).
 
         Returns:
-          A subset of the specified card list that work with the deck's hero.
+          A subset of all cards that work with the deck's hero.
         '''
-        initial = CardList._hero_filter_related(
-            hero            = self.hero,
-            cards           = cards,
-            catalog         = catalog,
-            include_generic = include_generic
+        if cast(str, self.hero.class_type) == 'Shapeshifter':
+            raise Exception(f'deck hero "{self.hero.name}" is a shapeshifter')
+        from .catalog import DEFAULT_CATALOG
+        if DEFAULT_CATALOG is None:
+            raise Exception('default catalog has not been initialized')
+        hero_class = cast(str, self.hero.class_type)
+        hero_talent = self.hero.talent_type
+        cards = DEFAULT_CATALOG.lookup_cards(key='types', value='Generic') if include_generic else CardList.empty()
+        cards.extend(
+            card for card in DEFAULT_CATALOG.lookup_cards(key='class_type', value=hero_class) if card.talent_type is None
         )
-        if only_legal:
-            return CardList([card for card in initial if card.is_legal(self.format)])
-        else:
-            return initial
+        if not hero_talent is None:
+            cards.extend(
+                card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=hero_talent) if card.class_type is None or card.class_type == hero_class
+            )
+        if 'Essense' in self.hero.ability_keywords:
+            for keyword in self.hero.type_keywords:
+                if keyword in TALENT_SUPERTYPES and keyword != hero_talent:
+                    cards.extend(
+                        card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=keyword) if card.class_type is None or card.class_type == hero_class
+                    )
+        dedup = CardList.empty()
+        for card in cards:
+            if not 'Hero' in card.types and not card in dedup:
+                dedup.append(card)
+        return dedup
 
     @staticmethod
     def from_deck_list(name: str, deck_list: dict[str, int], catalog: Optional[CardList] = None, format: str = 'B', notes: Optional[str] = None) -> Deck:
@@ -653,11 +664,12 @@ class Deck:
         Computes useful statistics associated with this deck, returning the
         following keys:
 
-        * `card_statistics` - `CardList.statistics()` on the "main" deck of cards, with health and
-          intelligence metrics removed.
-        * `hero` - Contains the intelligence and health of the deck's hero.
-        * `inventory_statistics` - `CardList.statistics()` on the inventory cards, with health,
-          intelligence, cost, and pitch metrics removed since they aren't applicable.
+        * `card_statistics` - `CardList.statistics()` on the "main" deck of
+          cards, with intellect and life value metrics removed.
+        * `hero` - Contains the intellect and life value of the deck's hero.
+        * `inventory_statistics` - `CardList.statistics()` on the inventory
+          cards, with intellect, life value, resource cost, and pitch value
+          metrics removed since they aren't applicable.
 
         Returns:
           A `dict` encapsulating the analysis results.
@@ -665,12 +677,12 @@ class Deck:
         card_stats = self.cards.statistics(precision)
         inventory_stats = self.inventory.statistics(precision)
         return {
-            'card_statistics': {k: v for k, v in card_stats.items() if not any(m in k for m in ['health', 'intelligence'])},
+            'card_statistics': {k: v for k, v in card_stats.items() if not any(m in k for m in ['intellect', 'life'])},
             'hero': {
-                'health': self.hero.health,
-                'intelligence': self.hero.intelligence
+                'intellect': self.hero.intellect,
+                'life': self.hero.life
             },
-            'inventory_statistics': {k: v for k, v in inventory_stats.items() if not any(m in k for m in ['cost', 'health', 'intelligence', 'pitch'])},
+            'inventory_statistics': {k: v for k, v in inventory_stats.items() if not any(m in k for m in ['cost', 'intellect', 'life', 'pitch'])},
         }
 
     def to_deck_list(self, include_tokens: bool = False) -> dict[str, int]:
@@ -727,8 +739,9 @@ class Deck:
         '''
         if 'Shapeshifter' in self.hero.types:
             raise Exception(f'deck hero "{self.hero.full_name}" is a Shapeshifter')
-        selection = [t for t in self.hero.types if not t in EXCLUDE_TYPES]
-        if include_generic:
-            return selection + ['Generic']
-        else:
-            return selection
+        types = ['Generic', cast(str, self.hero.class_type)] if include_generic else []
+        if not self.hero.talent_type is None:
+            types.append(self.hero.talent_type)
+        if 'Essence' in self.hero.ability_keywords:
+            types.extend(t for t in self.hero.type_keywords if t in TALENT_SUPERTYPES)
+        return types

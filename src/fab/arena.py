@@ -10,7 +10,8 @@ import random
 
 from typing import Optional
 
-from .card import Card, CardList
+from .card import Card
+from .card_list import CardList
 from .chain import CombatChain
 from .deck import Deck
 

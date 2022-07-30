@@ -11,9 +11,9 @@ import plotly.graph_objects as go
 
 from typing import Any, Optional
 
-from . import card_set
-from .card import CardList
+from .card_list import CardList
 from .card_set import CardSetCollection
+from .deck import Deck
 
 STAT_TITLE = {
     'count': 'Number of Cards',
@@ -41,6 +41,9 @@ STAT_TITLE = {
     'min_intelligence': 'Minimum Intelligence',
     'min_pitch': 'Minimum Pitch Value',
     'min_power': 'Minimum Power',
+    'num_blue': 'Number of Blue Cards',
+    'num_red': 'Number of Red Cards',
+    'num_yellow': 'Number of Yellow Cards',
     'pitch_cost_difference': 'Pitch-Cost Difference',
     'power_defense_difference': 'Power-Defense Difference',
     'stdev_cost': 'Standard Deviation Cost',
@@ -96,6 +99,17 @@ def __compute_hovertext(cards: CardList, limit: int = 4) -> str:
     else:
         names = [card.name for card in cards]
     return ' | '.join(names)
+
+
+def deck_distribution_plot(
+    decks: list[Deck],
+    bin_size: Optional[int] = 1,
+    show_curve: bool = True,
+    title: Optional[str] = None,
+    value: str = 'power'
+) -> Any:
+    '''
+    '''
 
 
 def distribution_plot(
