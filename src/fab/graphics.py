@@ -19,26 +19,26 @@ STAT_TITLE = {
     'count': 'Number of Cards',
     'max_cost': 'Maximum Cost',
     'max_defense': 'Maximum Defense',
-    'max_health': 'Maximum Health',
-    'max_intelligence': 'Maximum Intelligence',
+    'max_intellect': 'Maximum Intellect',
+    'max_life': 'Maximum Life',
     'max_pitch': 'Maximum Pitch Value',
     'max_power': 'Maximum Power',
     'mean_cost': 'Mean Cost',
     'mean_defense': 'Mean Defense',
-    'mean_health': 'Mean Health',
-    'mean_intelligence': 'Mean Intelligence',
+    'mean_intellect': 'Mean Intellect',
+    'mean_life': 'Mean Life',
     'mean_pitch': 'Mean Pitch Value',
     'mean_power': 'Mean Power',
     'median_cost': 'Median Cost',
     'median_defense': 'Median Defense',
-    'median_health': 'Median Health',
-    'median_intelligence': 'Median Intelligence',
+    'median_intellect': 'Median Intellect',
+    'median_life': 'Median Life',
     'median_pitch': 'Median Pitch Value',
     'median_power': 'Median Power',
     'min_cost': 'Minimum Cost',
     'min_defense': 'Minimum Defense',
-    'min_health': 'Minimum Health',
-    'min_intelligence': 'Minimum Intelligence',
+    'min_intellect': 'Minimum Intellect',
+    'min_life': 'Minimum Life',
     'min_pitch': 'Minimum Pitch Value',
     'min_power': 'Minimum Power',
     'num_blue': 'Number of Blue Cards',
@@ -48,14 +48,14 @@ STAT_TITLE = {
     'power_defense_difference': 'Power-Defense Difference',
     'stdev_cost': 'Standard Deviation Cost',
     'stdev_defense': 'Standard Deviation Defense',
-    'stdev_health': 'Standard Deviation Health',
-    'stdev_intelligence': 'Standard Deviation Intelligence',
+    'stdev_intellect': 'Standard Deviation Intellect',
+    'stdev_life': 'Standard Deviation Life',
     'stdev_pitch': 'Standard Deviation Pitch Value',
     'stdev_power': 'Standard Deviation Power',
     'total_cost': 'Total Cost',
     'total_defense': 'Total Defense',
-    'total_health': 'Total Health',
-    'total_intelligence': 'Total Intelligence',
+    'total_intellect': 'Total Intellect',
+    'total_life': 'Total Life',
     'total_pitch': 'Total Pitch Value',
     'total_power': 'Total Power'
 }
@@ -66,12 +66,12 @@ VALUE_TITLE = {
     'defense': 'Defense Value',
     'flavor_text': 'Flavor Text',
     'full_name': 'Full Name',
-    'grants': 'Grants',
-    'health': 'Health',
+    'grants_keywords': 'Grants',
     'identifiers': 'Identifiers',
     'image_urls': 'Image URLs',
-    'intelligence': 'Intelligence',
+    'intellect': 'Intellect',
     'keywords': 'Keywords',
+    'life': 'Life Value',
     'name': 'Name',
     'pitch': 'Pitch Value',
     'power': 'Power Value',
@@ -100,17 +100,15 @@ def __compute_hovertext(cards: CardList, limit: int = 4) -> str:
         names = [card.name for card in cards]
     return ' | '.join(names)
 
-
-def deck_distribution_plot(
-    decks: list[Deck],
-    bin_size: Optional[int] = 1,
-    show_curve: bool = True,
-    title: Optional[str] = None,
-    value: str = 'power'
-) -> Any:
-    '''
-    '''
-
+# def deck_distribution_plot(
+#     decks: list[Deck],
+#     bin_size: Optional[int] = 1,
+#     show_curve: bool = True,
+#     title: Optional[str] = None,
+#     value: str = 'power'
+# ) -> Any:
+#     '''
+#     '''
 
 def distribution_plot(
     cards: CardList,

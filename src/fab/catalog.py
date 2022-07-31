@@ -61,17 +61,20 @@ def _parse_legality(entry: dict[str, Any]) -> dict[str, bool]:
     A helper function for parsing out card legality from upstream data.
     '''
     res = {}
-    blitz_legal = not entry['Blitz Legal'].lower() in ['no', 'false']
-    blitz_ll = True if entry['Blitz Living Legend'] else False
-    blitz_banned = True if entry['Blitz Banned'] else False
-    cc_legal = not entry['CC Legal'].lower() in ['no', 'false']
-    cc_ll = True if entry['CC Living Legend'] else False
-    cc_banned = True if entry['CC Banned'] else False
-    commoner_legal = not entry['Commoner Legal'].lower() in ['no', 'false']
-    commoner_banned = True if entry['Commoner Banned'] else False
-    res['B'] = blitz_legal and not blitz_ll and not blitz_banned
-    res['CC'] = cc_legal and not cc_ll and not cc_banned
-    res['C'] = commoner_legal and not commoner_banned
+    try:
+        blitz_legal = not entry['Blitz Legal'].lower() in ['no', 'false']
+        blitz_ll = True if entry['Blitz Living Legend'] else False
+        blitz_banned = True if entry['Blitz Banned'] else False
+        cc_legal = not entry['CC Legal'].lower() in ['no', 'false']
+        cc_ll = True if entry['CC Living Legend'] else False
+        cc_banned = True if entry['CC Banned'] else False
+        commoner_legal = not entry['Commoner Legal'].lower() in ['no', 'false']
+        commoner_banned = True if entry['Commoner Banned'] else False
+        res['B'] = blitz_legal and not blitz_ll and not blitz_banned
+        res['CC'] = cc_legal and not cc_ll and not cc_banned
+        res['C'] = commoner_legal and not commoner_banned
+    except Exception as e:
+        raise Exception(f'unable to parse card legality - {e}')
     return res
 
 def _parse_image_urls(inputstr: str) -> list[str]:
@@ -79,15 +82,18 @@ def _parse_image_urls(inputstr: str) -> list[str]:
     A helper function for parsing out the image URL list from upstream data.
     '''
     result = []
-    if not inputstr:
-        return result
-    elif ',' in inputstr:
-        for substrings in [x.split(' - ', 1) for x in unidecode(inputstr).split(',') if ' - ' in x]:
-            url = substrings[0].strip()
+    try:
+        if not inputstr:
+            return result
+        elif ',' in inputstr:
+            for substrings in [x.split(' - ', 1) for x in unidecode(inputstr).split(',') if ' - ' in x]:
+                url = substrings[0].strip()
+                result.append(url)
+        elif ' - ' in inputstr:
+            url = unidecode(inputstr).split(' - ', 1)[0].strip()
             result.append(url)
-    elif ' - ' in inputstr:
-        url = unidecode(inputstr).split(' - ', 1)[0].strip()
-        result.append(url)
+    except Exception as e:
+        raise Exception(f'unable to parse image URLs - {e}')
     return result
 
 def _parse_keywords(
@@ -102,10 +108,13 @@ def _parse_keywords(
     '''
     # First, let's set things up by converting the upstream data into some lists
     # stripped of whitespace.
-    abilities_and_effects = [k.strip() for k in unidecode(abilities_and_effects_str).split(',')]
-    abilities_and_effects_keywords = [k.strip() for k in unidecode(abilities_and_effects_keywords_str).split(',')]
-    card_keywords = [k.strip() for k in unidecode(card_keywords_str).split(',')]
-    granted_keywords = [k.strip() for k in unidecode(granted_keywords_str).split(',')]
+    try:
+        abilities_and_effects = [k.strip() for k in unidecode(abilities_and_effects_str).split(',')]
+        abilities_and_effects_keywords = [k.strip() for k in unidecode(abilities_and_effects_keywords_str).split(',')]
+        card_keywords = [k.strip() for k in unidecode(card_keywords_str).split(',')]
+        granted_keywords = [k.strip() for k in unidecode(granted_keywords_str).split(',')]
+    except Exception as e:
+        raise Exception(f'unable to split keyword strings - {e}')
     # This will be the form of our result.
     res = {
         'ability_keywords': [],
@@ -119,32 +128,53 @@ def _parse_keywords(
     # Start by aggregating the non-grant fields and see if any of the keywords
     # defined in `meta` are contained in the aggregate. We'll save the results
     # to the `keywords` key and then further process afterwards.
-    for k in abilities_and_effects + abilities_and_effects_keywords + card_keywords:
-        no_digits = ''.join(c for c in k if not c.isdigit()).strip()
-        # delete "turn" from the upstream keyword data because it gets
-        # confused for the "Turn" effect keyword.
-        no_digits = no_digits.replace('turn', '').replace('Turn', '')
-        for other in sorted(ABILITY_KEYWORDS + EFFECT_KEYWORDS + LABEL_KEYWORDS + TYPE_KEYWORDS, key=len, reverse=True):
-            if other == no_digits or other in no_digits.split():
-                if not other in res['keywords']:
-                    res['keywords'].append(other)
+    try:
+        for k in abilities_and_effects + abilities_and_effects_keywords + card_keywords:
+            no_digits = ''.join(c for c in k if not c.isdigit()).strip()
+            # delete "turn" from the upstream keyword data because it gets
+            # confused for the "Turn" effect keyword.
+            no_digits = no_digits.replace('turn', '').replace('Turn', '')
+            for other in sorted(ABILITY_KEYWORDS + EFFECT_KEYWORDS + LABEL_KEYWORDS + TYPE_KEYWORDS, key=len, reverse=True):
+                if other == no_digits or other in no_digits.split():
+                    if not other in res['keywords']:
+                        res['keywords'].append(other)
+    except Exception as e:
+        raise Exception(f'unable to aggregate non-grant keyword fields - {e}')
     # Next, let's  do some additional work by parsing what keys we can directly
     # from the body of the card. We'll need to work with all alphanumeric text
     # that isn't part of the reminder text.
     if body:
-        for paragraph in unidecode(body).split('\n\n'):
-            clean = paragraph.replace('Turn', '').replace('turn', '').rsplit('*(', 1)[0]
-            clean = ''.join(c for c in clean if c.isalnum() or c.isspace())
-            for k in EFFECT_KEYWORDS:
-                if k.lower() in clean.lower():
-                    if not k in res['keywords']:
-                        res['keywords'].append(k)
-            for k in TOKEN_KEYWORDS:
-                if k in clean:
-                    if not k in res['token_keywords']:
-                        res['token_keywords'].append(k)
+        try:
+            for paragraph in unidecode(body).split('\n\n'):
+                clean = paragraph.replace('Turn', '').replace('turn', '').rsplit('*(', 1)[0]
+                clean = ''.join(c for c in clean if c.isalnum() or c.isspace())
+                for k in LABEL_KEYWORDS:
+                    if k.lower() in clean.lower():
+                        if not k in res['keywords']:
+                            res['keywords'].append(k)
+                for k in EFFECT_KEYWORDS:
+                    if k.lower() in clean.lower():
+                        if not k in res['keywords']:
+                            res['keywords'].append(k)
+                for k in TOKEN_KEYWORDS:
+                    if k in clean:
+                        if not k in res['keywords']:
+                            res['keywords'].append(k)
+        except Exception as e:
+            raise Exception(f'unable to parse keywords from card body - {e}')
+    # Now parse the grants keywords.
+    try:
+        for k in granted_keywords:
+            no_digits = ''.join(c for c in k if not c.isdigit()).strip()
+            if no_digits in ABILITY_KEYWORDS + LABEL_KEYWORDS:
+                if not no_digits in res['keywords']:
+                    res['keywords'].append(no_digits)
+                res['grants_keywords'].append(no_digits)
+    except Exception as e:
+        raise Exception(f'unable to parse grants keywords - {e}')
     # Now let's go back through the `keywords` key and further split the
     # keywords into the appropriate list.
+    res['keywords'] = sorted(res['keywords'])
     for k in res['keywords']:
         if k in ABILITY_KEYWORDS:
             res['ability_keywords'].append(k)
@@ -158,12 +188,7 @@ def _parse_keywords(
             res['type_keywords'].append(k)
         else:
             raise Exception(f'unexpected keyword "{k}"')
-    # We need to grab token keywords from the body of the
-    for k in granted_keywords:
-        no_digits = ''.join(c for c in k if not c.isdigit()).strip()
-        if no_digits in ABILITY_KEYWORDS + LABEL_KEYWORDS:
-            res['grants_keywords'].append(no_digits)
-    return res
+    return {k: sorted(v) for k, v in res.items()}
 
 def _parse_markdown_text(inputstr: str) -> Optional[str]:
     '''
@@ -255,21 +280,29 @@ def _parse_types(inputstr: str) -> dict[str, Optional[list[str] | str]]:
     '''
     A helper function for parsing card type information.
     '''
-    all_types = [t.strip() for t in inputstr.split(',')]
-    res = {
-        'card_type': [t for t in all_types if t in CARD_TYPES + FUNCTIONAL_SUBTYPES][0],
-        'class_type': None,
-        'subtypes': [t for t in all_types if t in SUBTYPES],
-        'supertypes': [t for t in all_types if t in SUPERTYPES],
-        'types': all_types,
-        'talent_type': None
-    }
-    for t in res['supertypes']:
-        if t in CLASS_SUPERTYPES:
-            res['class_type'] = t
-        elif t in TALENT_SUPERTYPES:
-            res['talent_type'] = t
-    return res
+    try:
+        all_types = [t.strip() for t in unidecode(inputstr).split(',')]
+        res = {
+            'card_type': 'UNKNOWN',
+            'class_type': None,
+            'subtypes': sorted([t for t in all_types if t in SUBTYPES]),
+            'supertypes': sorted([t for t in all_types if t in SUPERTYPES]),
+            'types': sorted(all_types),
+            'talent_type': None
+        }
+        for t in all_types:
+            if t in CARD_TYPES:
+                res['card_type'] = t
+        # If we couldn't figure out the card type, assume it's a token.
+        if res['card_type'] == 'UNKNOWN': res['card_type'] = 'Token'
+        for t in res['supertypes']:
+            if t in CLASS_SUPERTYPES:
+                res['class_type'] = t
+            elif t in TALENT_SUPERTYPES:
+                res['talent_type'] = t
+        return res
+    except Exception as e:
+        raise Exception(f'unable to parse card types - {e}')
 
 def _parse_value(inputstr: str) -> int | str | None:
     '''
@@ -290,31 +323,37 @@ def _parse_variations(identifiers_str: str, rarities_str: str, variations_str: s
     # First, we need to clean up our identifiers and rarities. We'll be building
     # a map of `identifier -> edition -> rarity` so that we may build the
     # variations strings easier.
-    identifiers: list[str] = [i.strip() for i in unidecode(identifiers_str).split(',')]
-    rarities_map: dict[str, dict[str, list[str]]] = {}
-    for i, rarity_chunk in enumerate(unidecode(rarities_str).split(',')):
-        if not '-' in rarity_chunk:
-            rarity = rarity_chunk.strip()
-            if not rarity in RARITIES: continue
-            if len(identifiers) >= i + 1:
-                if not identifiers[i] in rarities_map:
-                    rarities_map[identifiers[i]] = {}
-                if not 'any' in rarities_map[identifiers[i]]:
-                    rarities_map[identifiers[i]]['any'] = [rarity]
+    try:
+        identifiers: list[str] = [i.strip() for i in unidecode(identifiers_str).split(',')]
+    except Exception as e:
+        raise Exception(f'unable to parse card identifiers - {e}')
+    try:
+        rarities_map: dict[str, dict[str, list[str]]] = {}
+        for i, rarity_chunk in enumerate(unidecode(rarities_str).split(',')):
+            if not '-' in rarity_chunk:
+                rarity = rarity_chunk.strip()
+                if not rarity in RARITIES: continue
+                if len(identifiers) >= i + 1:
+                    if not identifiers[i] in rarities_map:
+                        rarities_map[identifiers[i]] = {}
+                    if not 'any' in rarities_map[identifiers[i]]:
+                        rarities_map[identifiers[i]]['any'] = [rarity]
+                    else:
+                        rarities_map[identifiers[i]]['any'].append(rarity)
                 else:
-                    rarities_map[identifiers[i]]['any'].append(rarity)
+                    continue
             else:
-                continue
-        else:
-            rpart_chunks = rarity_chunk.strip().split('-')
-            if len(rpart_chunks) < 3: continue
-            identifier = rpart_chunks[1].strip()
-            edition = rpart_chunks[2].strip()
-            if not edition in EDITIONS: continue
-            rarities = [r.strip() for r in rpart_chunks[0].strip().split()]
-            if not identifier in rarities_map:
-                rarities_map[identifier] = {}
-            rarities_map[identifier][edition] = [r for r in rarities if r in RARITIES]
+                rpart_chunks = rarity_chunk.strip().split('-')
+                if len(rpart_chunks) < 3: continue
+                identifier = rpart_chunks[1].strip()
+                edition = rpart_chunks[2].strip()
+                if not edition in EDITIONS: continue
+                rarities = [r.strip() for r in rpart_chunks[0].strip().split()]
+                if not identifier in rarities_map:
+                    rarities_map[identifier] = {}
+                rarities_map[identifier][edition] = [r for r in rarities if r in RARITIES]
+    except Exception as e:
+        raise Exception(f'unable to parse and compute card rarities map - {e}')
     # This is needed because remember that the rarities string can contain `-`
     # characters.
     rarities: list[str] = []
@@ -334,56 +373,65 @@ def _parse_variations(identifiers_str: str, rarities_str: str, variations_str: s
     # that all combinations are possible. We'll also assume that any unknown
     # edition is "Unlimited", and art types and foilings are "Standard".
     if not variations_str:
-        variations = []
-        for identifier, idata in rarities_map.items():
-            for edition, rarity in idata.items():
-                if edition == 'any':
-                    if not 'U' in res['editions']:
-                        res['editions'].append('U')
-                    variations.append(f'{identifier}-U-{rarity}-S-S')
-                else:
-                    if not edition in res['editions']:
-                        res['editions'].append(edition)
-                    variations.append(f'{identifier}-{edition}-{rarity}-S-S')
-        for v in variations:
-            if not v in res['variations']:
-                res['variations'].append(v)
-        res['art_types'].append('S')
-        res['foilings'].append('S')
-        return res
-    for raw_variation in unidecode(variations_str).split(','):
-        chunks = raw_variation.strip().split('-')
-        if len(chunks) < 3:
-            continue
-        variations = []
-        foilings = chunks[0].strip().split()
-        identifier = chunks[1].strip()
-        edition = chunks[2].strip()
-        if not edition in EDITIONS: continue
-        art_type = chunks[3].strip() if len(chunks) == 4 else 'S'
-        if not art_type in ART_TYPES: continue
-        for foiling in foilings:
-            if not foiling in FOILINGS: continue
-            for rarity in (rarities_map[identifier]['any'] if 'any' in rarities_map[identifier] else rarities_map[identifier][edition]):
-                variations.append(f'{identifier}-{edition}-{rarity}-{foiling}-{art_type}')
-            if not foiling in res['foilings']:
-                res['foilings'].append(foiling)
-        if not edition in res['editions']:
-            res['editions'].append(edition)
-        if not art_type in res['art_types']:
-            res['art_types'].append(art_type)
-        for v in variations:
-            if not v in res['variations']:
-                res['variations'].append(v)
+        try:
+            variations = []
+            for identifier, idata in rarities_map.items():
+                for edition, rarity in idata.items():
+                    if edition == 'any':
+                        if not 'U' in res['editions']:
+                            res['editions'].append('U')
+                        variations.append(f'{identifier}-U-{rarity}-S-S')
+                    else:
+                        if not edition in res['editions']:
+                            res['editions'].append(edition)
+                        variations.append(f'{identifier}-{edition}-{rarity}-S-S')
+            for v in variations:
+                if not v in res['variations']:
+                    res['variations'].append(v)
+            res['art_types'].append('S')
+            res['foilings'].append('S')
+        except Exception as e:
+            raise Exception(f'unable to compute fallback card variations - {e}')
+    else:
+        try:
+            for raw_variation in unidecode(variations_str).split(','):
+                chunks = raw_variation.strip().split('-')
+                if len(chunks) < 3:
+                    continue
+                variations = []
+                foilings = chunks[0].strip().split()
+                identifier = chunks[1].strip()
+                edition = chunks[2].strip()
+                if not edition in EDITIONS: continue
+                art_type = chunks[3].strip() if len(chunks) == 4 else 'S'
+                if not art_type in ART_TYPES: continue
+                for foiling in foilings:
+                    if not foiling in FOILINGS: continue
+                    for rarity in (rarities_map[identifier]['any'] if 'any' in rarities_map[identifier] else rarities_map[identifier][edition]):
+                        variations.append(f'{identifier}-{edition}-{rarity}-{foiling}-{art_type}')
+                    if not foiling in res['foilings']:
+                        res['foilings'].append(foiling)
+                if not edition in res['editions']:
+                    res['editions'].append(edition)
+                if not art_type in res['art_types']:
+                    res['art_types'].append(art_type)
+                for v in variations:
+                    if not v in res['variations']:
+                        res['variations'].append(v)
+        except Exception as e:
+            raise Exception(f'unable to parse card variations - {e}')
     # Before we return the data, let's sort it.
-    return {
-        'art_types': sorted(res['art_types'], key=lambda a: list(ART_TYPES.keys()).index(a)),
-        'editions': sorted(res['editions']),
-        'foilings': sorted(res['foilings'], key=lambda f: list(FOILINGS.keys()).index(f)),
-        'identifiers': sorted(res['identifiers']),
-        'rarities': sorted(res['rarities'], key=lambda r: list(RARITIES.keys()).index(r)),
-        'variations': sorted(res['variations'])
-    }
+    try:
+        return {
+            'art_types': sorted(res['art_types'], key=lambda a: list(ART_TYPES.keys()).index(a)),
+            'editions': sorted(res['editions']),
+            'foilings': sorted(res['foilings'], key=lambda f: list(FOILINGS.keys()).index(f)),
+            'identifiers': sorted(res['identifiers']),
+            'rarities': sorted(res['rarities'], key=lambda r: list(RARITIES.keys()).index(r)),
+            'variations': sorted(res['variations'])
+        }
+    except Exception as e:
+        raise Exception(f'unable to sort card variation data - {e}')
 
 class CardCatalog:
     '''
@@ -570,8 +618,8 @@ class CardCatalog:
                     ability_keywords = keywords_data['ability_keywords'],
                     art_types = variations_data['art_types'],
                     body = _parse_markdown_text(entry['Functional Text']),
-                    card_type = types_data['card_type'],
-                    class_type = types_data['class_type'],
+                    card_type = cast(str, types_data['card_type']),
+                    class_type = cast(Optional[str], types_data['class_type']),
                     cost = _parse_value(entry['Cost']),
                     defense = _parse_value(entry['Defense']),
                     effect_keywords = keywords_data['effect_keywords'],
@@ -592,11 +640,11 @@ class CardCatalog:
                     power = _parse_value(entry['Power']),
                     rarities = variations_data['rarities'],
                     sets = [s.strip() for s in entry['Set Identifiers'].split(',')],
-                    subtypes = types_data['subtypes'],
-                    supertypes = types_data['supertypes'],
-                    talent_type = types_data['talent_type'],
+                    subtypes = cast(list[str], types_data['subtypes']),
+                    supertypes = cast(list[str], types_data['supertypes']),
+                    talent_type = cast(Optional[str], types_data['talent_type']),
                     token_keywords = keywords_data['token_keywords'],
-                    types = types_data['types'],
+                    types = cast(list[str], types_data['types']),
                     type_keywords = keywords_data['type_keywords'],
                     type_text = unidecode(entry['Type Text'].strip()),
                     variations = variations_data['variations']
@@ -627,10 +675,14 @@ class CardCatalog:
                 ))
             except Exception as e:
                 raise Exception(f'unable to parse intermediate card set data - {e} - {entry}')
+        # 5. Initialize the card catalog.
         catalog = CardCatalog(card_data, set_data)
         if set_default:
             global DEFAULT_CATALOG
             DEFAULT_CATALOG = catalog
+        # 6. Delete the temporary file.
+        os.remove(file_name)
+        # 7. Return result.
         return catalog
 
     @staticmethod
@@ -690,8 +742,10 @@ class CardCatalog:
             return self.card_data[self.card_identifier_mapping[identifier]]
         elif not full_name is None:
             return self.card_data[self.card_full_name_mapping[full_name]]
+        elif not variation is None:
+            return self.card_data[self.card_variation_mapping[variation]]
         else:
-            raise Exception('please specify a value for either `full_name` or `identifier`')
+            raise Exception('please specify a value for either `full_name`, `identifier`, or `variation`')
 
     def lookup_cards(self, key: str, value: Optional[int | str]) -> CardList:
         '''
@@ -801,6 +855,15 @@ class CardCatalog:
         else:
             with open(os.path.expanduser(file_path), 'w') as f:
                 f.write(self.to_json())
+
+    def set_as_default(self) -> None:
+        '''
+        Sets this card catalog as the default card catalog.
+
+        This may be used to dynamically switch between card catalogs.
+        '''
+        global DEFAULT_CATALOG
+        DEFAULT_CATALOG = self
 
     def sets(self) -> list[CardSet]:
         '''

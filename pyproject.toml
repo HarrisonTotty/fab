@@ -51,6 +51,10 @@ pytest-aio          = "*"
 pytest-cov          = "*"
 pytest-randomly     = "*"
 
+[tool.pyright]
+pythonVersion = "3.9"
+strictListInference = true
+
 [tool.pytest.ini_options]
 addopts          = "-v --cov=fab"
 python_files     = "*.py"

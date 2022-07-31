@@ -4,7 +4,6 @@ Contains the definition of Flesh and Blood card lists.
 
 from __future__ import annotations
 
-import copy
 import json
 import os
 import random
@@ -15,9 +14,22 @@ from statistics import mean, median, mode, stdev
 from typing import Any, cast, Optional
 
 from .card import Card, STRING_FIELDS, STRING_LIST_FIELDS, VALUE_FIELDS
-from .meta import GAME_FORMATS, RARITIES
+from .meta import ART_TYPES, FOILINGS, GAME_FORMATS, RARITIES
 
 JSON_INDENT: Optional[int] = 2
+
+def _sort_list_field(field: str, values: list[int | str], reverse: bool = False) -> list[int | str]:
+    '''
+    A helper function for sorting certain `list[str]` fields of cards.
+    '''
+    if field == 'art_types':
+        return sorted(values, key=lambda x: list(ART_TYPES.keys()).index(x), reverse=reverse)
+    elif field == 'foilings':
+        return sorted(values, key=lambda x: list(FOILINGS.keys()).index(x), reverse=reverse)
+    elif field == 'rarities':
+        return sorted(values, key=lambda x: list(RARITIES.keys()).index(x), reverse=reverse)
+    else:
+        return sorted(values)
 
 class CardList(UserList):
     '''
@@ -104,7 +116,7 @@ class CardList(UserList):
         '''
         return cast(list[str], self.collect_unique('class_type'))
 
-    def collect(self, field: str, sort: bool = True) -> list[int | str]:
+    def collect(self, field: str, reverse: bool = False, sort: bool = True) -> list[int | str]:
         '''
         Returns the list of all `Card` field values associated with the
         specified `Card` field in this list of cards.
@@ -115,6 +127,7 @@ class CardList(UserList):
 
         Args:
           field: The name of the `Card` field to collect (such as `cost`).
+          reverse: Whether to reverse the sort order if `sort` is `True`.
           sort: Whether to sort the results.
         '''
         if field in STRING_FIELDS:
@@ -128,9 +141,9 @@ class CardList(UserList):
         else:
             raise Exception(f'unsupported collection field "{field}"')
         result = cast(list[int | str], result)
-        return sorted(result) if sort else result
+        return _sort_list_field(field, result, reverse=reverse) if sort else result
 
-    def collect_unique(self, field: str, sort: bool = True) -> list[int | str]:
+    def collect_unique(self, field: str, reverse: bool = False, sort: bool = True) -> list[int | str]:
         '''
         Returns the set of all unique `Card` field values associated with the
         specified `Card` field in this list of cards.
@@ -141,10 +154,11 @@ class CardList(UserList):
 
         Args:
           field: The name of the `Card` field to collect (such as `cost`).
+          reverse: Whether to reverse the sort order if `sort` is `True`.
           sort: Whether to sort the results.
         '''
         unique = list(set(self.collect(field, sort=False)))
-        return sorted(unique) if sort else unique
+        return _sort_list_field(field, unique, reverse=reverse) if sort else unique
 
     def costs(self) -> list[int]:
         '''
@@ -502,10 +516,20 @@ class CardList(UserList):
         Returns:
           A new `CardList` object from the parsed data.
         '''
-        cards = []
-        for jcard in json.loads(jsonstr):
-            cards.append(Card.from_dict(jcard))
-        return CardList(cards)
+        return CardList.from_list(json.loads(jsonstr))
+
+    @staticmethod
+    def from_list(data: list[dict[str, Any]]) -> CardList:
+        '''
+        Creates a new list of cards given its raw list representation.
+
+        Args:
+          data: The raw list representation of the card list.
+
+        Returns:
+          A new `CardList` object from the parsed data.
+        '''
+        return CardList([Card.from_dict(d) for d in data])
 
     def full_names(self) -> list[str]:
         '''
@@ -662,7 +686,7 @@ class CardList(UserList):
         '''
         res = {}
         for f in GAME_FORMATS.keys():
-            res[f] = not (False in [card.is_legal(f) for card in self.data])
+            res[f] = not (False in [card.is_legal(f) for card in self.data if f in card.legality])
         return res
 
     def life_values(self) -> list[int]:

@@ -95,58 +95,60 @@ class Card:
     card.
 
     The `keywords` field contains the set of all keywords associated with the
-    card, with exception to those granted to _other_ cards, which is contained
-    in the `grants_keywords` field. The `keywords` field is then further broken
-    down into `ability_keywords`, `effect_keywords`, `label_keywords`,
+    card. The subset of those granted to _other_ cards are contained in the
+    `grants_keywords` field. The `keywords` field is then further broken down
+    into `ability_keywords`, `effect_keywords`, `label_keywords`,
     `token_keywords`, and `type_keywords`. It should be noted here that
     `type_keywords` is distinguished from `types`, in that it contains type
     keywords that exist within the `body` of the card, as opposed to the card's
-    `type_text`.
+    `type_text`. See the constants defined in the `meta` submodule for more
+    information.
 
     Regarding card types, each card has a list of all type keywords (`types`), a
     primary type (`card_type`), and the subset of types which are considered
     subtypes (`subtypes`) and supertypes (`supertypes`). If The card contains a
     class supertype, the `class_type` field will be set to that type. Likewise
     if a card contains a talent supertype, the `talent_type` field will be set
-    to that type.
+    to that type. Again, see the constants defined in the `meta` submodule to
+    learn the possible values.
 
     For user convenience, `Card` objects expose two additional metadata fields
     (`notes` and `tags`) which may be populated by the user for arbitrary use.
 
     Attributes:
-      ability_keywords: The list of ability keywords associated with this card (see `meta.ABILITY_KEYWORDS`).
-      art_types: The list of art type codes associated with the card (see `meta.ART_TYPES`).
+      ability_keywords: The list of ability keywords associated with this card, such as `Dominate`.
+      art_types: The list of art type codes associated with the card, sorted by rarity.
       body: The full body text (rules text and reminder text) of the card, in Markdown format.
-      card_type: The primary type associated with the card (see `meta.CARD_TYPES`).
-      class_type: The hero class supertype associated with the card (see `meta.CLASS_SUPERTYPES`), or `None` if not applicable.
+      card_type: The primary type associated with the card, such as `Action`.
+      class_type: The hero class supertype associated with the card, or `None` if not applicable.
       cost: The resource cost of the card, or `None` if not present.
       defense: The defense value of the card, or `None` if not present.
-      effect_keywords: The list of effect keywords associated with this card (see `meta.EFFECT_KEYWORDS`).
-      editions: The list of edition codes the card was printed in (see `meta.EDITIONS`).
+      effect_keywords: The list of effect keywords associated with this card, such as `Discard`.
+      editions: The list of edition codes the card was printed in.
       flavor_text: Any lore text printed on the body of the card, in Markdown format.
-      foilings: The list of foiling codes the card was printed in (see `meta.FOILINGS`).
+      foilings: The list of foiling codes the card was printed in, sorted by foil rarity.
       full_name: The full name of the card, including pitch value.
       grants_keywords: A list of keywords this card grants to other cards.
       identifiers: The list of card identifiers, such as `RNR012`.
       image_urls: A list of card image URLs.
       intellect: The intellect value of the card, or `None` if not present.
-      keywords: The list of all keywords associated with the card (not including "type keywords").
-      label_keywords: The list of label keywords associated with this card (see `meta.LABEL_KEYWORDS`).
-      legality: Whether this card is _currently_ legal for various formats (see `meta.GAME_FORMATS`).
+      keywords: The list of all keywords associated with the card.
+      label_keywords: The list of label keywords associated with this card, such as `Combo`.
+      legality: Whether this card is _currently_ legal for various formats.
       life: The life (health) value of the card, or `None` if not present.
       name: The name of the card, excluding pitch value.
       notes: An optional string of user notes associated with the card, in Markdown format.
       pitch: The pitch value of the card, or `None` if not present.
       power: The attack power of the card, or `None` if not present.
-      rarities: The list of rarities associated with the card.
+      rarities: The list of rarity codes associated with the card, sorted by rarity.
       sets: The list of card set codes associated with the card.
       subtypes: The list of subtypes associated with this card.
       supertypes: The list of supertypes associated with this card.
       tags: A collection of user-defined tags.
       talent_type: The talent supertype associated with this card (see `meta.TALENT_SUPERTYPES`), or `None` if not applicable.
-      token_keywords: The list of all token keywords associated with this card (see `meta.TOKEN_KEYWORDS`).
+      token_keywords: The list of all token keywords associated with this card, such as `Frostbite`.
       types: The list of all type keywords contained within the `type_text` of this card.
-      type_keywords: The list of type keywords present within the `body` of the card.
+      type_keywords: The list of type keywords present within the `body` of the card, such as `Action`.
       type_text: The full type box text of the card.
       variations: The list of unique variation IDs associated with the card (see above).
     '''
