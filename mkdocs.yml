@@ -8,11 +8,11 @@ nav:
   - 'Home': index.md
   - 'API Reference':
     - 'Cards & Decks':
-      - 'Card': cards.md
-      - 'CardList': card-lists.md
-      - 'CardSet': card-sets.md
-      - 'CardSetCollection': card-set-collections.md
-      - 'Deck': decks.md
+      - 'Card': Card.md
+      - 'CardCatalog': CardCatalog.md
+      - 'CardList': CardList.md
+      - 'CardSet': CardSet.md
+      - 'Deck': Deck.md
     - 'Card Inventory':
       - 'CardInventory': card-inventories.md
       - 'InventoryItem': inventory-items.md
@@ -24,9 +24,11 @@ nav:
     - 'Graphical Analysis':
       - 'graphics': graphics.md
     - 'Metadata':
-      - 'PlayerProfile': player-profile.md
+      - 'PlayerProfile': PlayerProfile.md
       - 'meta': meta.md
 plugins:
+  - mkdocs-jupyter:
+      ignore_h1_titles: true
   - mkdocstrings:
       default_handler: python
       handlers:

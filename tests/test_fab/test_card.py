@@ -24,6 +24,7 @@ def test_dict_rep():
         'cost',
         'defense',
         'editions',
+        'effect_keywords',
         'flavor_text',
         'foilings',
         'full_name',
@@ -43,9 +44,11 @@ def test_dict_rep():
         'subtypes',
         'supertypes',
         'talent_type',
+        'token_keywords',
         'types',
         'type_keywords',
         'type_text',
+        'variations',
         'notes',
         'tags'
     }
@@ -67,15 +70,24 @@ def test_dict_rep():
         'image_urls': ['https://storage.googleapis.com/fabmaster/media/images/1HP050.width-450.png', 'https://storage.googleapis.com/fabmaster/media/images/WTR_43.width-450.png', 'https://storage.googleapis.com/fabmaster/media/images/U-WTR43.width-450.png'],
         'intellect': None,
         'keywords': ['Crush', 'Deal', 'Discard', 'Specialization'],
-        'legality': {'B': True, 'C': True, 'CC': True, 'UPF': True},
+        'legality': {'B': True, 'C': True, 'CC': True},
+        'label_keywords': ['Crush'],
+        'life': None,
         'name': 'Crippling Crush',
         'pitch': 1,
         'power': 11,
-        'rarities': ['M', 'M'],
+        'rarities': ['M'],
         'sets': ['1HP', 'WTR'],
-        'tags': ['example-1'],
+        'subtypes': ['Attack'],
+        'supertypes': ['Guardian'],
+        'talent_type': None,
+        'token_keywords': [],
+        'types': ['Action', 'Attack', 'Guardian'],
+        'type_keywords': [],
         'type_text': 'Guardian Action - Attack',
-        'types': ['Guardian', 'Action', 'Attack']
+        'variations': ['1HP050-N-M-S-S', 'WTR043-A-M-R-S', 'WTR043-A-M-S-S', 'WTR043-U-M-R-S', 'WTR043-U-M-S-S'],
+        'notes': None,
+        'tags': ['example-1'],
     }
 
 def test_json_conversion():

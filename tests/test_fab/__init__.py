@@ -150,23 +150,23 @@ CS1 = fab.CardSet(
     urls       = {'F': url_filler, 'U': url_filler} # type: ignore
 )
 
-CS2 = fab.CardSet(
-    dates      = {'A': (datetime.date(2019, 10, 11), datetime.date(2019, 10, 11)), 'U': (datetime.date(2020, 11, 6), datetime.date(2021, 12, 1))},
-    editions   = ['A', 'U'],
-    identifier = 'WTR',
-    id_range   = ('WTR000', 'WTR225'),
-    name       = 'Welcome to Rathe',
-    urls       = {'A': url_filler, 'U': url_filler} # type: ignore
-)
+# CS2 = fab.CardSet(
+#     dates      = {'A': (datetime.date(2019, 10, 11), datetime.date(2019, 10, 11)), 'U': (datetime.date(2020, 11, 6), datetime.date(2021, 12, 1))},
+#     editions   = ['A', 'U'],
+#     identifier = 'WTR',
+#     id_range   = ('WTR000', 'WTR225'),
+#     name       = 'Welcome to Rathe',
+#     urls       = {'A': url_filler, 'U': url_filler} # type: ignore
+# )
 
-CS3 = fab.CardSet(
-    dates      = {'N': (datetime.date(2022, 6, 24), None)},
-    editions   = ['N'],
-    identifier = 'UPR',
-    id_range   = ('UPR000', 'UPR225'),
-    name       = 'Uprising',
-    urls       = {'N': url_filler} # type: ignore
-)
+# CS3 = fab.CardSet(
+#     dates      = {'N': (datetime.date(2022, 6, 24), None)},
+#     editions   = ['N'],
+#     identifier = 'UPR',
+#     id_range   = ('UPR000', 'UPR225'),
+#     name       = 'Uprising',
+#     urls       = {'N': url_filler} # type: ignore
+# )
 
 
 # ----- Example Decks -----

@@ -27,7 +27,7 @@ def test_collections():
     assert CL1.full_names() == ['Chane', 'Crippling Crush (1)', 'Flic Flak (2)']
     assert CL1.grants_keywords() == ['Go again']
     assert CL1.intellect_values() == [4]
-    assert CL1.keywords == ['Action', 'Combo', 'Create', 'Crush', 'Deal', 'Discard', 'Go again', 'Soul Shackle', 'Specialization']
+    assert CL1.keywords() == ['Action', 'Combo', 'Create', 'Crush', 'Deal', 'Discard', 'Go again', 'Soul Shackle', 'Specialization']
     assert CL1.label_keywords() == ['Combo', 'Crush']
     assert CL1.life_values() == [20]
     assert CL1.names() == ['Chane', 'Crippling Crush', 'Flic Flak']
@@ -107,7 +107,7 @@ def test_sorting():
     assert CL1.sort(by='cost', reverse = True).data == [C1, C2, C3]
     assert CL1.sort(by='sets').data == [C1, C2, C3]
     assert CL1.sort(by='types').data == [C2, C1, C3]
-    assert CL1.sort(by='rarities').data == [C2, C3, C1]
+    assert CL1.sort(by='rarities').data == [C2, C1, C3]
 
 def test_statistics():
     '''

@@ -444,6 +444,31 @@ class CardCatalog:
     does not need to access these fields (attributes) directly, but they are
     documented below nonetheless.
 
+    Example:
+      Loading the latest pre-parsed card catalog from the internet:
+
+      ```python
+      catalog = CardCatalog.load()
+      ```
+
+      Loading a card catalog from a local file:
+
+      ```python
+      catalog = CardCatalog.load('~/data/my-catalog.json.gz')
+      ```
+
+      Saving a card catalog to a local file:
+
+      ```
+      catalog.save('~/data/my-catalog.json.gz')
+      ```
+
+      Importing and parsing a specific version of upstream catalog data:
+
+      ```python
+      catalog = CardCatalog.import_upstream('v2.8.1')
+      ```
+
     Attributes:
       card_data: Contains a raw `list` of all available cards.
       card_full_name_mapping: Maps the full names of cards to their corresponding index in `card_data`.
@@ -499,7 +524,7 @@ class CardCatalog:
 
         Args:
           card_data: The list of cards to build the catalog from.
-          card_set_data: The list of card sets to build the catalog from.
+          set_data: The list of card sets to build the catalog from.
         '''
         self.card_data = copy.deepcopy(card_data)
         self.set_data = copy.deepcopy(set_data)
@@ -537,6 +562,16 @@ class CardCatalog:
         identifier.
         '''
         self.card_mapping_cache = {}
+
+    @staticmethod
+    def default() -> Optional[CardCatalog]:
+        '''
+        Gets a reference to the default card catalog.
+
+        Returns:
+          A reference to the default card catalog.
+        '''
+        return DEFAULT_CATALOG
 
     @staticmethod
     def from_dict(data: dict[str, list[dict]]) -> CardCatalog:

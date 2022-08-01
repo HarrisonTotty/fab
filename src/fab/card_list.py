@@ -1184,7 +1184,7 @@ class CardList(UserList):
         implemented.
 
         Args:
-          key: The `Card` field to sort by.
+          by: The `Card` field to sort by.
           reverse: Whether to reverse the sort order.
 
         Returns:
@@ -1220,13 +1220,13 @@ class CardList(UserList):
                     valued.append(card)
             if reverse:
                 return CardList(
-                    sorted(valued, key=lambda c: cast(int, list(RARITIES.keys()).index(c.highest_rarity())), reverse=reverse) + \
+                    sorted(valued, key=lambda c: cast(int, list(RARITIES.keys()).index(c.lowest_rarity())), reverse=reverse) + \
                     sorted(empty, key=lambda c: c.full_name, reverse=reverse)
                 )
             else:
                 return CardList(
                     sorted(empty, key=lambda c: c.full_name, reverse=reverse) + \
-                    sorted(valued, key=lambda c: cast(int, list(RARITIES.keys()).index(c.lowest_rarity())), reverse=reverse)
+                    sorted(valued, key=lambda c: cast(int, list(RARITIES.keys()).index(c.highest_rarity())), reverse=reverse)
                 )
         elif by in STRING_LIST_FIELDS:
             return CardList(
@@ -1296,23 +1296,19 @@ class CardList(UserList):
         }
         if not field in VALUE_FIELDS:
             raise Exception(f'specified card field "{field}" does not exist or is not a value field')
+        array = [card[field] for card in self.data if isinstance(card[field], int)]
         if function in int_functions:
-            if not self.data: return 0
+            if not array: return 0
         elif function in float_functions:
-            if not self.data: return 0.0
+            if not array: return 0.0
         elif function == 'stdev':
-            if len(self.data) < 2: return 0.0
+            if len(array) < 2: return 0.0
         else:
             raise Exception(f'unknown statistical function "{function}"')
-        array = [card[field] for card in self.data if isinstance(card[field], int)]
-        if array and function in int_functions:
+        if function in int_functions:
             return funcmap[function](array)
-        elif array and function in float_functions:
-            return round(funcmap[function](array), precision)
-        elif function in int_functions:
-            return 0
         else:
-            return 0.0
+            return round(funcmap[function](array), precision)
 
     def statistics(self, precision: int = 2) -> dict[str, int | float]:
         '''

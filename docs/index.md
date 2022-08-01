@@ -2,13 +2,12 @@
 
 This site serves the API documentation for the `fab` Python module.
 
-## Importing Card Data
+## Quick Start
 
 ```python
-from fab import CardList, CardSetCollection
+from fab import *
 
-cards = CardList.load('data/cards.json', set_catalog=True)
-card_sets = CardSetCollection.load('data/card-sets.json', set_catalog=True)
+catalog = CardCatalog.load()
 ```
      
 ## Working With Card Data

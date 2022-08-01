@@ -11,78 +11,10 @@ import plotly.graph_objects as go
 
 from typing import Any, Optional
 
+from .card import Card, STRING_FIELDS, STRING_LIST_FIELDS, VALUE_FIELDS
 from .card_list import CardList
-from .card_set import CardSetCollection
-from .deck import Deck
 
-STAT_TITLE = {
-    'count': 'Number of Cards',
-    'max_cost': 'Maximum Cost',
-    'max_defense': 'Maximum Defense',
-    'max_intellect': 'Maximum Intellect',
-    'max_life': 'Maximum Life',
-    'max_pitch': 'Maximum Pitch Value',
-    'max_power': 'Maximum Power',
-    'mean_cost': 'Mean Cost',
-    'mean_defense': 'Mean Defense',
-    'mean_intellect': 'Mean Intellect',
-    'mean_life': 'Mean Life',
-    'mean_pitch': 'Mean Pitch Value',
-    'mean_power': 'Mean Power',
-    'median_cost': 'Median Cost',
-    'median_defense': 'Median Defense',
-    'median_intellect': 'Median Intellect',
-    'median_life': 'Median Life',
-    'median_pitch': 'Median Pitch Value',
-    'median_power': 'Median Power',
-    'min_cost': 'Minimum Cost',
-    'min_defense': 'Minimum Defense',
-    'min_intellect': 'Minimum Intellect',
-    'min_life': 'Minimum Life',
-    'min_pitch': 'Minimum Pitch Value',
-    'min_power': 'Minimum Power',
-    'num_blue': 'Number of Blue Cards',
-    'num_red': 'Number of Red Cards',
-    'num_yellow': 'Number of Yellow Cards',
-    'pitch_cost_difference': 'Pitch-Cost Difference',
-    'power_defense_difference': 'Power-Defense Difference',
-    'stdev_cost': 'Standard Deviation Cost',
-    'stdev_defense': 'Standard Deviation Defense',
-    'stdev_intellect': 'Standard Deviation Intellect',
-    'stdev_life': 'Standard Deviation Life',
-    'stdev_pitch': 'Standard Deviation Pitch Value',
-    'stdev_power': 'Standard Deviation Power',
-    'total_cost': 'Total Cost',
-    'total_defense': 'Total Defense',
-    'total_intellect': 'Total Intellect',
-    'total_life': 'Total Life',
-    'total_pitch': 'Total Pitch Value',
-    'total_power': 'Total Power'
-}
-
-VALUE_TITLE = {
-    'body': 'Body Text',
-    'cost': 'Resource Cost',
-    'defense': 'Defense Value',
-    'flavor_text': 'Flavor Text',
-    'full_name': 'Full Name',
-    'grants_keywords': 'Grants',
-    'identifiers': 'Identifiers',
-    'image_urls': 'Image URLs',
-    'intellect': 'Intellect',
-    'keywords': 'Keywords',
-    'life': 'Life Value',
-    'name': 'Name',
-    'pitch': 'Pitch Value',
-    'power': 'Power Value',
-    'rarities': 'Rarities',
-    'sets': 'Source Sets',
-    'tags': 'Custom Tags',
-    'type_text': 'Type Box Text',
-    'types': 'Card Types'
-}
-
-def __compute_hovertext(cards: CardList, limit: int = 4) -> str:
+def _compute_hovertext(cards: CardList, limit: int = 4) -> str:
     '''
     A handy function for computing hovertext for the specified list of cards.
 
@@ -100,28 +32,40 @@ def __compute_hovertext(cards: CardList, limit: int = 4) -> str:
         names = [card.name for card in cards]
     return ' | '.join(names)
 
-# def deck_distribution_plot(
-#     decks: list[Deck],
-#     bin_size: Optional[int] = 1,
-#     show_curve: bool = True,
-#     title: Optional[str] = None,
-#     value: str = 'power'
-# ) -> Any:
-#     '''
-#     '''
+def _compute_stat_name(field: str, function: str) -> str:
+    '''
+    A helper function for computing the field+stat title name.
+    '''
+    FUNCMAP = {
+        'max': 'Maximum',
+        'mean': 'Mean',
+        'median': 'Median',
+        'stdev': 'Standard Deviation',
+        'total': 'Total'
+    }
+    func_name = FUNCMAP[function]
+    if field in VALUE_FIELDS:
+        desc = VALUE_FIELDS[field]
+    else:
+        raise Exception(f'unknown field "{field}"')
+    return f'{func_name} {desc}'
 
 def distribution_plot(
     cards: CardList,
-    bin_size: Optional[int] = 1,
-    by: str = 'types',
-    only: list[str] = [],
+    group_by: str = 'class_type',
+    group_values: list[str] = [],
     show_curve: bool = True,
     title: Optional[str] = None,
-    value: str = 'power'
+    value_field: str = 'power'
 ) -> Any:
     '''
     Produces a layered distribution plot of the specified list of cards,
     grouping with respect to a particular card field.
+
+    If the specified `group_by` argument corresponds to a `Card` field of type
+    `list[str]`, the list contents will be unpacked. Likewise, if the specified
+    `value_field` argument corresponds to a `Card` field of type `list[str]`,
+    then the taken "value" is assumed to be the number of elements of that list.
 
     Tip: Warning
       Card values which are not present (`None`) or variable (`'*'`) are not
@@ -129,123 +73,16 @@ def distribution_plot(
 
     Args:
       cards: The list of cards to plot.
-      bin_size: An optional bin size (width of a single histogram column).
-      by: The `Card` field to group by.
-      only: An optional list of "groups" to restrict the results to.
-      show_curve: Whether to display the normal curve in the resulting plot.
-      title: An optional title string for the plot.
-      value: The `Card` field to use as the value to compare between groups.
+      group_by: The `Card` field to group the list of cards by.
+      group_values: Limits the plotted groups to only the specified values.
+      show_curve: Whether to include the normal curve in the plot.
+      title: An optional title for the plot.
+      value_field: The `Card` field from which to use for value comparison.
 
     Returns:
       A Plotly distribution plot of the data.
-
-    Example:
-      The following would create a plot to compare the distribution of power
-      for all of the "hero classes".
-
-      ```python
-      from fab import CardList
-      from fab import graphics as g
-      from fab import meta
-
-      cards = CardList.load('data/cards.json', set_catalog=True)
-
-      g.distribution_plot(cards, by='types', only=meta.CLASS_TYPES, value='power')
-      ```
     '''
-    if value == 'cost':
-        subcards = CardList([card for card in cards if isinstance(card.cost, int)])
-    elif value == 'defense':
-        subcards = CardList([card for card in cards if isinstance(card.defense, int)])
-    elif value == 'health':
-        subcards = CardList([card for card in cards if isinstance(card.health, int)])
-    elif value == 'intelligence':
-        subcards = CardList([card for card in cards if isinstance(card.intelligence, int)])
-    elif value == 'pitch':
-        subcards = CardList([card for card in cards if isinstance(card.pitch, int)])
-    elif value == 'power':
-        subcards = CardList([card for card in cards if isinstance(card.power, int)])
-    else:
-        raise Exception(f'unknown value {value}')
-    if by == 'grants':
-        layers = [l for l in subcards.grants() if not only or l in only]
-        if value == 'cost':
-            values = [[card.cost for card in subcards.filter(grants=layer) if isinstance(card.cost, int)] for layer in layers]
-        elif value == 'defense':
-            values = [[card.defense for card in subcards.filter(grants=layer) if isinstance(card.defense, int)] for layer in layers]
-        elif value == 'health':
-            values = [[card.health for card in subcards.filter(grants=layer) if isinstance(card.health, int)] for layer in layers]
-        elif value == 'intelligence':
-            values = [[card.intelligence for card in subcards.filter(grants=layer) if isinstance(card.intelligence, int)] for layer in layers]
-        elif value == 'pitch':
-            values = [[card.pitch for card in subcards.filter(grants=layer) if isinstance(card.pitch, int)] for layer in layers]
-        elif value == 'power':
-            values = [[card.power for card in subcards.filter(grants=layer) if isinstance(card.power, int)] for layer in layers]
-        else:
-            raise Exception(f'unknown value {value}')
-    elif by in ['keyword', 'keywords']:
-        layers = [l for l in subcards.keywords() if not only or l in only]
-        if value == 'cost':
-            values = [[card.cost for card in subcards.filter(keywords=layer) if isinstance(card.cost, int)] for layer in layers]
-        elif value == 'defense':
-            values = [[card.defense for card in subcards.filter(keywords=layer) if isinstance(card.defense, int)] for layer in layers]
-        elif value == 'health':
-            values = [[card.health for card in subcards.filter(keywords=layer) if isinstance(card.health, int)] for layer in layers]
-        elif value == 'intelligence':
-            values = [[card.intelligence for card in subcards.filter(keywords=layer) if isinstance(card.intelligence, int)] for layer in layers]
-        elif value == 'pitch':
-            values = [[card.pitch for card in subcards.filter(keywords=layer) if isinstance(card.pitch, int)] for layer in layers]
-        elif value == 'power':
-            values = [[card.power for card in subcards.filter(keywords=layer) if isinstance(card.power, int)] for layer in layers]
-        else:
-            raise Exception(f'unknown value {value}')
-    elif by in ['rarity', 'rarities']:
-        layers = [l for l in subcards.rarities() if not only or l in only]
-        if value == 'cost':
-            values = [[card.cost for card in subcards.filter(rarities=layer) if isinstance(card.cost, int)] for layer in layers]
-        elif value == 'defense':
-            values = [[card.defense for card in subcards.filter(rarities=layer) if isinstance(card.defense, int)] for layer in layers]
-        elif value == 'health':
-            values = [[card.health for card in subcards.filter(rarities=layer) if isinstance(card.health, int)] for layer in layers]
-        elif value == 'intelligence':
-            values = [[card.intelligence for card in subcards.filter(rarities=layer) if isinstance(card.intelligence, int)] for layer in layers]
-        elif value == 'pitch':
-            values = [[card.pitch for card in subcards.filter(rarities=layer) if isinstance(card.pitch, int)] for layer in layers]
-        elif value == 'power':
-            values = [[card.power for card in subcards.filter(rarities=layer) if isinstance(card.power, int)] for layer in layers]
-        else:
-            raise Exception(f'unknown value {value}')
-    elif by in ['type', 'types']:
-        layers = [l for l in subcards.types() if not only or l in only]
-        if value == 'cost':
-            values = [[card.cost for card in subcards.filter(types=layer) if isinstance(card.cost, int)] for layer in layers]
-        elif value == 'defense':
-            values = [[card.defense for card in subcards.filter(types=layer) if isinstance(card.defense, int)] for layer in layers]
-        elif value == 'health':
-            values = [[card.health for card in subcards.filter(types=layer) if isinstance(card.health, int)] for layer in layers]
-        elif value == 'intelligence':
-            values = [[card.intelligence for card in subcards.filter(types=layer) if isinstance(card.intelligence, int)] for layer in layers]
-        elif value == 'pitch':
-            values = [[card.pitch for card in subcards.filter(types=layer) if isinstance(card.pitch, int)] for layer in layers]
-        elif value == 'power':
-            values = [[card.power for card in subcards.filter(types=layer) if isinstance(card.power, int)] for layer in layers]
-        else:
-            raise Exception(f'unknown value {value}')
-    else:
-        raise Exception(f'unknown categorizer {by}')
-    fig = ff.create_distplot(
-        values,
-        layers,
-        bin_size = bin_size,
-        curve_type = 'normal',
-        show_curve = show_curve
-    )
-    fig.update_layout(
-        title = title,
-        xaxis_title = VALUE_TITLE[value],
-        yaxis_title = 'Probability Density'
-    )
-    return fig
+    groups = cards.group(by=group_by, include_none=False)
 
 
 def pie_chart(

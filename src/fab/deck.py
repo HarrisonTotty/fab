@@ -113,6 +113,31 @@ class Deck:
         '''
         return len(self.cards) + len(self.inventory)
 
+    def add_card(self, card: Card, count: int = 1) -> None:
+        '''
+        Adds the specified card to the deck.
+
+        Tip: Warning
+          The specified `count` will be ignored when adding inventory or tokens.
+
+        Args:
+          card: The card to add.
+          count: The number of copies of the card to add.
+        '''
+        if count < 1:
+            raise ValueError('please specify a positive integer value for "count"')
+        if card.is_hero():
+            raise Exception('this method does not accept hero cards')
+        for _ in range(_, count):
+            if card.is_equipment() or card.is_weapon():
+                if not card in self.inventory:
+                    self.inventory.append(card)
+            elif card.is_token():
+                if not card in self.tokens:
+                    self.tokens.append(card)
+            else:
+                self.cards.append(card)
+
     def all_cards(self, include_tokens: bool = False) -> CardList:
         '''
         Returns all cards within this deck (excluding tokens by default).
@@ -296,52 +321,19 @@ class Deck:
         self.inventory = curr_inv.sort()
         self.tokens    = curr_tokens.sort()
 
-    def supporting_cards(self, include_generic: bool = True, only_legal: bool = True) -> CardList:
+    def clear(self, include_inventory: bool = False, include_tokens: bool = False) -> None:
         '''
-        Returns the list of all cards which may be used in this deck.
-
-        Tip: Warning
-          This method does not validate the legality of the deck's hero card.
-
-        Note:
-          This method requires the default card catalog to be initialized.
+        Clears this deck of cards, optionally also including inventory/tokens.
 
         Args:
-          include_generic: Whether to include _Generic_ cards in the result.
-          only_legal: Whether to include only cards that are currently legal (not banned, suspended, or living legend).
-
-        Returns:
-          A subset of all cards that work with the deck's hero.
+          include_inventory: Whether to also clear the deck's inventory cards.
+          include_tokens: Whether to also clear the deck's token cards.
         '''
-        if cast(str, self.hero.class_type) == 'Shapeshifter':
-            raise Exception(f'deck hero "{self.hero.name}" is a shapeshifter')
-        from .catalog import DEFAULT_CATALOG
-        if DEFAULT_CATALOG is None:
-            raise Exception('default catalog has not been initialized')
-        hero_class = cast(str, self.hero.class_type)
-        hero_talent = self.hero.talent_type
-        cards = DEFAULT_CATALOG.lookup_cards(key='types', value='Generic') if include_generic else CardList.empty()
-        cards.extend(
-            card for card in DEFAULT_CATALOG.lookup_cards(key='class_type', value=hero_class) if card.talent_type is None
-        )
-        if not hero_talent is None:
-            cards.extend(
-                card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=hero_talent) if card.class_type is None or card.class_type == hero_class
-            )
-        if 'Essense' in self.hero.ability_keywords:
-            for keyword in self.hero.type_keywords:
-                if keyword in TALENT_SUPERTYPES and keyword != hero_talent:
-                    cards.extend(
-                        card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=keyword) if card.class_type is None or card.class_type == hero_class
-                    )
-        dedup = CardList.empty()
-        for card in cards:
-            if not 'Hero' in card.types and not card in dedup:
-                if only_legal and card.is_legal(self.format):
-                    dedup.append(card)
-                elif not only_legal:
-                    dedup.append(card)
-        return dedup
+        self.cards = CardList.empty()
+        if include_inventory:
+            self.inventory = CardList.empty()
+        if include_tokens:
+            self.tokens = CardList.empty()
 
     @staticmethod
     def from_deck_list(name: str, deck_list: dict[str, int], format: str = 'B', notes: Optional[str] = None) -> Deck:
@@ -706,6 +698,53 @@ class Deck:
             },
             'inventory_statistics': {k: v for k, v in inventory_stats.items() if not any(m in k for m in ['cost', 'intellect', 'life', 'pitch'])},
         }
+
+    def supporting_cards(self, include_generic: bool = True, only_legal: bool = True) -> CardList:
+        '''
+        Returns the list of all cards which may be used in this deck.
+
+        Tip: Warning
+          This method does not validate the legality of the deck's hero card.
+
+        Note:
+          This method requires the default card catalog to be initialized.
+
+        Args:
+          include_generic: Whether to include _Generic_ cards in the result.
+          only_legal: Whether to include only cards that are currently legal (not banned, suspended, or living legend).
+
+        Returns:
+          A subset of all cards that work with the deck's hero.
+        '''
+        if cast(str, self.hero.class_type) == 'Shapeshifter':
+            raise Exception(f'deck hero "{self.hero.name}" is a shapeshifter')
+        from .catalog import DEFAULT_CATALOG
+        if DEFAULT_CATALOG is None:
+            raise Exception('default catalog has not been initialized')
+        hero_class = cast(str, self.hero.class_type)
+        hero_talent = self.hero.talent_type
+        cards = DEFAULT_CATALOG.lookup_cards(key='types', value='Generic') if include_generic else CardList.empty()
+        cards.extend(
+            card for card in DEFAULT_CATALOG.lookup_cards(key='class_type', value=hero_class) if card.talent_type is None
+        )
+        if not hero_talent is None:
+            cards.extend(
+                card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=hero_talent) if card.class_type is None or card.class_type == hero_class
+            )
+        if 'Essense' in self.hero.ability_keywords:
+            for keyword in self.hero.type_keywords:
+                if keyword in TALENT_SUPERTYPES and keyword != hero_talent:
+                    cards.extend(
+                        card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=keyword) if card.class_type is None or card.class_type == hero_class
+                    )
+        dedup = CardList.empty()
+        for card in cards:
+            if not 'Hero' in card.types and not card in dedup:
+                if only_legal and card.is_legal(self.format):
+                    dedup.append(card)
+                elif not only_legal:
+                    dedup.append(card)
+        return dedup
 
     def to_deck_list(self, include_tokens: bool = False) -> dict[str, int]:
         '''

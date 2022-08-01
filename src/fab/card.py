@@ -14,48 +14,51 @@ from typing import Any, Optional, Union
 
 from .meta import GAME_FORMATS, ICON_CODE_IMAGE_URLS, RARITIES
 
-STRING_FIELDS = [
-    'body',
-    'card_type',
-    'class_type',
-    'flavor_text',
-    'full_name',
-    'name',
-    'notes',
-    'talent_type',
-    'type_text'
-]
+STRING_FIELDS = {
+    # field: desc
+    'body': 'Body Text',
+    'card_type': 'Primary Type',
+    'class_type': 'Class',
+    'flavor_text': 'Flavor Text',
+    'full_name': 'Full Name',
+    'name': 'Name',
+    'notes': 'User Notes',
+    'talent_type': 'Talent',
+    'type_text': 'Type Box Text'
+}
 
-STRING_LIST_FIELDS = [
-    'ability_keywords',
-    'art_types',
-    'editions',
-    'effect_keywords',
-    'foilings',
-    'grants_keywords',
-    'identifiers',
-    'image_urls',
-    'keywords',
-    'label_keywords',
-    'rarities',
-    'sets',
-    'subtypes',
-    'supertypes',
-    'tags',
-    'token_keywords',
-    'types',
-    'type_keywords',
-    'variations'
-]
+STRING_LIST_FIELDS = {
+    # field: (plural desc, singular desc)
+    'ability_keywords': ('Ability Keywords', 'Ability Keyword'),
+    'art_types': ('Art Types', 'Art Type'),
+    'editions': ('Editions', 'Edition'),
+    'effect_keywords': ('Effect Keywords', 'Effect Keyword'),
+    'foilings': ('Foiling Codes', 'Foiling Code'),
+    'grants_keywords': ('Grants Keywords', 'Grants Keyword'),
+    'identifiers': ('Identifiers', 'Identifier'),
+    'image_urls': ('Image URLs', 'Image URL'),
+    'keywords': ('Keywords', 'Keyword'),
+    'label_keywords': ('Label Keywords', 'Label Keyword'),
+    'rarities': ('Rarities', 'Rarity'),
+    'sets': ('Sets', 'Set'),
+    'subtypes': ('Subtypes', 'Subtype'),
+    'supertypes': ('Supertypes', 'Supertype'),
+    'tags': ('User Tags', 'User Tag'),
+    'token_keywords': ('Token Keywords', 'Token Keyword'),
+    'types': ('Types', 'Type'),
+    'type_keywords': ('Type Keywords', 'Type Keyword'),
+    'variations': ('Card Variations', 'Card Variation')
+}
 
-VALUE_FIELDS = [
-    'cost',
-    'defense',
-    'intellect',
-    'life',
-    'pitch',
-    'power'
-]
+VALUE_FIELDS = {
+    # field: desc
+    'cost': 'Resource Cost',
+    'defense': 'Defense Value',
+    'intellect': 'Intellect',
+    'life': 'Life Value',
+    'pitch': 'Pitch Value',
+    'power': 'Attack Power'
+}
 
 JSON_INDENT: Optional[int] = 2
 
@@ -114,6 +117,61 @@ class Card:
 
     For user convenience, `Card` objects expose two additional metadata fields
     (`notes` and `tags`) which may be populated by the user for arbitrary use.
+
+    Example:
+      Manually instantiating a card object:
+
+      ```python
+      chane = Card(
+        ability_keywords = ['Go again'],
+        art_types        = ['S'],
+        body             = '**Once per Turn Action** - Create a Soul Shackle token: Your ...',
+        card_type        = 'Hero',
+        class_type       = 'Runeblade',
+        cost             = None,
+        defense          = None,
+        editions         = ['F', 'N', 'U'],
+        effect_keywords  = ['Create'],
+        flavor_text      = None,
+        foilings         = ['S', 'R', 'C'],
+        full_name        = 'Chane',
+        grants_keywords  = ['Go again'],
+        identifiers      = ['HER037', 'CHN001', 'MON154'],
+        image_urls       = ['https://...', 'https://...'],
+        intellect        = 4,
+        keywords         = ['Action', 'Create', 'Go again', 'Soul Shackle'],
+        label_keywords   = [],
+        legality         = {'B': True, 'C': True, 'CC': True},
+        life             = 20,
+        name             = 'Chane',
+        pitch            = None,
+        power            = None,
+        rarities         = ['T', 'R', 'P'],
+        sets             = ['HER', 'CHN', 'MON'],
+        subtypes         = ['Young'],
+        supertypes       = ['Runeblade', 'Shadow'],
+        talent_type      = 'Shadow',
+        token_keywords   = ['Soul Shackle'],
+        types            = ['Hero', 'Runeblade', 'Shadow', 'Young'],
+        type_keywords    = ['Action'],
+        type_text        = 'Shadow Runeblade Hero - Young',
+        variations       = ['CHN001-N-R-R-S', 'HER037-N-P-C-S', 'MON154-F-T-S-S', 'MON154-U-T-S-S'],
+        notes            = 'Chane is pretty cool. I might want to build a CC deck with him soon.',
+        tags             = ['chane-cards', 'runeblades-i-like']
+      )
+      ```
+
+      Creating a card from its known full name:
+
+      ```python
+      chane = Card.from_full_name('Chane')
+      ```
+
+      Creating a card from its known identifier:
+
+      ```python
+      chane = Card.from_identifier('MON154')
+      ```
 
     Attributes:
       ability_keywords: The list of ability keywords associated with this card, such as `Dominate`.
