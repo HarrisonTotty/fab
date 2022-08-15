@@ -6,18 +6,22 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import datetime
 import json
 
-from IPython.display import display, Image, Markdown
-from pandas import Series
-from typing import Any, Optional, Union
+from IPython.display import display, Image
+from typing import Any, cast, Optional
 
-from .meta import GAME_FORMATS, ICON_CODE_IMAGE_URLS, RARITIES
+from .card_base import CardBase, JSON_INDENT
+from .meta import RARITIES
+
+DATE_FORMAT = '%Y/%m/%d'
 
 STRING_FIELDS = {
     # field: desc
     'body': 'Body Text',
     'card_type': 'Primary Type',
+    'color': 'Color',
     'class_type': 'Class',
     'flavor_text': 'Flavor Text',
     'full_name': 'Full Name',
@@ -36,7 +40,6 @@ STRING_LIST_FIELDS = {
     'foilings': ('Foiling Codes', 'Foiling Code'),
     'grants_keywords': ('Grants Keywords', 'Grants Keyword'),
     'identifiers': ('Identifiers', 'Identifier'),
-    'image_urls': ('Image URLs', 'Image URL'),
     'keywords': ('Keywords', 'Keyword'),
     'label_keywords': ('Label Keywords', 'Label Keyword'),
     'rarities': ('Rarities', 'Rarity'),
@@ -60,12 +63,8 @@ VALUE_FIELDS = {
     'power': 'Attack Power'
 }
 
-JSON_INDENT: Optional[int] = 2
-
-TCGPLAYER_BASE_URL = 'https://www.tcgplayer.com/search/flesh-and-blood-tcg/product?q='
-
 @dataclasses.dataclass
-class Card:
+class Card(CardBase):
     '''
     Represents a Flesh and Blood card.
 
@@ -96,6 +95,10 @@ class Card:
 
     which defines the set of possible printing conditions associated with the
     card.
+
+    The `dates` dictionary maps variation strings to tuples of the form
+    `(<release date>, <out-of-print date>)`, where either tuple value may also
+    be `None` if unknown or not applicable.
 
     The `keywords` field contains the set of all keywords associated with the
     card. The subset of those granted to _other_ cards are contained in the
@@ -128,7 +131,9 @@ class Card:
         body             = '**Once per Turn Action** - Create a Soul Shackle token: Your ...',
         card_type        = 'Hero',
         class_type       = 'Runeblade',
+        color            = None,
         cost             = None,
+        dates            = {'CHN001-N-R-R-S': ('...', '...')},
         defense          = None,
         editions         = ['F', 'N', 'U'],
         effect_keywords  = ['Create'],
@@ -137,7 +142,7 @@ class Card:
         full_name        = 'Chane',
         grants_keywords  = ['Go again'],
         identifiers      = ['HER037', 'CHN001', 'MON154'],
-        image_urls       = ['https://...', 'https://...'],
+        image_urls       = {'CHN001-N-R-R-S': 'https://...', 'HER037-N-P-C-S': 'https://...'},
         intellect        = 4,
         keywords         = ['Action', 'Create', 'Go again', 'Soul Shackle'],
         label_keywords   = [],
@@ -173,140 +178,69 @@ class Card:
       chane = Card.from_identifier('MON154')
       ```
 
+    Note that the fields/attributes associated with `Card` objects also include
+    those defined in `CardBase` objects.
+
     Attributes:
-      ability_keywords: The list of ability keywords associated with this card, such as `Dominate`.
       art_types: The list of art type codes associated with the card, sorted by rarity.
-      body: The full body text (rules text and reminder text) of the card, in Markdown format.
-      card_type: The primary type associated with the card, such as `Action`.
-      class_type: The hero class supertype associated with the card, or `None` if not applicable.
-      cost: The resource cost of the card, or `None` if not present.
-      defense: The defense value of the card, or `None` if not present.
-      effect_keywords: The list of effect keywords associated with this card, such as `Discard`.
+      dates: A dictionary correlating the initial release and out-of-print dates for a particular variation.
       editions: The list of edition codes the card was printed in.
-      flavor_text: Any lore text printed on the body of the card, in Markdown format.
       foilings: The list of foiling codes the card was printed in, sorted by foil rarity.
-      full_name: The full name of the card, including pitch value.
-      grants_keywords: A list of keywords this card grants to other cards.
       identifiers: The list of card identifiers, such as `RNR012`.
-      image_urls: A list of card image URLs.
-      intellect: The intellect value of the card, or `None` if not present.
-      keywords: The list of all keywords associated with the card.
-      label_keywords: The list of label keywords associated with this card, such as `Combo`.
-      legality: Whether this card is _currently_ legal for various formats.
-      life: The life (health) value of the card, or `None` if not present.
-      name: The name of the card, excluding pitch value.
-      notes: An optional string of user notes associated with the card, in Markdown format.
-      pitch: The pitch value of the card, or `None` if not present.
-      power: The attack power of the card, or `None` if not present.
+      image_urls: A map of card variations to the URL of their appropriate image.
       rarities: The list of rarity codes associated with the card, sorted by rarity.
       sets: The list of card set codes associated with the card.
-      subtypes: The list of subtypes associated with this card.
-      supertypes: The list of supertypes associated with this card.
-      tags: A collection of user-defined tags.
-      talent_type: The talent supertype associated with this card (see `meta.TALENT_SUPERTYPES`), or `None` if not applicable.
-      token_keywords: The list of all token keywords associated with this card, such as `Frostbite`.
-      types: The list of all type keywords contained within the `type_text` of this card.
-      type_keywords: The list of type keywords present within the `body` of the card, such as `Action`.
-      type_text: The full type box text of the card.
       variations: The list of unique variation IDs associated with the card (see above).
     '''
-
-    ability_keywords: list[str]
     art_types: list[str]
-    body: Optional[str]
-    card_type: str
-    class_type: Optional[str]
-    cost: Optional[int | str]
-    defense: Optional[int | str]
+    dates: dict[str, tuple[Optional[datetime.date], Optional[datetime.date]]]
     editions: list[str]
-    effect_keywords: list[str]
-    flavor_text: Optional[str]
     foilings: list[str]
-    full_name: str
-    grants_keywords: list[str]
     identifiers: list[str]
-    image_urls: list[str]
-    intellect: Optional[int | str]
-    keywords: list[str]
-    label_keywords: list[str]
-    legality: dict[str, bool]
-    life: Optional[int | str]
-    name: str
-    pitch: Optional[int | str]
-    power: Optional[int | str]
+    image_urls: dict[str, str]
     rarities: list[str]
     sets: list[str]
-    subtypes: list[str]
-    supertypes: list[str]
-    talent_type: Optional[str]
-    token_keywords: list[str]
-    types: list[str]
-    type_keywords: list[str]
-    type_text: str
     variations: list[str]
-    notes: Optional[str] = None
-    tags: list[str] = dataclasses.field(default_factory=list)
 
-    def __getitem__(self, key: str) -> Union[dict[str, bool], int, list[str], None, str]:
+    def check_consistency(self) -> tuple[bool, Optional[str]]:
         '''
-        Allows one to access fields of a card via dictionary syntax.
-
-        Args:
-          key: The name of the class attribute to fetch.
+        Checks the consistency of this card, returning information on whether
+        there are any invalid card fields.
 
         Returns:
-          The value associated with the specified field.
+          A tuple of the form `(<is consistent?>, <optional reason>)`.
         '''
-        return self.__dict__[key]
-
-    def __hash__(self) -> Any:
-        '''
-        Computes the hash representation of the card.
-
-        Returns:
-          The hash representation of the card.
-        '''
-        return hash((self.name, self.pitch))
-
-    def __str__(self) -> str:
-        '''
-        Computes the JSON string representation of the card.
-
-        This is an alias of the `to_json()` method.
-
-        Returns:
-          The JSON string representation of the card.
-        '''
-        return self.to_json()
-
-    def cost_value(self) -> Optional[int]:
-        '''
-        Returns the integer representation of the cost value of this card.
-
-        If the actual value of the corresponding `Card` attribute is `None` or
-        a `str`, this method will return `None`.
-
-        Returns:
-          The integer representation of the corresponding card field.
-        '''
-        return self.cost if isinstance(self.cost, int) else None
-
-    def defense_value(self) -> Optional[int]:
-        '''
-        Returns the integer representation of the defense value of this card.
-
-        If the actual value of the corresponding `Card` attribute is `None` or
-        a `str`, this method will return `None`.
-
-        Returns:
-          The integer representation of the corresponding card field.
-        '''
-        return self.defense if isinstance(self.defense, int) else None
+        for variation in self.variations:
+            chunks = variation.split('-')
+            if len(chunks) != 5:
+                return (False, f'Card variation "{variation}" not of the form "IDENTIFIER-EDITION-RARITY-FOILING-ARTTYPE"')
+            if not chunks[0] in self.identifiers:
+                return (False, f'Identifier for variation "{variation}" not present in self.identifiers')
+            if not chunks[1] in self.editions:
+                return (False, f'Edition for variation "{variation}" not present in self.editions')
+            if not chunks[2] in self.rarities:
+                return (False, f'Rarity for variation "{variation}" not present in self.rarities')
+            if not chunks[3] in self.foilings:
+                return (False, f'Foiling for variation "{variation}" not present in self.foilings')
+            if not chunks[4] in self.art_types:
+                return (False, f'Art type for variation "{variation}" not present in self.art_types')
+            if not any(chunks[0].startswith(s) for s in self.sets):
+                return (False, f'Card set for variation "{variation}" not present in self.sets')
+        for variation in self.image_urls.keys():
+            if not variation in self.variations:
+                return (False, f'Card image URLs contains variation "{variation}" not present in self.variations')
+        for variation in self.dates.keys():
+            if not variation in self.variations:
+                return (False, f'Card dates map contains variation "{variation}" not present in self.variations')
+        return super().check_consistency()
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> Card:
         '''
         Creates a card from its dictionary representation.
+
+        This method will automatically convert date strings to `datetime.date`
+        objects if needed.
 
         Args:
           data: The dictionary representation of the card to convert from.
@@ -314,7 +248,31 @@ class Card:
         Returns:
           A new card from the specified data.
         '''
-        return Card(**data)
+        intermediate = {}
+        for field, field_value in data.items():
+            if field == 'dates':
+                intermediate['dates'] = {}
+                for k, v in field_value.items():
+                    if v[0] is None:
+                        ird = None
+                    elif isinstance(v[0], str):
+                        ird = datetime.datetime.strptime(v[0], DATE_FORMAT).date()
+                    elif isinstance(v[0], datetime.date):
+                        ird = v[0]
+                    else:
+                        raise ValueError('unknown initial release date format')
+                    if v[1] is None:
+                        oop = None
+                    elif isinstance(v[1], str):
+                        oop = datetime.datetime.strptime(v[1], DATE_FORMAT).date()
+                    elif isinstance(v[1], datetime.date):
+                        oop = v[1]
+                    else:
+                        raise ValueError('unknown out-of-print date format')
+                    intermediate['dates'][k] = (ird, oop)
+            else:
+                intermediate[field] = field_value
+        return Card(**intermediate)
 
     @staticmethod
     def from_full_name(full_name: str) -> Card:
@@ -331,7 +289,7 @@ class Card:
         Returns:
           A new `Card` object.
         '''
-        from .catalog import DEFAULT_CATALOG
+        from .card_catalog import DEFAULT_CATALOG
         if DEFAULT_CATALOG is None:
             raise Exception('default card catalog has not been initialized')
         return DEFAULT_CATALOG.lookup_card(full_name=full_name)
@@ -351,7 +309,7 @@ class Card:
         Returns:
           A new `Card` object.
         '''
-        from .catalog import DEFAULT_CATALOG
+        from .card_catalog import DEFAULT_CATALOG
         if DEFAULT_CATALOG is None:
             raise Exception('specified card catalog has not been initialized')
         return DEFAULT_CATALOG.lookup_card(identifier=identifier)
@@ -365,7 +323,7 @@ class Card:
           jsonstr: The JSON string representation to parse.
 
         Returns:
-          A new `Card` object.
+          A new `Card` object from the parsed data.
         '''
         return Card.from_dict(json.loads(jsonstr))
 
@@ -385,215 +343,39 @@ class Card:
                 highest = level
         return list(RARITIES.keys())[highest]
 
-    def image(self, height: int = 314, index: int = -1, width: int = 225) -> Any:
+    def image(self, height: int = 314, variation: Optional[str] = None, width: int = 225) -> Any:
         '''
         Display an image of this card, optionally providing an alternative
-        index to use.
+        variation to use.
 
         Args:
           height: The height to scale the resulting image to, in pixels.
-          index: The target `image_urls` index to fetch image data for.
+          variation: The target `image_urls` variation to fetch image data for, or `None` to select the first image.
           width: The width to scale the resulting image to, in pixels.
 
         Returns:
           The image representation of the card.
         '''
         if not self.image_urls: return 'No images available'
+        if variation is None:
+            index = list(self.image_urls.keys())[0]
+        else:
+            index = variation
         return display(Image(self.image_urls[index], height=height, width=width))
 
-    def is_action(self) -> bool:
+    def initial_release_date(self) -> Optional[datetime.date]:
         '''
-        Whether this card is an action card.
+        Computes the initial release date associated with this card.
 
         Returns:
-          Whether the card contains the _Action_ type.
+          The earliest release date associated with the card, or `None`.
         '''
-        return 'Action' in self.types
-
-    def is_attack(self) -> bool:
-        '''
-        Whether this card is an attack card.
-
-        Returns:
-          Whether the card contains the _Attack_ type.
-        '''
-        return 'Attack' in self.types
-
-    def is_attack_reaction(self) -> bool:
-        '''
-        Whether this card is an attack reaction card.
-
-        Returns:
-          Whether the card contains the _Attack Reaction_ type.
-        '''
-        return 'Attack Reaction' in self.types
-
-    def is_aura(self) -> bool:
-        '''
-        Whether this card is an aura card.
-
-        Returns:
-          Whether the card contains the _Aura_ type.
-        '''
-        return 'Aura' in self.types
-
-    def is_blue(self) -> bool:
-        '''
-        Whether this is a blue card.
-
-        Returns:
-          Whether this card pitches for 3 resources.
-        '''
-        return self.pitch == 3 if isinstance(self.pitch, int) else False
-
-    def is_defense_reaction(self) -> bool:
-        '''
-        Whether this card is a defense reaction card.
-
-        Returns:
-          Whether the card contains the _Defense Reaction_ type.
-        '''
-        return 'Defense Reaction' in self.types
-
-    def is_equipment(self) -> bool:
-        '''
-        Whether this card is an equipment card.
-
-        Returns:
-          Whether the card contains the _Equipment_ type.
-        '''
-        return 'Equipment' in self.types
-
-    def is_generic(self) -> bool:
-        '''
-        Whether this card is a generic card.
-
-        Returns:
-          Whether this card is a generic card.
-        '''
-        return 'Generic' in self.types
-
-    def is_hero(self) -> bool:
-        '''
-        Whether this card is a hero card.
-
-        Returns:
-          Whether the card contains the _Hero_ type.
-        '''
-        return 'Hero' in self.types
-
-    def is_instant(self) -> bool:
-        '''
-        Whether this card is an instant card.
-
-        Returns:
-          Whether the card contains the _Instant_ type.
-        '''
-        return 'Instant' in self.types
-
-    def is_item(self) -> bool:
-        '''
-        Whether this card is an item card.
-
-        Returns:
-          Whether the card contains the _Item_ type.
-        '''
-        return 'Item' in self.types
-
-    def is_legal(self, format: Optional[str] = None) -> bool:
-        '''
-        Whether this card is legal for the specified format, or if `format` is
-        `None`, returns `False` if this card is banned in _any_ format.
-
-        Args:
-          format: The code of the card format to check, or `None` to check all formats.
-
-        Returns:
-          Whether the card is legal.
-        '''
-        if not self.legality: return True
-        if format is None:
-            return False in self.legality.values()
-        else:
-            return self.legality[format]
-
-    def is_reaction(self) -> bool:
-        '''
-        Whether this card is an attack or defense reaction card.
-
-        Returns:
-          Whether the card contains the _Attack Reaction_ or _Defense Reaction_ types.
-        '''
-        return self.is_attack_reaction() or self.is_defense_reaction()
-
-    def is_red(self) -> bool:
-        '''
-        Whether this is a red card.
-
-        Returns:
-          Whether this card pitches for 1 resource.
-        '''
-        return self.pitch == 1 if isinstance(self.pitch, int) else False
-
-    def is_token(self) -> bool:
-        '''
-        Whether this card is a token card.
-
-        Returns:
-          Whether the card contains the _Token_ type.
-        '''
-        return 'Token' in self.types
-
-    def is_weapon(self) -> bool:
-        '''
-        Whether this card is a weapon card.
-
-        Returns:
-          Whether the card contains the _Weapon_ type.
-        '''
-        return 'Weapon' in self.types
-
-    def is_yellow(self) -> bool:
-        '''
-        Whether this is a yellow card.
-
-        Returns:
-          Whether this card pitches for 2 resources.
-        '''
-        return self.pitch == 2 if isinstance(self.pitch, int) else False
-
-    def intellect_value(self) -> Optional[int]:
-        '''
-        Returns the integer representation of the intellect value of this card.
-
-        If the actual value of the corresponding `Card` attribute is `None` or
-        a `str`, this method will return `None`.
-
-        Returns:
-          The integer representation of the corresponding card field.
-        '''
-        return self.intellect if isinstance(self.intellect, int) else None
-
-    def keys(self) -> list[str]:
-        '''
-        Returns the dictionary keys associated with this card class.
-
-        Returns:
-          The `dict` keys as `list[str]`, corresponding to the possible fields of the card.
-        '''
-        return list(self.__dict__.keys())
-
-    def life_value(self) -> Optional[int]:
-        '''
-        Returns the integer representation of the life value of this card.
-
-        If the actual value of the corresponding `Card` attribute is `None` or
-        a `str`, this method will return `None`.
-
-        Returns:
-          The integer representation of the corresponding card field.
-        '''
-        return self.life if isinstance(self.life, int) else None
+        earliest = None
+        for date in self.release_dates().values():
+            if date is None: continue
+            if earliest is None or date < earliest:
+                earliest = copy.deepcopy(date)
+        return earliest
 
     def lowest_rarity(self) -> str:
         '''
@@ -611,29 +393,14 @@ class Card:
                 lowest = level
         return list(RARITIES.keys())[lowest]
 
-    def pitch_value(self) -> Optional[int]:
+    def out_of_print_dates(self) -> dict[str, Optional[datetime.date]]:
         '''
-        Returns the integer representation of the pitch value of this card.
-
-        If the actual value of the corresponding `Card` attribute is `None` or
-        a `str`, this method will return `None`.
+        Returns a mapping of card variations to their out-of-print dates.
 
         Returns:
-          The integer representation of the corresponding card field.
+          A mapping of card variations to their out-of-print dates.
         '''
-        return self.pitch if isinstance(self.pitch, int) else None
-
-    def power_value(self) -> Optional[int]:
-        '''
-        Returns the integer representation of the power value of this card.
-
-        If the actual value of the corresponding `Card` attribute is `None` or
-        a `str`, this method will return `None`.
-
-        Returns:
-          The integer representation of the corresponding card field.
-        '''
-        return self.power if isinstance(self.power, int) else None
+        return {k: v[1] for k, v in self.dates.items()}
 
     def rarity_names(self) -> list[str]:
         '''
@@ -644,107 +411,36 @@ class Card:
         '''
         return [RARITIES[r] for r in self.rarities]
 
-    def render(self, heading_level: str = '###', icon_size: int = 11) -> Any:
+    def release_dates(self) -> dict[str, Optional[datetime.date]]:
         '''
-        Renders this card into a markdown representation.
-
-        Args:
-          heading_level: Specifies the initial heading level of the card.
-          icon_size: Specified the target width of icon images.
+        Returns a mapping of card variations to their release dates.
 
         Returns:
-          The IPython-rendered markdown output.
+          A mapping of card variations to their release dates.
         '''
-        mdstr = f'{heading_level} {self.name} _({self.type_text})_\n\n'
-        if not self.body is None:
-            with_images = self.body
-            for k, v in ICON_CODE_IMAGE_URLS.items():
-                with_images = with_images.replace(k, f'<img src="{v}" alt="{k}" width="{icon_size}"/>')
-            mdstr += f'{with_images}\n\n'
-        if not self.flavor_text is None:
-            mdstr += f'{self.flavor_text}\n\n'
-        mdstr += '| Attribute | Value |\n|---|---|\n'
-        if not self.power is None:
-            mdstr += f'| Attack Power | {self.power} |\n'
-        if not self.defense is None:
-            mdstr += f'| Defense | {self.defense} |\n'
-        if not self.intellect is None:
-            mdstr += f'| Intellect | {self.intellect} |\n'
-        if not self.life is None:
-            mdstr += f'| Life | {self.life} |\n'
-        if not self.pitch is None:
-            mdstr += f'| Pitch Value | {self.pitch} |\n'
-        if not self.cost is None:
-            mdstr += f'| Resource Cost | {self.cost} |\n'
-        return display(Markdown(mdstr))
+        return {k: v[0] for k, v in self.dates.items()}
 
-    def render_body(self, icon_size: int = 11) -> Any:
-        '''
-        Renders the body text of this card as markdown output.
-
-        Args:
-          icon_size: Specified the target width of icon images.
-
-        Returns:
-          The IPython-rendered markdown output.
-        '''
-        if self.body is None: return 'Specified card does not have any body text.'
-        with_images = self.body
-        for k, v in ICON_CODE_IMAGE_URLS.items():
-            with_images = with_images.replace(k, f'<img src="{v}" alt="{k}" width="{icon_size}"/>')
-        return display(Markdown(with_images))
-
-    def render_notes(self, icon_size: int = 11) -> Any:
-        '''
-        Renders the notes of this card as markdown output.
-
-        Args:
-          icon_size: Specified the target width of icon images.
-
-        Returns:
-          The IPython-rendered markdown output.
-        '''
-        if self.notes is None: return 'Specified card does not have any notes.'
-        with_images = self.notes
-        for k, v in ICON_CODE_IMAGE_URLS.items():
-            with_images = with_images.replace(k, f'<img src="{v}" alt="{k}" width="{icon_size}"/>')
-        return display(Markdown(with_images))
-
-    def tcgplayer_url(self) -> str:
-        '''
-        Computes the [TCG Player](https://www.tcgplayer.com/) URL for the card.
-
-        Returns:
-          The URL used to search for the card on TCG Player.
-        '''
-        return TCGPLAYER_BASE_URL + self.name
-
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, convert_dates: bool = True) -> dict[str, Any]:
         '''
         Converts this card into a raw python dictionary.
+
+        Args:
+          convert_dates: Whether to convert internal `datetime.date` objects into strings.
 
         Returns:
           A copy of the raw `dict` representation of the card.
         '''
-        return copy.deepcopy(self.__dict__)
-
-    def to_json(self) -> str:
-        '''
-        Computes the card's JSON string representation.
-
-        Returns:
-          A JSON string representation of the card.
-        '''
-        return json.dumps(self.to_dict(), indent=JSON_INDENT)
-
-    def to_series(self) -> Series:
-        '''
-        Converts the card into a [pandas Series
-        object](https://pandas.pydata.org/docs/reference/series.html).
-
-        Returns:
-          A pandas `Series` object associated with the card.
-        '''
-        return Series(self.to_dict())
-
-
+        intermediate = {}
+        for field, field_value in copy.deepcopy(self.__dict__).items():
+            if field == 'dates':
+                intermediate['dates'] = {}
+                for k, v in cast(dict[str, tuple[Optional[datetime.date], Optional[datetime.date]]], field_value).items():
+                    if convert_dates:
+                        ird = None if v[0] is None else v[0].strftime(DATE_FORMAT)
+                        oop = None if v[1] is None else v[1].strftime(DATE_FORMAT)
+                        intermediate['dates'][k] = [ird, oop]
+                    else:
+                        intermediate['dates'][k] = [v[0], v[1]]
+            else:
+                intermediate[field] = field_value
+        return intermediate

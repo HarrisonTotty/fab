@@ -3,6 +3,14 @@ Contains useful meta information in the form of constants.
 
 The value at the start of each docstring refers to the appropriate section of
 the Comprehensive Rules document (if applicable).
+
+The constants provided in this submodule are particularly useful when filtering
+lists of cards, like so:
+
+```python
+# Returns all weapon cards in the list.
+result = some_list.filter(types=meta.WEAPON_SUBTYPES)
+```
 '''
 
 ABILITY_KEYWORDS = [
@@ -106,7 +114,7 @@ EFFECT_KEYWORDS = [
     'Distribute',
     'Draw',
     'Freeze',
-    'Gain'
+    'Gain',
     'Ignore',
     'Intimidate',
     'Look',
@@ -195,9 +203,9 @@ Contains subtypes associated with hero cards.
 '''
 
 ICON_CODES = {
-    '{d}': 'Defense Value',
-    '{h}': 'Health Value',
-    '{i}': 'Intelligence Value',
+    '{d}': 'Defense',
+    '{h}': 'Life',
+    '{i}': 'Intellect',
     '{p}': 'Attack Power',
     '{r}': 'Resource Point',
 }

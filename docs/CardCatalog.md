@@ -1,1 +1,1 @@
-::: fab.catalog.CardCatalog
+::: fab.card_catalog.CardCatalog

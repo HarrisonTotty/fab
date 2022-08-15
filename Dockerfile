@@ -19,7 +19,7 @@ RUN jupyter labextension install \
     plotlywidget
 
 
-FROM python:3.9 as poetry
+FROM python:3.10 as poetry
 
 ENV MYPY_CACHE_DIR=/tmp/mypy-cache \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
@@ -29,7 +29,7 @@ ENV MYPY_CACHE_DIR=/tmp/mypy-cache \
     PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1
 
-RUN pip install poetry
+RUN mkdir /tmp/mypy-cache && pip install poetry
 
 
 FROM poetry as build

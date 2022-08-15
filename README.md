@@ -21,7 +21,7 @@ Documentation](https://fablib.readthedocs.io/en/latest/).
 
 ### Installing Locally
 
-Ensure that you have Python 3.9+ and `pip` installed and then run:
+Ensure that you have Python 3.10+ and `pip` installed and then run:
 
 ```bash
 export VERSION=0.3.0
@@ -31,7 +31,7 @@ pip install fab.whl
 
 ### Building Locally
 
-Ensure that you have Python 3.9+ installed, along with
+Ensure that you have Python 3.10+ installed, along with
 [poetry](https://python-poetry.org/) and then run:
 
 ```bash

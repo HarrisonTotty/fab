@@ -10,6 +10,14 @@ from . import (
     C3
 )
 
+def test_check_consistency():
+    '''
+    Checks the consistency of the three card objects and this method.
+    '''
+    assert C1.check_consistency() == (True, None)
+    assert C2.check_consistency() == (True, None)
+    assert C3.check_consistency() == (True, None)
+
 def test_dict_rep():
     '''
     Tests the dictionary representation of card objects.
@@ -21,7 +29,9 @@ def test_dict_rep():
         'body',
         'card_type',
         'class_type',
+        'color',
         'cost',
+        'dates',
         'defense',
         'editions',
         'effect_keywords',
@@ -58,7 +68,9 @@ def test_dict_rep():
         'body': '**Bravo Specialization** *(You may only have Crippling Crush in your deck if your hero is Bravo.)*\n\n**Crush** - If Crippling Crush deals 4 or more damage to a hero, they discard 2 random cards.',
         'card_type': 'Action',
         'class_type': 'Guardian',
+        'color': 'Red',
         'cost': 7,
+        'dates': {},
         'defense': 3,
         'editions': ['A', 'N', 'U'],
         'effect_keywords': ['Deal', 'Discard'],
@@ -67,7 +79,7 @@ def test_dict_rep():
         'full_name': 'Crippling Crush (1)',
         'grants_keywords': [],
         'identifiers': ['1HP050', 'WTR043'],
-        'image_urls': ['https://storage.googleapis.com/fabmaster/media/images/1HP050.width-450.png', 'https://storage.googleapis.com/fabmaster/media/images/WTR_43.width-450.png', 'https://storage.googleapis.com/fabmaster/media/images/U-WTR43.width-450.png'],
+        'image_urls': {},
         'intellect': None,
         'keywords': ['Crush', 'Deal', 'Discard', 'Specialization'],
         'legality': {'B': True, 'C': True, 'CC': True},
@@ -161,6 +173,7 @@ def test_values():
     assert C1.art_types == ['S']
     assert C1.card_type == 'Action'
     assert C1.class_type == 'Guardian'
+    assert C1.color == 'Red'
     assert C1.cost == 7
     assert C1.defense == 3
     assert C1.editions == ['A', 'N', 'U']

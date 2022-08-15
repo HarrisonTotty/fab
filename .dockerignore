@@ -15,12 +15,13 @@ dist/
 
 __pycache__/
 
-.git
 .coverage
-.pytest_cache
+.git
+.github
 .mypy_cache
+.pytest_cache
 
-notebooks/
+
 data/
-
-poetry.lock
+docs/
+notebooks/

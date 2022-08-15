@@ -117,7 +117,7 @@ class Deck:
         '''
         Adds the specified card to the deck.
 
-        Tip: Warning
+        Warning:
           The specified `count` will be ignored when adding inventory or tokens.
 
         Args:
@@ -457,7 +457,7 @@ class Deck:
           7. The deck only contains cards which adhere to the specified format's
              rarity requirements.
 
-        Tip: Warning
+        Warning:
           This function currently does not validate any restrictions printed on
           cards themselves (ex: "Legendary" cards). Also, any restrictions on
           card rarity might not be accurate, since cards may be printed in
@@ -703,7 +703,7 @@ class Deck:
         '''
         Returns the list of all cards which may be used in this deck.
 
-        Tip: Warning
+        Warning:
           This method does not validate the legality of the deck's hero card.
 
         Note:
@@ -718,7 +718,7 @@ class Deck:
         '''
         if cast(str, self.hero.class_type) == 'Shapeshifter':
             raise Exception(f'deck hero "{self.hero.name}" is a shapeshifter')
-        from .catalog import DEFAULT_CATALOG
+        from .card_catalog import DEFAULT_CATALOG
         if DEFAULT_CATALOG is None:
             raise Exception('default catalog has not been initialized')
         hero_class = cast(str, self.hero.class_type)

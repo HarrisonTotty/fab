@@ -9,26 +9,21 @@ nav:
   - 'API Reference':
     - 'Cards & Decks':
       - 'Card': Card.md
-      - 'CardCatalog': CardCatalog.md
       - 'CardList': CardList.md
       - 'CardSet': CardSet.md
+      - 'CardVariant': CardVariant.md
       - 'Deck': Deck.md
-    - 'Card Inventory':
-      - 'CardInventory': card-inventories.md
-      - 'InventoryItem': inventory-items.md
-    - 'Game State':
-      - 'Arena': arena.md
-      - 'ChainLink': chain-link.md
-      - 'CombatChain': combat-chain.md
-      - 'PlayerSpace': player-space.md
+    - 'Card Catalogs & Inventory':
+      - 'CardCatalog': CardCatalog.md
+      - 'CardInventory': CardInventory.md
     - 'Graphical Analysis':
       - 'graphics': graphics.md
     - 'Metadata':
       - 'PlayerProfile': PlayerProfile.md
       - 'meta': meta.md
+    - 'Base Classes':
+        - 'CardBase': CardBase.md
 plugins:
-  - mkdocs-jupyter:
-      ignore_h1_titles: true
   - mkdocstrings:
       default_handler: python
       handlers:

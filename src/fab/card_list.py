@@ -4,6 +4,8 @@ Contains the definition of Flesh and Blood card lists.
 
 from __future__ import annotations
 
+import copy
+import datetime
 import json
 import os
 import random
@@ -31,7 +33,7 @@ def _sort_list_field(field: str, values: list[int | str], reverse: bool = False)
     else:
         return sorted(values)
 
-class CardList(UserList):
+class CardList(UserList[Card]):
     '''
     Represents a collection of cards.
 
@@ -121,7 +123,7 @@ class CardList(UserList):
         Returns the list of all `Card` field values associated with the
         specified `Card` field in this list of cards.
 
-        Tip: Warning
+        Warning:
           Note that values of `None` and `str` values for `int`-based fields
           will be excluded. The card field `legality` may not be collected.
 
@@ -148,7 +150,7 @@ class CardList(UserList):
         Returns the set of all unique `Card` field values associated with the
         specified `Card` field in this list of cards.
 
-        Tip: Warning
+        Warning:
           Note that values of `None` and `str` values for `int`-based fields
           will be excluded. The card field `legality` may not be collected.
 
@@ -164,7 +166,7 @@ class CardList(UserList):
         '''
         Returns the set of all card costs associated with this list of cards.
 
-        Tip: Warning
+        Warning:
           This excludes cards with no cost or with variable cost.
 
         Returns:
@@ -188,6 +190,20 @@ class CardList(UserList):
                 counts[card.full_name] = 1
         return counts
 
+    def dates(self) -> dict[str, tuple[Optional[datetime.date], Optional[datetime.date]]]:
+        '''
+        Returns the combined `dates` field of all cards in the list.
+
+        Returns:
+          A mapping of all card variations to their corresponding release and/or out-of-print dates.
+        '''
+        result = {}
+        for card in self.data:
+            for k, v in card.dates.items():
+                if not k in result:
+                    result[k] = v
+        return copy.deepcopy(result)
+
     def defense_reactions(self) -> CardList:
         '''
         Returns the set of all defense reaction cards in this card list.
@@ -202,7 +218,7 @@ class CardList(UserList):
         Returns the set of all card defense values associated with this list of
         cards.
 
-        Tip: Warning
+        Warning:
           This excludes cards with no defense or with variable defense.
 
         Returns:
@@ -295,10 +311,9 @@ class CardList(UserList):
         '''
         return CardList(card for card in self.data if card.is_equipment())
 
-    def filter(self, **kwargs) -> CardList:
+    def filter(self, **kwargs: Any) -> CardList:
         '''
-        Filters a list of cards according to a function against a particular
-        `Card` field.
+        Filters the list of cards against one or more `Card` fields.
 
         In addition to functions/lambdas, you can also specify:
 
@@ -319,15 +334,56 @@ class CardList(UserList):
           `types`). This is the same thing as passing an empty list.
         * A `str` for the `legality` keyword argument, corresponding to a format
           code that the card must be legal in to be included.
-        * The strings `r`, `red`, `y`, `yellow`, `b`, or `blue` for the `pitch`
-          keyword argument, corresponding to the color of the card
-          (case-insensitive).
+        * A `str` of the form `YYYY`, `YYYY/MM`, or `YYYY/MM/DD` for the `dates`
+          keyword argument, corresponding to only including cards with an
+          _initial release date_ in the same year and/or month and/or day as the
+          specified string (for example: `2022/08`).
+        * A `datetime.date` for the `dates` keyword argument, corresponding to
+          only including cards with the same _initial release date_ as the
+          specified value.
         * A `bool` value to a keyword argument called `negate`, which defines
           whether to negate the filter query.
 
+        Warning:
+          When filtering cards by type to discern which cards may be used in a
+          deck, be mindful that when invoking this method with something like
+          `types=['Generic', 'Shadow', 'Runeblade']`, your result includes cards
+          which contain the _Generic_, _Shadow_, **or** _Runeblade_ types (it
+          will also contain _Shadow Brute_ cards, for instance). When you want
+          to filter cards by types which work with a particular hero, it's best
+          to leverage `Deck` objects instead.
+
+        Example:
+          The following examples assume `cards` is an existing `CardList`
+          object.
+
+          Return all cards which contain the _Attack_ type:
+
+          ```python
+          # Method 1 - Lambda Expressions
+          result = cards.filter(types=lambda t: 'Attack' in t)
+
+          # Method 2 - List Shortcut
+          result = cards.filter(types=['Attack'])
+
+          # Method 3 - String Shortcut (Preferred)
+          result = cards.filter(types='Attack')
+          ```
+
+          Return all _Brute or Illusionist_ cards with 7 power:
+
+          ```python
+          result = cards.filter(types=['Brute', 'Illusionist'], power=7)
+          ```
+
+          Return all _Illusionist_ cards that don't pitch for 3 resources:
+
+          ```python
+          result = cards.filter(types='Illusionist').filter(pitch=3, negate=True)
+          ```
+
         Returns:
-          A new `CardList` containing the `Card` objects that meet the filtering
-          requirements.
+          A new `CardList` containing the `Card` objects that meet the filtering requirements.
         '''
         if not self.data: return self
         filtered: list[Card] = []
@@ -350,11 +406,11 @@ class CardList(UserList):
                                 break
                     elif isinstance(value, str):
                         if negate:
-                            if value.lower() in cardv.lower():
+                            if isinstance(cardv, str) and value.lower() in cardv.lower():
                                 add = False
                                 break
                         else:
-                            if not value.lower() in cardv.lower():
+                            if not isinstance(cardv, str) or not value.lower() in cardv.lower():
                                 add = False
                                 break
                     elif callable(value):
@@ -437,25 +493,81 @@ class CardList(UserList):
                             if not isinstance(cardv, int) or cardv < value[0] or cardv > value[1]:
                                 add = False
                                 break
-                    elif isinstance(value, str) and arg == 'pitch':
+                    elif callable(value):
                         if negate:
-                            if value.startswith('b') and card.is_blue():
-                                add = False
-                                break
-                            if value.startswith('r') and card.is_red():
-                                add = False
-                                break
-                            if value.startswith('y') and card.is_yellow():
+                            if value(cardv):
                                 add = False
                                 break
                         else:
-                            if value.startswith('b') and not card.is_blue():
+                            if not value(cardv):
                                 add = False
                                 break
-                            if value.startswith('r') and not card.is_red():
+                    else:
+                        raise ValueError(f'unsupported value type for "{arg}" argument')
+                elif arg == 'dates':
+                    ird = card.initial_release_date()
+                    if isinstance(value, str):
+                        if not value.isdigit() and not '/' in value:
+                            raise ValueError('dates specification not of the form "YYYY", "YYYY/MM", or "YYYY/MM/DD"')
+                        chunks = [int(c) for c in value.split('/')]
+                        while len(chunks) < 3: chunks.append(None)
+                        [year, month, day] = chunks
+                        if not day is None:
+                            if negate:
+                                if not ird is None and ird.year == year and ird.month == month and ird.day == day:
+                                    add = False
+                                    break
+                            else:
+                                if ird is None or ird.year != year or ird.month != month or ird.day != day:
+                                    add = False
+                                    break
+                        elif not month is None:
+                            if negate:
+                                if not ird is None and ird.year == year and ird.month == month:
+                                    add = False
+                                    break
+                            else:
+                                if ird is None or ird.year != year or ird.month != month:
+                                    add = False
+                                    break
+                        else:
+                            if negate:
+                                if not ird is None and ird.year == year:
+                                    add = False
+                                    break
+                            else:
+                                if ird is None or ird.year != year:
+                                    add = False
+                                    break
+                    elif isinstance(value, datetime.date):
+                        if negate:
+                            if value == ird:
                                 add = False
                                 break
-                            if value.startswith('y') and not card.is_yellow():
+                        else:
+                            if value != ird:
+                                add = False
+                                break
+                    elif callable(value):
+                        if negate:
+                            if value(card.dates):
+                                add = False
+                                break
+                        else:
+                            if not value(card.dates):
+                                add = False
+                                break
+                    else:
+                        raise ValueError(f'unsupported value type for "{arg}" argument')
+                elif arg == 'legality':
+                    cardv = cast(dict[str, bool], card[arg])
+                    if isinstance(value, str):
+                        if negate:
+                            if card.is_legal(value):
+                                add = False
+                                break
+                        else:
+                            if not card.is_legal(value):
                                 add = False
                                 break
                     elif callable(value):
@@ -465,6 +577,207 @@ class CardList(UserList):
                                 break
                         else:
                             if not value(cardv):
+                                add = False
+                                break
+                    else:
+                        raise ValueError(f'unsupported value type for "{arg}" argument')
+                else:
+                    raise Exception(f'unknown filtering argument "{arg}"')
+            if add: filtered.append(card)
+        return CardList(filtered)
+
+    def filter_exact(self, **kwargs: Any) -> CardList:
+        '''
+        Filters the list of cards against one or more `Card` fields.
+
+        This method is similar to `filter()` except that when specifying a
+        `list[str]` for those fields that support it, _all_ elements must
+        be present for the card to be included in the result. However, passing
+        just a `str` to those fields acts the same as in `filter()`.
+
+        Example:
+          The following examples assume `cards` is an existing `CardList`
+          object.
+
+          Return all _Shadow Runeblade Action_ cards:
+
+          ```python
+          result = cards.filter_exact(types=['Shadow', 'Runeblade', 'Action'])
+          ```
+
+        Returns:
+          A new `CardList` containing the `Card` objects that meet the filtering requirements.
+        '''
+        if not self.data: return self
+        filtered: list[Card] = []
+        negate = kwargs['negate'] if 'negate' in kwargs else False
+        for card in self.data:
+            add = True
+            for arg, value in kwargs.items():
+                if arg == 'negate':
+                    continue
+                elif arg in STRING_FIELDS:
+                    cardv = cast(Optional[str], card[arg])
+                    if value is None:
+                        if negate:
+                            if cardv is None:
+                                add = False
+                                break
+                        else:
+                            if not cardv is None:
+                                add = False
+                                break
+                    elif isinstance(value, str):
+                        if negate:
+                            if isinstance(cardv, str) and value.lower() in cardv.lower():
+                                add = False
+                                break
+                        else:
+                            if not isinstance(cardv, str) or not value.lower() in cardv.lower():
+                                add = False
+                                break
+                    elif callable(value):
+                        if negate:
+                            if value(cardv):
+                                add = False
+                                break
+                        else:
+                            if not value(cardv):
+                                add = False
+                                break
+                    else:
+                        raise ValueError(f'unsupported value type for "{arg}" argument')
+                elif arg in STRING_LIST_FIELDS:
+                    cardv = cast(list[str], card[arg])
+                    if value is None:
+                        if negate:
+                            if not cardv:
+                                add = False
+                                break
+                        else:
+                            if cardv:
+                                add = False
+                                break
+                    elif isinstance(value, list):
+                        if negate:
+                            if set(value) == set(cardv):
+                                add = False
+                                break
+                        else:
+                            if set(value) != set(cardv):
+                                add = False
+                                break
+                    elif isinstance(value, str):
+                        if negate:
+                            if value in cardv:
+                                add = False
+                                break
+                        else:
+                            if not value in cardv:
+                                add = False
+                                break
+                    elif callable(value):
+                        if negate:
+                            if value(cardv):
+                                add = False
+                                break
+                        else:
+                            if not value(cardv):
+                                add = False
+                                break
+                    else:
+                        raise ValueError(f'unsupported value type for "{arg}" argument')
+                elif arg in VALUE_FIELDS:
+                    cardv = cast(Optional[int | str], card[arg])
+                    if value is None:
+                        if negate:
+                            if cardv is None:
+                                add = False
+                                break
+                        else:
+                            if not cardv is None:
+                                add = False
+                                break
+                    elif isinstance(value, int):
+                        if negate:
+                            if isinstance(cardv, int) and cardv == value:
+                                add = False
+                                break
+                        else:
+                            if not isinstance(cardv, int) or cardv != value:
+                                add = False
+                                break
+                    elif isinstance(value, tuple):
+                        if negate:
+                            if isinstance(cardv, int) and cardv >= value[0] and cardv <= value[1]:
+                                add = False
+                                break
+                        else:
+                            if not isinstance(cardv, int) or cardv < value[0] or cardv > value[1]:
+                                add = False
+                                break
+                    elif callable(value):
+                        if negate:
+                            if value(cardv):
+                                add = False
+                                break
+                        else:
+                            if not value(cardv):
+                                add = False
+                                break
+                    else:
+                        raise ValueError(f'unsupported value type for "{arg}" argument')
+                elif arg == 'dates':
+                    ird = card.initial_release_date()
+                    if isinstance(value, str):
+                        if not value.isdigit() and not '/' in value:
+                            raise ValueError('dates specification not of the form "YYYY", "YYYY/MM", or "YYYY/MM/DD"')
+                        chunks = [int(c) for c in value.split('/')]
+                        while len(chunks) < 3: chunks.append(None)
+                        [year, month, day] = chunks
+                        if not day is None:
+                            if negate:
+                                if not ird is None and ird.year == year and ird.month == month and ird.day == day:
+                                    add = False
+                                    break
+                            else:
+                                if ird is None or ird.year != year or ird.month != month or ird.day != day:
+                                    add = False
+                                    break
+                        elif not month is None:
+                            if negate:
+                                if not ird is None and ird.year == year and ird.month == month:
+                                    add = False
+                                    break
+                            else:
+                                if ird is None or ird.year != year or ird.month != month:
+                                    add = False
+                                    break
+                        else:
+                            if negate:
+                                if not ird is None and ird.year == year:
+                                    add = False
+                                    break
+                            else:
+                                if ird is None or ird.year != year:
+                                    add = False
+                                    break
+                    elif isinstance(value, datetime.date):
+                        if negate:
+                            if value == ird:
+                                add = False
+                                break
+                        else:
+                            if value != ird:
+                                add = False
+                                break
+                    elif callable(value):
+                        if negate:
+                            if value(card.dates):
+                                add = False
+                                break
+                        else:
+                            if not value(card.dates):
                                 add = False
                                 break
                     else:
@@ -550,7 +863,7 @@ class CardList(UserList):
         '''
         return cast(list[str], self.collect_unique('grants_keywords'))
 
-    def group(self, by: str = 'types', include_none: bool = True) -> dict[Optional[int | str], CardList]:
+    def group(self, by: str = 'types', count_threshold: int = 1, include_none: bool = True) -> dict[Optional[datetime.date | int | str], CardList]:
         '''
         Groups cards by the specified `Card` field.
 
@@ -558,19 +871,23 @@ class CardList(UserList):
         potential values associated with the specified card field. Fields of
         type `list[str]` are unpacked into their sub-values, and replaced with
         `None` if empty. When grouping by `legality`, the result is the subset
-        of all cards currently legal for each format code.
+        of all cards currently legal for each format code. Grouping by the
+        `dates` field implies grouping by release date.
 
         Args:
           by: The `Card` field to group by.
+          count_threshold: Excludes groups with less than this many elements from the result.
           include_none: Whether to include fields with value `None` in the result.
 
         Returns:
           A `dict` of `CardList` objects grouped by the specified `Card` field.
         '''
         if not self.data: return {}
+        if count_threshold < 1:
+            raise ValueError('specified count threshold must be a positive integer value')
         res = {}
         for card in self.data:
-            if by in STRING_FIELDS + VALUE_FIELDS:
+            if by in list(STRING_FIELDS.keys()) + list(VALUE_FIELDS.keys()):
                 value = cast(Optional[int | str], card[by])
                 if not include_none and value is None:
                     continue
@@ -595,6 +912,16 @@ class CardList(UserList):
                             res[v] = CardList([card])
                         else:
                             res[v].append(card)
+            elif by == 'dates':
+                rel_dates = card.release_dates()
+                for v in rel_dates.values():
+                    if not include_none and v is None:
+                        continue
+                    else:
+                        if not v in res:
+                            res[v] = CardList([card])
+                        else:
+                            res[v].append(card)
             elif by == 'legality':
                 for fmt, legality in card.legality:
                     if legality:
@@ -604,7 +931,7 @@ class CardList(UserList):
                             res[fmt].append(card)
             else:
                 raise Exception(f'unknown filter group "{by}"')
-        return res
+        return {k: v for k, v in res.items() if len(v) >= count_threshold}
 
     def heroes(self) -> CardList:
         '''
@@ -638,7 +965,7 @@ class CardList(UserList):
         Returns the set of all card intellect values associated with this list
         of cards.
 
-        Tip: Warning
+        Warning:
           This excludes cards with no intellect or with variable intellect.
 
         Returns:
@@ -694,7 +1021,7 @@ class CardList(UserList):
         Returns the set of all card life values associated with this list of
         cards.
 
-        Tip: Warning
+        Warning:
           This excludes cards with no life value or with variable life value.
 
         Returns:
@@ -722,7 +1049,7 @@ class CardList(UserList):
         '''
         Computes the maximum card cost within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no cost are ignored.
 
         Returns:
@@ -734,7 +1061,7 @@ class CardList(UserList):
         '''
         Computes the maximum card defense within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no defense are ignored.
 
         Returns:
@@ -746,7 +1073,7 @@ class CardList(UserList):
         '''
         Computes the maximum card intellect within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no intellect are ignored.
 
         Returns:
@@ -758,7 +1085,7 @@ class CardList(UserList):
         '''
         Computes the maximum card life value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no life value are ignored.
 
         Returns:
@@ -770,7 +1097,7 @@ class CardList(UserList):
         '''
         Computes the maximum card pitch value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no pitch are ignored.
 
         Returns:
@@ -782,7 +1109,7 @@ class CardList(UserList):
         '''
         Computes the maximum card attack power within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no attack power are ignored.
 
         Returns:
@@ -794,7 +1121,7 @@ class CardList(UserList):
         '''
         Computes the mean card cost within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no cost are ignored.
 
         Args:
@@ -809,7 +1136,7 @@ class CardList(UserList):
         '''
         Computes the mean card defense within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no defense are ignored.
 
         Args:
@@ -824,7 +1151,7 @@ class CardList(UserList):
         '''
         Computes the mean card intellect within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no intellect are ignored.
 
         Args:
@@ -839,7 +1166,7 @@ class CardList(UserList):
         '''
         Computes the mean card life value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no life value are ignored.
 
         Args:
@@ -854,7 +1181,7 @@ class CardList(UserList):
         '''
         Computes the mean card pitch within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no pitch are ignored.
 
         Args:
@@ -869,7 +1196,7 @@ class CardList(UserList):
         '''
         Computes the mean card attack power within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no attack power are ignored.
 
         Args:
@@ -884,7 +1211,7 @@ class CardList(UserList):
         '''
         Computes the median card cost within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no cost are ignored.
 
         Args:
@@ -899,7 +1226,7 @@ class CardList(UserList):
         '''
         Computes the median card defense within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no defense are ignored.
 
         Args:
@@ -914,7 +1241,7 @@ class CardList(UserList):
         '''
         Computes the median card intellect within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no intellect are ignored.
 
         Args:
@@ -929,7 +1256,7 @@ class CardList(UserList):
         '''
         Computes the median card life value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no life value are ignored.
 
         Args:
@@ -944,7 +1271,7 @@ class CardList(UserList):
         '''
         Computes the median card pitch value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no pitch value are ignored.
 
         Args:
@@ -959,7 +1286,7 @@ class CardList(UserList):
         '''
         Computes the median card attack power within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no attack power are ignored.
 
         Args:
@@ -974,7 +1301,7 @@ class CardList(UserList):
         '''
         Computes the minimum card cost within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no cost are ignored.
 
         Returns:
@@ -986,7 +1313,7 @@ class CardList(UserList):
         '''
         Computes the minimum card defense within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no defense are ignored.
 
         Returns:
@@ -998,7 +1325,7 @@ class CardList(UserList):
         '''
         Computes the minimum card intellect within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no intellect are ignored.
 
         Returns:
@@ -1010,7 +1337,7 @@ class CardList(UserList):
         '''
         Computes the minimum card life value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no life value are ignored.
 
         Returns:
@@ -1022,7 +1349,7 @@ class CardList(UserList):
         '''
         Computes the minimum card pitch value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no pitch value are ignored.
 
         Returns:
@@ -1034,7 +1361,7 @@ class CardList(UserList):
         '''
         Computes the minimum attack power within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no attack power are ignored.
 
         Returns:
@@ -1058,7 +1385,7 @@ class CardList(UserList):
         Returns:
           The number of cards in this card list that pitch for 3 resources.
         '''
-        return len(self.filter(pitch='blue'))
+        return len(self.filter(color='Blue'))
 
     def num_red(self) -> int:
         '''
@@ -1067,7 +1394,7 @@ class CardList(UserList):
         Returns:
           The number of cards in this card list that pitch for 1 resource.
         '''
-        return len(self.filter(pitch='red'))
+        return len(self.filter(color='Red'))
 
     def num_yellow(self) -> int:
         '''
@@ -1076,7 +1403,16 @@ class CardList(UserList):
         Returns:
           The number of cards in this card list that pitch for 2 resources.
         '''
-        return len(self.filter(pitch='yellow'))
+        return len(self.filter(color='Yellow'))
+
+    def out_of_print_dates(self) -> dict[str, Optional[datetime.date]]:
+        '''
+        Returns a mapping of all card variations to their out-of-print dates.
+
+        Returns:
+          A mapping of card variations to their out-of-print dates.
+        '''
+        return {k: v[1] for k, v in self.dates().items()}
 
     def pitch_cost_difference(self) -> int:
         '''
@@ -1086,7 +1422,7 @@ class CardList(UserList):
           A positive integer indicates that on average one generates more pitch
           value than consumes it.
 
-        Tip: Warning
+        Warning:
           This calculation does not take into effect any additional pitch/cost a
           card might incur in its body text.
 
@@ -1100,7 +1436,7 @@ class CardList(UserList):
         Returns the set of all card pitch values associated with this list of
         cards.
 
-        Tip: Warning
+        Warning:
           This excludes cards with no pitch or with variable pitch.
 
         Returns:
@@ -1116,7 +1452,7 @@ class CardList(UserList):
         Note:
           A positive integer indicates the deck prefers an offensive strategy.
 
-        Tip: Warning
+        Warning:
           This calculation does not take into effect any additional power/defense
           a card might incur in its body text.
 
@@ -1130,7 +1466,7 @@ class CardList(UserList):
         Returns the set of all card power values associated with this list of
         cards.
 
-        Tip: Warning
+        Warning:
           This excludes cards with no power or with variable power.
 
         Returns:
@@ -1157,6 +1493,15 @@ class CardList(UserList):
         '''
         return CardList(card for card in self.data if card.is_reaction())
 
+    def release_dates(self) -> dict[str, Optional[datetime.date]]:
+        '''
+        Returns a mapping of all card variations to their release dates.
+
+        Returns:
+          A mapping of card variations to their release dates.
+        '''
+        return {k: v[0] for k, v in self.dates().items()}
+
     def save(self, file_path: str):
         '''
         Saves the list of cards to the specified file path.
@@ -1181,7 +1526,8 @@ class CardList(UserList):
         the ordering is based on the _number_ of values within those lists.
         `rarities` is a special case where cards are sorted by their
         highest (if reverse) or lowest rarity value. Sorting by legality is not
-        implemented.
+        implemented. Sorting by `dates` will always reference the _initial
+        release date_ for a card.
 
         Args:
           by: The `Card` field to sort by.
@@ -1315,7 +1661,7 @@ class CardList(UserList):
         Computes all possible statistics associated with this collection of
         cards.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no value for certain fields will be excluded
           from that field's calculations.
 
@@ -1340,7 +1686,7 @@ class CardList(UserList):
         '''
         Computes the standard deviation of card cost within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no cost are ignored.
 
         Args:
@@ -1355,7 +1701,7 @@ class CardList(UserList):
         '''
         Computes the standard deviation of card defense within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no defense are ignored.
 
         Args:
@@ -1370,7 +1716,7 @@ class CardList(UserList):
         '''
         Computes the standard deviation of card intellect within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no intellect are ignored.
 
         Args:
@@ -1385,7 +1731,7 @@ class CardList(UserList):
         '''
         Computes the standard deviation of card life value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no life value are ignored.
 
         Args:
@@ -1400,7 +1746,7 @@ class CardList(UserList):
         '''
         Computes the standard deviation of card pitch value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no pitch value are ignored.
 
         Args:
@@ -1415,7 +1761,7 @@ class CardList(UserList):
         '''
         Computes the standard deviation of attack power within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no attack power are ignored.
 
         Args:
@@ -1469,7 +1815,27 @@ class CardList(UserList):
         Returns:
           A pandas `DataFrame` object representing the list of cards.
         '''
-        return DataFrame(self.data)
+        return DataFrame(copy.deepcopy(self.data))
+
+    def to_flat_dataframe(self, fields: list[str]) -> DataFrame:
+        '''
+        Converts the list of cards into a [pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html).
+
+        The difference between this method and `to_dataframe()` is that the
+        specified fields of type `list[str]` will be "exploded" into multiple
+        entries per list element.
+
+        Args:
+          fields: A list of `Card` fields to invoke `DataFrame.explode()` on.
+
+        Returns:
+          A pandas `DataFrame` object representing the list of cards.
+        '''
+        result = self.to_dataframe()
+        for field in fields:
+            result = result.explode(field)
+        result = result.replace([], None)
+        return result
 
     def to_json(self) -> str:
         '''
@@ -1512,7 +1878,7 @@ class CardList(UserList):
         '''
         Computes the total card cost within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no cost are ignored.
 
         Returns:
@@ -1524,7 +1890,7 @@ class CardList(UserList):
         '''
         Computes the total card defense within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no defense are ignored.
 
         Returns:
@@ -1536,7 +1902,7 @@ class CardList(UserList):
         '''
         Computes the total card intellect within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no intellect are ignored.
 
         Returns:
@@ -1548,7 +1914,7 @@ class CardList(UserList):
         '''
         Computes the total card life value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no life value are ignored.
 
         Returns:
@@ -1560,7 +1926,7 @@ class CardList(UserList):
         '''
         Computes the total card pitch value within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no pitch value are ignored.
 
         Returns:
@@ -1572,7 +1938,7 @@ class CardList(UserList):
         '''
         Computes the total attack power within this card list.
 
-        Tip: Warning
+        Warning:
           Cards with variable or no attack power are ignored.
 
         Returns:
