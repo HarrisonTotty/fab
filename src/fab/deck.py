@@ -716,26 +716,36 @@ class Deck:
         Returns:
           A subset of all cards that work with the deck's hero.
         '''
-        if cast(str, self.hero.class_type) == 'Shapeshifter':
+        if 'Shapeshifter' in self.hero.types:
             raise Exception(f'deck hero "{self.hero.name}" is a shapeshifter')
         from .card_catalog import DEFAULT_CATALOG
         if DEFAULT_CATALOG is None:
             raise Exception('default catalog has not been initialized')
-        hero_class = cast(str, self.hero.class_type)
-        hero_talent = self.hero.talent_type
         cards = DEFAULT_CATALOG.lookup_cards(key='types', value='Generic') if include_generic else CardList.empty()
-        cards.extend(
-            card for card in DEFAULT_CATALOG.lookup_cards(key='class_type', value=hero_class) if card.talent_type is None
-        )
-        if not hero_talent is None:
+        for hero_class in self.hero.class_types:
+            class_cards = DEFAULT_CATALOG.lookup_cards(key='class_types', value=hero_class)
+            for hero_talent in self.hero.talent_types:
+                cards.extend(
+                    # Cards of the same class and talent
+                    card for card in class_cards if hero_talent in card.talent_types
+                )
+            else:
+                cards.extend(
+                    # Cards of the same class with no talent
+                    card for card in class_cards if not card.talent_types
+                )
+        for hero_talent in self.hero.talent_types:
+            talent_cards = DEFAULT_CATALOG.lookup_cards(key='talent_types', value=hero_talent)
             cards.extend(
-                card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=hero_talent) if card.class_type is None or card.class_type == hero_class
+                # Cards of the same talent and no class
+                card for card in talent_cards if not card.class_types
             )
         if 'Essense' in self.hero.ability_keywords:
             for keyword in self.hero.type_keywords:
-                if keyword in TALENT_SUPERTYPES and keyword != hero_talent:
+                if keyword in TALENT_SUPERTYPES and not keyword in self.hero.talent_types:
+                    essense_cards = DEFAULT_CATALOG.lookup_cards(key='talent_types', value=keyword)
                     cards.extend(
-                        card for card in DEFAULT_CATALOG.lookup_cards(key='talent_type', value=keyword) if card.class_type is None or card.class_type == hero_class
+                        card for card in essense_cards if not card.class_types or any(c in self.hero.class_types for c in card.class_types)
                     )
         dedup = CardList.empty()
         for card in cards:
@@ -800,9 +810,9 @@ class Deck:
         '''
         if 'Shapeshifter' in self.hero.types:
             raise Exception(f'deck hero "{self.hero.full_name}" is a Shapeshifter')
-        types = ['Generic', cast(str, self.hero.class_type)] if include_generic else []
-        if not self.hero.talent_type is None:
-            types.append(self.hero.talent_type)
+        types = ['Generic'] if include_generic else []
+        types.extend(self.hero.class_types)
+        types.extend(self.hero.talent_types)
         if 'Essence' in self.hero.ability_keywords:
             types.extend(t for t in self.hero.type_keywords if t in TALENT_SUPERTYPES)
-        return types
+        return sorted(types)

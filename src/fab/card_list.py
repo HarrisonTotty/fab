@@ -116,7 +116,7 @@ class CardList(UserList[Card]):
         Returns:
           The unique `list` of all hero class types within the card list.
         '''
-        return cast(list[str], self.collect_unique('class_type'))
+        return cast(list[str], self.collect_unique('class_types'))
 
     def collect(self, field: str, reverse: bool = False, sort: bool = True) -> list[int | str]:
         '''
@@ -1806,7 +1806,7 @@ class CardList(UserList[Card]):
         Returns:
           The unique `list` of all talent types within the card list.
         '''
-        return cast(list[str], self.collect_unique('talent_type'))
+        return cast(list[str], self.collect_unique('talent_types'))
 
     def to_dataframe(self) -> DataFrame:
         '''
@@ -1834,8 +1834,8 @@ class CardList(UserList[Card]):
         result = self.to_dataframe()
         for field in fields:
             result = result.explode(field)
-        result = result.replace([], None)
-        return result
+        result = result.replace([], None) # type: ignore
+        return cast(DataFrame, result)
 
     def to_json(self) -> str:
         '''

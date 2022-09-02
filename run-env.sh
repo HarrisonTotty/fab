@@ -2,7 +2,6 @@
 # Runs an instance of the fab Jupyter Lab environment image.
 
 set -e
-trap 'exit 100' INT
 
 docker run \
     --rm \

@@ -28,7 +28,7 @@ def test_dict_rep():
         'art_types',
         'body',
         'card_type',
-        'class_type',
+        'class_types',
         'color',
         'cost',
         'dates',
@@ -53,7 +53,7 @@ def test_dict_rep():
         'sets',
         'subtypes',
         'supertypes',
-        'talent_type',
+        'talent_types',
         'token_keywords',
         'types',
         'type_keywords',
@@ -67,7 +67,7 @@ def test_dict_rep():
         'art_types': ['S'],
         'body': '**Bravo Specialization** *(You may only have Crippling Crush in your deck if your hero is Bravo.)*\n\n**Crush** - If Crippling Crush deals 4 or more damage to a hero, they discard 2 random cards.',
         'card_type': 'Action',
-        'class_type': 'Guardian',
+        'class_types': ['Guardian'],
         'color': 'Red',
         'cost': 7,
         'dates': {},
@@ -92,7 +92,7 @@ def test_dict_rep():
         'sets': ['1HP', 'WTR'],
         'subtypes': ['Attack'],
         'supertypes': ['Guardian'],
-        'talent_type': None,
+        'talent_types': [],
         'token_keywords': [],
         'types': ['Action', 'Attack', 'Guardian'],
         'type_keywords': [],
@@ -172,7 +172,7 @@ def test_values():
     assert C1.ability_keywords == ['Specialization']
     assert C1.art_types == ['S']
     assert C1.card_type == 'Action'
-    assert C1.class_type == 'Guardian'
+    assert C1.class_types == ['Guardian']
     assert C1.color == 'Red'
     assert C1.cost == 7
     assert C1.defense == 3
@@ -196,7 +196,7 @@ def test_values():
     assert C1.sets == ['1HP', 'WTR']
     assert C1.subtypes == ['Attack']
     assert C1.supertypes == ['Guardian']
-    assert C1.talent_type is None
+    assert C1.talent_types == []
     assert C1.token_keywords == []
     assert C1.tags == ['example-1']
     assert C1.type_keywords == []

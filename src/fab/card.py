@@ -12,56 +12,28 @@ import json
 from IPython.display import display, Image
 from typing import Any, cast, Optional
 
-from .card_base import CardBase, JSON_INDENT
+from .card_base import CardBase
+from .card_base import STRING_FIELDS as BASE_STRING_FIELDS
+from .card_base import STRING_LIST_FIELDS as BASE_STRING_LIST_FIELDS
+from .card_base import VALUE_FIELDS as BASE_VALUE_FIELDS
 from .meta import RARITIES
 
 DATE_FORMAT = '%Y/%m/%d'
 
-STRING_FIELDS = {
-    # field: desc
-    'body': 'Body Text',
-    'card_type': 'Primary Type',
-    'color': 'Color',
-    'class_type': 'Class',
-    'flavor_text': 'Flavor Text',
-    'full_name': 'Full Name',
-    'name': 'Name',
-    'notes': 'User Notes',
-    'talent_type': 'Talent',
-    'type_text': 'Type Box Text'
-}
+STRING_FIELDS = BASE_STRING_FIELDS
 
-STRING_LIST_FIELDS = {
+STRING_LIST_FIELDS = BASE_STRING_LIST_FIELDS | {
     # field: (plural desc, singular desc)
-    'ability_keywords': ('Ability Keywords', 'Ability Keyword'),
     'art_types': ('Art Types', 'Art Type'),
     'editions': ('Editions', 'Edition'),
-    'effect_keywords': ('Effect Keywords', 'Effect Keyword'),
     'foilings': ('Foiling Codes', 'Foiling Code'),
-    'grants_keywords': ('Grants Keywords', 'Grants Keyword'),
     'identifiers': ('Identifiers', 'Identifier'),
-    'keywords': ('Keywords', 'Keyword'),
-    'label_keywords': ('Label Keywords', 'Label Keyword'),
     'rarities': ('Rarities', 'Rarity'),
     'sets': ('Sets', 'Set'),
-    'subtypes': ('Subtypes', 'Subtype'),
-    'supertypes': ('Supertypes', 'Supertype'),
-    'tags': ('User Tags', 'User Tag'),
-    'token_keywords': ('Token Keywords', 'Token Keyword'),
-    'types': ('Types', 'Type'),
-    'type_keywords': ('Type Keywords', 'Type Keyword'),
     'variations': ('Card Variations', 'Card Variation')
 }
 
-VALUE_FIELDS = {
-    # field: desc
-    'cost': 'Resource Cost',
-    'defense': 'Defense Value',
-    'intellect': 'Intellect',
-    'life': 'Life Value',
-    'pitch': 'Pitch Value',
-    'power': 'Attack Power'
-}
+VALUE_FIELDS = BASE_VALUE_FIELDS
 
 @dataclasses.dataclass
 class Card(CardBase):
@@ -112,11 +84,11 @@ class Card(CardBase):
 
     Regarding card types, each card has a list of all type keywords (`types`), a
     primary type (`card_type`), and the subset of types which are considered
-    subtypes (`subtypes`) and supertypes (`supertypes`). If The card contains a
-    class supertype, the `class_type` field will be set to that type. Likewise
-    if a card contains a talent supertype, the `talent_type` field will be set
-    to that type. Again, see the constants defined in the `meta` submodule to
-    learn the possible values.
+    subtypes (`subtypes`) and supertypes (`supertypes`). If The card contains
+    one or more class supertypes, the `class_types` field will contain those
+    types. Likewise if a card contains one or more talent supertypes, the
+    `talent_types` field contain those types. Again, see the constants defined
+    in the `meta` submodule to learn the possible values.
 
     For user convenience, `Card` objects expose two additional metadata fields
     (`notes` and `tags`) which may be populated by the user for arbitrary use.
@@ -130,7 +102,7 @@ class Card(CardBase):
         art_types        = ['S'],
         body             = '**Once per Turn Action** - Create a Soul Shackle token: Your ...',
         card_type        = 'Hero',
-        class_type       = 'Runeblade',
+        class_types      = ['Runeblade'],
         color            = None,
         cost             = None,
         dates            = {'CHN001-N-R-R-S': ('...', '...')},
@@ -155,7 +127,7 @@ class Card(CardBase):
         sets             = ['HER', 'CHN', 'MON'],
         subtypes         = ['Young'],
         supertypes       = ['Runeblade', 'Shadow'],
-        talent_type      = 'Shadow',
+        talent_types     = ['Shadow'],
         token_keywords   = ['Soul Shackle'],
         types            = ['Hero', 'Runeblade', 'Shadow', 'Young'],
         type_keywords    = ['Action'],

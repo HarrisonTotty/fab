@@ -22,18 +22,17 @@ STRING_FIELDS = {
     'body': 'Body Text',
     'card_type': 'Primary Type',
     'color': 'Color',
-    'class_type': 'Class',
     'flavor_text': 'Flavor Text',
     'full_name': 'Full Name',
     'name': 'Name',
     'notes': 'User Notes',
-    'talent_type': 'Talent',
     'type_text': 'Type Box Text'
 }
 
 STRING_LIST_FIELDS = {
     # field: (plural desc, singular desc)
     'ability_keywords': ('Ability Keywords', 'Ability Keyword'),
+    'class_types': ('Class Types', 'Class'),
     'effect_keywords': ('Effect Keywords', 'Effect Keyword'),
     'grants_keywords': ('Grants Keywords', 'Grants Keyword'),
     'keywords': ('Keywords', 'Keyword'),
@@ -41,6 +40,7 @@ STRING_LIST_FIELDS = {
     'subtypes': ('Subtypes', 'Subtype'),
     'supertypes': ('Supertypes', 'Supertype'),
     'tags': ('User Tags', 'User Tag'),
+    'talent_types': ('Talent Types', 'Talent'),
     'token_keywords': ('Token Keywords', 'Token Keyword'),
     'types': ('Types', 'Type'),
     'type_keywords': ('Type Keywords', 'Type Keyword'),
@@ -69,7 +69,7 @@ class CardBase:
       ability_keywords: The list of ability keywords associated with this card, such as `Dominate`.
       body: The full body text (rules text and reminder text) of the card, in Markdown format.
       card_type: The primary type associated with the card, such as `Action`.
-      class_type: The hero class supertype associated with the card, or `None` if not applicable.
+      class_types: The hero class supertypes associated with the card, if applicable.
       color: The color of the card, being `"Red"`, `"Yellow"`, `"Blue"`, or `None`.
       cost: The resource cost of the card, or `None` if not present.
       defense: The defense value of the card, or `None` if not present.
@@ -89,7 +89,7 @@ class CardBase:
       subtypes: The list of subtypes associated with this card.
       supertypes: The list of supertypes associated with this card.
       tags: A collection of user-defined tags.
-      talent_type: The talent supertype associated with this card (see `meta.TALENT_SUPERTYPES`), or `None` if not applicable.
+      talent_types: The talent supertypes associated with this card (see `meta.TALENT_SUPERTYPES`), if applicable.
       token_keywords: The list of all token keywords associated with this card, such as `Frostbite`.
       types: The list of all type keywords contained within the `type_text` of this card.
       type_keywords: The list of type keywords present within the `body` of the card, such as `Action`.
@@ -98,7 +98,7 @@ class CardBase:
     ability_keywords: list[str]
     body: Optional[str]
     card_type: str
-    class_type: Optional[str]
+    class_types: list[str] # NOTE: This is now a list[str] because of Emperor being a Warrior Wizard.
     color: Optional[str]
     cost: Optional[int | str]
     defense: Optional[int | str]
@@ -118,7 +118,7 @@ class CardBase:
     subtypes: list[str]
     supertypes: list[str]
     tags: list[str]
-    talent_type: Optional[str]
+    talent_types: list[str]
     token_keywords: list[str]
     type_keywords: list[str]
     type_text: str
@@ -169,11 +169,11 @@ class CardBase:
                 return (False, f'Ability keyword "{k}" not present in self.keywords')
         if not self.card_type in self.types:
             return (False, f'Primary card type "{self.card_type}" not present in self.types')
-        if isinstance(self.class_type, str):
-            if not self.class_type in self.supertypes:
-                return (False, f'Card class type "{self.class_type}" not present in self.supertypes')
-            if not self.class_type in self.types:
-                return (False, f'Card class type "{self.class_type}" not present in self.types')
+        for class_type in self.class_types:
+            if not class_type in self.supertypes:
+                return (False, f'Card class type "{class_type}" not present in self.supertypes')
+            if not class_type in self.types:
+                return (False, f'Card class type "{class_type}" not present in self.types')
         if isinstance(self.color, str):
             if not self.color in ['Red', 'Yellow', 'Blue']:
                 return (False, f'Card color "{self.color}" is not "Red", "Yellow", "Blue", or None')
@@ -215,11 +215,11 @@ class CardBase:
         for t in self.supertypes:
             if not t in self.types:
                 return (False, f'Card supertype "{t}" not present in self.types')
-        if isinstance(self.talent_type, str):
-            if not self.talent_type in self.supertypes:
-                return (False, f'Card talent type "{t}" not present in self.supertypes')
-            if not self.talent_type in self.types:
-                return (False, f'Card talent type "{t}" not present in self.types')
+        for talent_type in self.talent_types:
+            if not talent_type in self.supertypes:
+                return (False, f'Card talent type "{talent_type}" not present in self.supertypes')
+            if not talent_type in self.types:
+                return (False, f'Card talent type "{talent_type}" not present in self.types')
         for k in self.token_keywords:
             if not k in self.keywords:
                 return (False, f'Token keyword "{k}" not present in self.keywords')

@@ -43,6 +43,7 @@ DEFAULT_CATALOG: Optional[CardCatalog] = None
 DEFAULT_BASE_URL: str = 'https://github.com/HarrisonTotty/fab/releases/download'
 UPSTREAM_DATE_FORMAT: str = '%Y-%m-%d'
 UPSTREAM_BASE_URL: str = 'https://github.com/flesh-cube/flesh-and-blood-cards/releases/download'
+UPSTREAM_VERSION: str = 'v2.12.0'
 
 def _get_dates(variations: list[str], card_sets: list[CardSet]) -> dict[str, tuple[Optional[datetime.date], Optional[datetime.date]]]:
     '''
@@ -321,11 +322,11 @@ def _parse_types(inputstr: str) -> dict[str, Optional[list[str] | str]]:
         all_types = list(set([t.strip() for t in unidecode(inputstr).split(',')]))
         res = {
             'card_type': 'Token', # Unless we find a match, assume Token
-            'class_type': None,
+            'class_types': [],
             'subtypes': sorted(list(set([t for t in all_types if t in SUBTYPES]))),
             'supertypes': sorted(list(set([t for t in all_types if t in SUPERTYPES]))),
             'types': sorted(all_types),
-            'talent_type': None
+            'talent_types': []
         }
         for t in all_types:
             if t in CARD_TYPES:
@@ -334,9 +335,9 @@ def _parse_types(inputstr: str) -> dict[str, Optional[list[str] | str]]:
             res['types'] = sorted(res['types'] + ['Token'])
         for t in res['supertypes']:
             if t in CLASS_SUPERTYPES:
-                res['class_type'] = t
+                res['class_types'].append(t)
             elif t in TALENT_SUPERTYPES:
-                res['talent_type'] = t
+                res['talent_types'].append(t)
         return res
     except Exception as e:
         raise Exception(f'unable to parse card types - {e}')
@@ -657,7 +658,7 @@ class CardCatalog:
         return CardCatalog.from_dict(json.loads(jsonstr))
 
     @staticmethod
-    def import_upstream(version: str = 'v2.8.1', set_default: bool = False) -> CardCatalog:
+    def import_upstream(version: str = UPSTREAM_VERSION, set_default: bool = False) -> CardCatalog:
         '''
         Imports card data from the upstream [data
         repository](https://github.com/flesh-cube/flesh-and-blood-cards).
@@ -732,7 +733,7 @@ class CardCatalog:
                     art_types = variations_data['art_types'],
                     body = _parse_markdown_text(entry['Functional Text']),
                     card_type = cast(str, types_data['card_type']),
-                    class_type = cast(Optional[str], types_data['class_type']),
+                    class_types = cast(list[str], types_data['class_types']),
                     color = _parse_color(entry['Pitch']),
                     cost = _parse_value(entry['Cost']),
                     dates = _get_dates(variations_data['variations'], set_data),
@@ -759,7 +760,7 @@ class CardCatalog:
                     subtypes = cast(list[str], types_data['subtypes']),
                     supertypes = cast(list[str], types_data['supertypes']),
                     tags = [],
-                    talent_type = cast(Optional[str], types_data['talent_type']),
+                    talent_types = cast(list[str], types_data['talent_types']),
                     token_keywords = keywords_data['token_keywords'],
                     type_keywords = keywords_data['type_keywords'],
                     type_text = unidecode(entry['Type Text'].strip()),
