@@ -133,7 +133,7 @@ def box_plot(
       A plotly figure object representing the plot.
     '''
     labels = {}
-    df = cards.to_dataframe()
+    df = cards.to_flat_dataframe(fields=[color_field, x_field])
     if color_field in STRING_LIST_FIELDS:
         df.explode(color_field)
         labels[color_field] = STRING_LIST_FIELDS[color_field][1]
