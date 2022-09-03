@@ -1,8 +1,8 @@
 ::: fab.graphics
     options:
       members:
+        - 'box_plot'
         - 'distribution_plot'
-        - 'pie_chart'
+        - 'relationship_graph'
         - 'scatter_plot'
-        - 'statistic_plot'
         - 'table'
