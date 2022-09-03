@@ -287,6 +287,61 @@ def relationship_graph(
     )
 
 
+def scatter_plot(
+    cards: CardList,
+    group_by: str = 'class_types',
+    hover_fields: list[str] = [],
+    title: Optional[str] = None,
+    trendline: Optional[str] = None,
+    x: str = 'cost',
+    y: str = 'power'
+) -> go.Figure:
+    '''
+    Creates a scatter plot comparing the specified card fields.
+
+    Args:
+      cards: The list of cards to plot.
+      group_by: The `Card` field to group cards by.
+      hover_fields: A list of additional `Card` fields to display on hover.
+      title: An optional title for the plot.
+      trendline: Specifies a trendline algorithm to plot for each group, being one of `ols`, `lowess`, `rolling`, `expanding`, or `ewm`.
+      x: The `Card` field to display on the x-axis of the plot.
+      y: The `Card` field to display on the y-axis of the plot.
+
+    Returns:
+      A Plotly `Figure` object representing the plot.
+    '''
+    if any(k in STRING_LIST_FIELDS for k in [x, y, group_by]):
+        df = cards.to_flat_dataframe(fields=[k for k in [x, y, group_by] if k in STRING_LIST_FIELDS])
+    else:
+        df = cards.to_dataframe()
+    titles = []
+    for k in [x, y, group_by]:
+        if k in STRING_FIELDS:
+            titles.append(STRING_FIELDS[k])
+        elif k in STRING_LIST_FIELDS:
+            titles.append(STRING_LIST_FIELDS[k][1])
+        elif k in VALUE_FIELDS:
+            titles.append(VALUE_FIELDS[k])
+        else:
+            raise ValueError(f'specified field "{k}" is not supported')
+    fig = px.scatter(
+        df,
+        color = group_by,
+        hover_data = hover_fields if hover_fields else None,
+        hover_name = 'name',
+        trendline = trendline,
+        x = x,
+        y = y,
+    )
+    fig.update_layout(
+        legend_title_text = titles[2],
+        title = title,
+        xaxis_title = titles[0],
+        yaxis_title = titles[1],
+    )
+    return fig
+
 
 def table(cards: CardList, hide: list[str] = ['intellect', 'life', 'pitch']) -> Any:
     '''
